@@ -41,13 +41,13 @@ export default function Home() {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="py-20 md:py-32 bg-gradient-to-b from-white to-bg-alt flex items-center"
+        className="py-12 md:py-20 lg:py-32 bg-gradient-to-b from-white to-bg-alt flex items-center"
       >
-        <div className="container relative flex items-start min-h-[80vh]">
-          <div className="flex-1 max-w-2xl lg:max-w-3xl relative z-10">
+        <div className="container relative flex items-start">
+          <div className="flex-1 max-w-full md:max-w-2xl lg:max-w-3xl relative z-10">
             <motion.h1
               variants={itemVariants}
-              className="text-6xl md:text-7xl lg:text-8xl font-serif font-bold mb-6 leading-tight"
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-serif font-bold mb-4 md:mb-6 leading-tight"
             >
               Securing <br />
               <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text">
@@ -57,27 +57,28 @@ export default function Home() {
 
             <motion.p
               variants={itemVariants}
-              className="text-xl md:text-2xl text-gray-600 mb-4 max-w-3xl leading-relaxed"
+              className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-600 mb-3 md:mb-4 max-w-full md:max-w-3xl leading-relaxed"
             >
-              Didactik Media preserves, documents, and activates Africa's
-              audiovisual heritage. We are building the essential archival
-              infrastructure for the continent's creative economy.
+              The operating system for Africa's audiovisual heritage. We
+              preserve, catalog, and activate the continent's film and broadcast
+              archives with AI-powered infrastructure built for the creative
+              economy.
             </motion.p>
 
             <motion.p
               variants={itemVariants}
-              className="text-sm text-gray-500 mb-8"
+              className="text-xs sm:text-sm text-gray-500 mb-6 md:mb-8 font-semibold italic"
             >
-              Trusted by Africa Magic, Showmax & Amazon Prime Video
+              Powering archival infrastructure for:
             </motion.p>
 
-            <motion.div variants={itemVariants} className="mb-8 w-full">
+            <motion.div variants={itemVariants} className="mb-6 md:mb-8 w-full">
               <LogoMarquee />
             </motion.div>
 
             <motion.div
               variants={itemVariants}
-              className="flex flex-wrap gap-4 mb-10"
+              className="flex flex-wrap gap-4 mb-8 md:mb-10"
             >
               <Link to="/our-work" className="cta-button">
                 Learn About Our Work
@@ -86,29 +87,29 @@ export default function Home() {
 
             <motion.div
               variants={itemVariants}
-              className="flex flex-wrap gap-12 pt-8 border-t border-gray-200"
+              className="flex flex-wrap gap-6 sm:gap-8 md:gap-12 pt-6 md:pt-8 border-t border-gray-200"
             >
               <div>
-                <div className="text-4xl md:text-5xl font-bold text-secondary mb-2">
+                <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-secondary mb-1 md:mb-2">
                   100+
                 </div>
-                <div className="text-sm font-medium text-gray-500 uppercase tracking-wide">
+                <div className="text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wide">
                   Hours Preserved
                 </div>
               </div>
               <div>
-                <div className="text-4xl md:text-5xl font-bold text-secondary mb-2">
+                <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-secondary mb-1 md:mb-2">
                   15+
                 </div>
-                <div className="text-sm font-medium text-gray-500 uppercase tracking-wide">
+                <div className="text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wide">
                   Institutional Clients
                 </div>
               </div>
               <div>
-                <div className="text-4xl md:text-5xl font-bold text-secondary mb-2">
+                <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-secondary mb-1 md:mb-2">
                   100%
                 </div>
-                <div className="text-sm font-medium text-gray-500 uppercase tracking-wide">
+                <div className="text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wide">
                   Broadcast-Ready
                 </div>
               </div>
@@ -116,14 +117,14 @@ export default function Home() {
           </div>
           <motion.div
             initial={{ opacity: 0, x: 50, rotate: 5 }}
-            animate={{ opacity: 0.2, x: 0, rotate: 0 }}
+            animate={{ opacity: 0.12, x: 0, rotate: 0 }}
             transition={{ duration: 1, ease: "easeOut" }}
-            className="absolute right-0 top-1/2 -translate-y-1/2 hidden lg:block z-0 w-[60%]"
+            className="absolute inset-0 lg:inset-auto lg:right-0 lg:top-1/2 lg:-translate-y-1/2 z-0 lg:w-[60%] flex items-center justify-center lg:justify-end pointer-events-none"
           >
             <motion.img
               src="/images/film-reel-hero.png"
               alt="Vintage film reel artistic illustration"
-              className="w-full h-auto object-contain drop-shadow-2xl ml-auto"
+              className="w-[80%] max-w-xs sm:max-w-sm md:max-w-md lg:w-full lg:max-w-none h-auto object-contain opacity-100 lg:opacity-100 drop-shadow-2xl lg:ml-auto"
               animate={{
                 y: [0, -15, 0],
               }}

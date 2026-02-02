@@ -7,7 +7,7 @@ export default function OurWork() {
       number: "01",
       title: "Ingest & Digitize",
       description:
-        "We rescue content from tapes, film, and disorganized drives—from Betacam to VHS, we handle all legacy formats.",
+        "We rescue content from tapes, film, and disorganized drives-from Betacam to VHS, we handle all legacy formats.",
     },
     {
       number: "02",
@@ -19,7 +19,7 @@ export default function OurWork() {
       number: "03",
       title: "Preserve & Secure",
       description:
-        "We store master files in secure, managed environments for the long term—preservation-grade digital asset management.",
+        "We store master files in secure, managed environments for the long term-preservation-grade digital asset management.",
     },
     {
       number: "04",

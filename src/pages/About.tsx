@@ -69,26 +69,38 @@ export default function About() {
 
               {/* Founder's Note Text */}
               <div className="space-y-6 text-lg text-gray-700 leading-relaxed">
+                <div className="mb-4">
+                  <h3 className="text-2xl font-serif font-semibold mb-2">
+                    Emem Attah | Founder & CEO
+                  </h3>
+                  <p className="text-base italic text-gray-600">
+                    LL.B (Babcock University) | Intellectual Property & Media
+                    Strategist | CP Innovate Grant 2024 (Shortlisted)
+                  </p>
+                </div>
                 <p>
-                  I have always been interested in how stories shape power - who
-                  gets remembered, who gets believed, and who gets written out.
-                  Trained as a lawyer and shaped by years working in television
-                  production, I saw firsthand how culture, media, and policy
-                  intersect, often invisibly. While working on major African
-                  television productions, I became increasingly aware of how
-                  much of our history, creative labour, and national memory was
-                  undocumented, poorly preserved, or lost entirely. That gap
-                  stayed with me.
+                  Emem holds the distinction of being the youngest-ever TV
+                  Producer for Africa Magic (Multichoice), where she managed
+                  high-volume media lifecycles for major African productions.
+                  Trained as a lawyer, she saw firsthand how much of our history
+                  and creative labour was undocumented, poorly preserved, or
+                  lost entirely.
                 </p>
                 <p>
-                  After leaving production, I founded Didactik Media to respond
-                  to that absence. What began as a practical solution to
-                  archiving and documentation has grown into a broader
-                  commitment to preserving stories with integrity - from film
-                  and television to cultural dialogue and institutional memory.
+                  After leaving production, she founded Didactik Media to
+                  respond to that absence. Leveraging her legal expertise in
+                  Intellectual Property and Copyright Law, Emem architected
+                  Didactik's AI-powered African Cultural Taxonomy, a defensible
+                  IP asset that meets international archival standards while
+                  protecting African data sovereignty.
                 </p>
-                <p className="italic text-gray-600">
-                  — Ememobong Attah, Founder & CEO
+                <p>
+                  She is currently leading Didactik's transition from Nigeria's
+                  premier digitization service into a scalable, sustainable tech
+                  platform for the continent's audiovisual memory-creating
+                  economic opportunity, preserving cultural heritage, and
+                  reducing the carbon footprint of archival preservation by over
+                  90% through efficient digital cold storage.
                 </p>
               </div>
             </div>
@@ -114,7 +126,7 @@ export default function About() {
                 Didactik Media was founded to address a critical gap in Africa's
                 creative economy: the systematic loss of audiovisual heritage.
                 We recognized that without proper archival infrastructure,
-                decades of cultural production were disappearing—taking with
+                decades of cultural production were disappearing-taking with
                 them not just content, but the raw material for future
                 creativity, research, and economic opportunity.
               </p>
@@ -127,7 +139,7 @@ export default function About() {
               </p>
               <p>
                 We believe that preserving Africa's audiovisual heritage is not
-                just about looking backward—it's about building the foundation
+                just about looking backward-it's about building the foundation
                 for a thriving creative economy that can compete globally while
                 remaining rooted in authentic African narratives.
               </p>

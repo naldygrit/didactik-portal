@@ -41,7 +41,7 @@ export default function LogoMarquee() {
         {duplicatedLogos.map((logo, index) => (
           <div
             key={`${logo.name}-${index}`}
-            className="flex items-center justify-center min-w-[150px] opacity-70 hover:opacity-100 transition-opacity duration-300 grayscale hover:grayscale-0"
+            className="flex items-center justify-center min-w-[150px] opacity-70 hover:opacity-100 transition-opacity duration-300 "
           >
             <img src={logo.src} alt={logo.name} className={logo.className} />
           </div>

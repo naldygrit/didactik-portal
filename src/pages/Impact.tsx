@@ -36,7 +36,7 @@ export default function Impact() {
               </h2>
               <div className="space-y-4 text-lg text-gray-700 leading-relaxed">
                 <p>
-                  Preventing the permanent loss of history—70%+ of pre-2000
+                  Preventing the permanent loss of history-70%+ of pre-2000
                   Nigerian TV content is already gone.
                 </p>
                 <p>Building a credible record for research and education.</p>
@@ -59,7 +59,7 @@ export default function Impact() {
               </h2>
               <div className="space-y-4 text-lg text-gray-700 leading-relaxed">
                 <p>
-                  Transforming cost centers into revenue streams—unlocking
+                  Transforming cost centers into revenue streams-unlocking
                   billions in creative IP.
                 </p>
                 <p>
@@ -67,7 +67,7 @@ export default function Impact() {
                   platforms.
                 </p>
                 <p>
-                  Professionalizing the creative industry's assets—producers
+                  Professionalizing the creative industry's assets-producers
                   lose 15-30% of potential revenue from inaccessible archives.
                 </p>
               </div>
@@ -91,7 +91,7 @@ export default function Impact() {
               We are not just saving tapes; we are securing the raw material of
               our future.
             </blockquote>
-            <p className="text-lg text-gray-600">— Emem Attah, Founder</p>
+            <p className="text-lg text-gray-600">- Emem Attah, Founder</p>
           </motion.div>
 
           <div className="mt-10 text-center">

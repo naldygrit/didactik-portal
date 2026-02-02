@@ -12,7 +12,8 @@ const teamData: TeamMember[] = [
   {
     name: "Ememobong Attah",
     role: "Founder & CEO",
-    credential: "LL.B Law, Babcock University",
+    credential:
+      "LL.B Law, Babcock University | IP & Media Strategist | CP Innovate Grant 2024",
     photo: "/images/team/founder-img-1.jpeg",
   },
   {
