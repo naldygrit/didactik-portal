@@ -24,12 +24,12 @@ export default function About() {
   return (
     <div>
       {/* Header */}
-      <section className="py-24 bg-gradient-to-b from-bg-alt to-white">
+      <section className="pt-20 pb-10 bg-gradient-to-b from-bg-alt to-white">
         <div className="container">
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-5xl md:text-6xl font-serif font-bold mb-6"
+            className="text-5xl md:text-6xl font-serif font-bold -mb-2"
           >
             Architects of{" "}
             <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text">
@@ -40,7 +40,7 @@ export default function About() {
       </section>
 
       {/* Founder's Note */}
-      <section className="py-24 bg-white">
+      <section className="pt-10 pb-20 bg-white">
         <div className="container">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -97,7 +97,7 @@ export default function About() {
       </section>
 
       {/* Company Story */}
-      <section className="py-24 bg-bg-alt">
+      <section className="py-16 bg-bg-alt">
         <div className="container">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -136,7 +136,7 @@ export default function About() {
         </div>
       </section>
       {/* Core Values */}
-      <section className="py-24 bg-white">
+      <section className="py-16 bg-white">
         <div className="container">
           <h2 className="text-4xl font-serif font-bold mb-12 text-center">
             Our Values

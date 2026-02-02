@@ -46,7 +46,7 @@ export default function Contact() {
   return (
     <div>
       {/* Header */}
-      <section className="py-16 bg-gradient-to-b from-bg-alt to-white">
+      <section className="pt-20 pb-10 bg-gradient-to-b from-bg-alt to-white">
         <div className="container">
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
@@ -59,7 +59,7 @@ export default function Contact() {
       </section>
 
       {/* Contact Form & Info */}
-      <section className="py-16 bg-white">
+      <section className="pt-10 pb-20 bg-white">
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
             {/* Contact Form */}
