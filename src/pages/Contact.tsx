@@ -265,7 +265,7 @@ export default function Contact() {
                         className="text-secondary hover:text-primary transition-colors flex items-center gap-2"
                       >
                         <FaInstagram className="text-primary text-xl" />
-                        Instagram @didactikmedia
+                        @didactikmedia
                       </a>
                     </p>
                   </div>

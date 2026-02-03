@@ -65,7 +65,7 @@ export default function Footer() {
                   className="text-gray-500 hover:text-secondary transition-colors flex items-center gap-2"
                 >
                   <FaInstagram className="text-secondary text-lg" />
-                  Instagram @didactikmedia
+                  @didactikmedia
                 </a>
               </p>
             </div>
