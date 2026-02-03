@@ -248,17 +248,6 @@ export default function Contact() {
                     </p>
                     <p>
                       <a
-                        href="https://www.linkedin.com/in/ememobongattah/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-secondary hover:text-primary transition-colors flex items-center gap-2"
-                      >
-                        <FaLinkedin className="text-primary text-xl" />
-                        Emem Attah
-                      </a>
-                    </p>
-                    <p>
-                      <a
                         href="https://instagram.com/didactikmedia"
                         target="_blank"
                         rel="noopener noreferrer"
