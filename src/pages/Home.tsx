@@ -141,7 +141,7 @@ export default function Home() {
               className="w-[80%] max-w-xs sm:max-w-sm md:max-w-md lg:w-full lg:max-w-none"
             >
               <ImageWithSkeleton
-                src="/images/film-reel-hero.png"
+                src="/images/film-reel-hero.webp"
                 alt="Vintage film reel artistic illustration"
                 className="w-full h-auto object-contain opacity-100 lg:opacity-100 drop-shadow-2xl lg:ml-auto"
               />
