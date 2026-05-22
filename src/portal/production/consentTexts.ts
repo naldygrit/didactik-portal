@@ -14,7 +14,7 @@ interface ConsentEntry {
 
 export const CONSENT_TEXTS: Record<JurisdictionalBasis, ConsentEntry> = {
   ndpa_section_43: {
-    version: 'data_transfer_ndpa_v1_2026_05',
+    version: 'data_transfer_ndpa_v2_2026_05',
     text: `DATA TRANSFER CONSENT NOTICE
 Nigeria Data Protection Act 2023 — Section 43(1)(a) Derogation
 
@@ -29,6 +29,8 @@ Recipient: Backblaze, Inc., 500 Ben Franklin Court, San Mateo, CA 94402, USA.
 Purpose: archival storage of your submitted audiovisual content.
 Retention: until you request deletion or your submission is removed from the archive. Contact privacy@didactikmedia.com to exercise your data subject rights.
 Full privacy policy: didactikmedia.com/privacy
+
+NIGERIAN COPYRIGHT ACT 2022 NOTICE: Under the Nigerian Copyright Act 2022, certain uses of copyrighted works are permitted by statute without requiring the copyright owner's consent. Fair dealing exceptions for educational purposes (Sections 21–24) — including use by educational establishments for instruction, examination, and non-commercial broadcast recording — are automatic statutory rights that operate independently of any licence you grant. The Act also provides compulsory licensing mechanisms (Sections 31–35), which allow the Nigerian Copyright Commission to authorise translation and reproduction of works for educational and public-interest purposes following a formal application process. Granting Didactik a licence to distribute and act on your behalf does not diminish or waive any of these statutory provisions. Didactik does not invoke fair dealing exceptions or compulsory licensing provisions in its routine commercial licensing operations.
 
 By checking the box below, you explicitly and freely consent to the transfer of your personal data outside Nigeria on the basis of Section 43(1)(a) of the Nigeria Data Protection Act 2023. This consent is voluntary — you may decline without penalty other than being unable to submit content through this platform.`,
   },
