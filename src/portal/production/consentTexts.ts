@@ -78,30 +78,28 @@ By checking the box below, you acknowledge this disclosure and consent to the tr
   },
 
   gdpr_article_49: {
-    version: 'data_transfer_gdpr_art49_v1_2026_05',
+    version: 'data_transfer_gdpr_art49_v2_2026_06',
     text: `DATA TRANSFER CONSENT NOTICE
-General Data Protection Regulation — Article 49(1)(a) Derogation
+General Data Protection Regulation — Data Transfer Notice
 (Applies to submitters in the EU, EEA, and United Kingdom)
 
 Didactik Media Limited ("Didactik") is the controller of your personal data for the purposes of this submission. When you submit content through this platform, personal data — including your name, contact details, and submission metadata — will be transferred to and stored on servers operated by Backblaze, Inc., a company incorporated in the United States of America.
 
-The European Commission has not issued an adequacy decision covering Backblaze, Inc. Didactik does not currently have Standard Contractual Clauses (SCCs) or other Article 46 transfer mechanisms in place with Backblaze for submitters in your jurisdiction. This transfer therefore relies on your explicit consent under Article 49(1)(a) of the GDPR (or Article 49(1)(a) UK GDPR as applicable), which permits occasional, non-repetitive transfers to third countries lacking an adequacy decision where the data subject has explicitly consented.
+Backblaze, Inc. has self-certified under the EU-U.S. Data Privacy Framework (EU-U.S. DPF) with the US Department of Commerce. Transfers to Backblaze therefore have the benefit of the European Commission's adequacy decision for the EU-U.S. DPF under GDPR Article 45. For UK submitters, Backblaze is certified under the UK Extension to the EU-U.S. DPF (UK-US DataBridge), providing the transfer mechanism under UK GDPR. However, the EU-U.S. DPF is currently subject to a legal challenge before the Court of Justice of the EU (Case C-703/25 P) and PCLOB oversight is suspended. Didactik therefore also collects your explicit consent under Article 49(1)(a) GDPR (or UK GDPR as applicable) as a supplementary measure, and intends to execute Standard Contractual Clauses with Backblaze as the primary transfer mechanism when EU operations scale beyond the pilot phase.
 
-CLOUD ACT DISCLOSURE: Backblaze, Inc. is a US company subject to the Clarifying Lawful Overseas Use of Data Act (CLOUD Act), 18 U.S.C. § 2713. Under the CLOUD Act, US government agencies may compel Backblaze to disclose your personal data stored on its servers, potentially without prior notice to you and without a mutual legal assistance treaty (MLAT) process. This is a material risk that GDPR Article 49 derogation guidance requires you to be informed of before consenting.
-
-TRANSFER MECHANISM TRANSITION: Didactik intends to migrate EU/EEA/UK submitters to Standard Contractual Clauses under GDPR Article 46 as the primary transfer mechanism. Until those SCCs are executed, this Article 49(1)(a) consent is the applicable transfer basis.
+CLOUD ACT DISCLOSURE: Backblaze, Inc. is a US company subject to the Clarifying Lawful Overseas Use of Data Act (CLOUD Act), 18 U.S.C. § 2713. Under the CLOUD Act, US government agencies may compel Backblaze to disclose your personal data stored on its servers, potentially without prior notice to you and without a mutual legal assistance treaty (MLAT) process. This is a material risk you are entitled to be informed of. The EU-U.S. DPF does not exempt US companies from CLOUD Act obligations.
 
 Please note: Didactik's operations for EU/EEA/UK–based submitters are currently in a limited pilot phase. Each submission is reviewed by Didactik admin staff before your upload is processed.
 
 Data transferred: your name, contact details, and submission metadata.
 Recipient: Backblaze, Inc., 500 Ben Franklin Court, San Mateo, CA 94402, USA.
 Purpose: archival storage of your submitted audiovisual content.
-Legal basis for transfer: Article 49(1)(a) GDPR / UK GDPR — explicit consent.
+Legal basis for transfer: Article 45 GDPR (EU-U.S. DPF adequacy decision); supplemented by Article 49(1)(a) explicit consent.
 Your rights: you have the right of access, rectification, erasure, restriction of processing, data portability, and to object to processing. You may also lodge a complaint with your local supervisory authority. Contact privacy@didactikmedia.com.
 Retention: until you request deletion or your submission is removed from the archive.
 Full privacy policy: didactikmedia.com/privacy
 
-By checking the box below, you explicitly and freely consent to the transfer of your personal data to the United States of America on the basis of Article 49(1)(a) of the General Data Protection Regulation (or UK GDPR as applicable). This consent is voluntary. You may withdraw it at any time by contacting privacy@didactikmedia.com — withdrawal does not affect the lawfulness of any prior transfer, but you will no longer be able to submit content through this platform.`,
+By checking the box below, you explicitly and freely consent to the transfer of your personal data to the United States of America. This consent is a supplementary measure alongside the EU-U.S. Data Privacy Framework adequacy decision (or UK Extension for UK submitters) and is voluntary. You may withdraw it at any time by contacting privacy@didactikmedia.com — withdrawal does not affect the lawfulness of any prior transfer, but you will no longer be able to submit content through this platform.`,
   },
 
   other: {

@@ -4,11 +4,13 @@ import { useQuery } from '@tanstack/react-query';
 import { apiGet } from '../../../shared/apiHelpers';
 import { jurisdictionalBasisForCountry } from '../../lib/jurisdiction';
 import { CONSENT_TEXTS } from '../../consentTexts';
+import { PrivacyPolicyDrawer } from './PrivacyPolicyDrawer';
 import type { MeResponse, ProductionCompanyDetail } from '../../../shared/types';
 import type { WizardFormData } from '../../pages/SubmitPage';
 
 export function Step3Consent() {
   const [expanded, setExpanded] = useState(false);
+  const [isPolicyOpen, setIsPolicyOpen] = useState(false);
   const { register, formState: { errors } } = useFormContext<WizardFormData>();
 
   // Fetch /auth/me/ to get the production company ID
@@ -71,12 +73,20 @@ export function Step3Consent() {
         />
         <label htmlFor="consented" className="text-sm text-gray-700 cursor-pointer">
           I have read the consent terms above and explicitly consent to the transfer
-          of my personal data as described.
+          of my personal data as described.{' '}
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setIsPolicyOpen((v) => !v); }}
+            className="text-indigo-600 hover:text-indigo-800 font-medium whitespace-nowrap"
+          >
+            Privacy Policy {isPolicyOpen ? '↑' : '↓'}
+          </button>
         </label>
       </div>
       {errors.consented && (
         <p className="text-xs text-red-600">{errors.consented.message as string}</p>
       )}
+      <PrivacyPolicyDrawer isOpen={isPolicyOpen} />
     </div>
   );
 }
