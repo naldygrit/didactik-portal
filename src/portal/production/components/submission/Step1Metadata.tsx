@@ -1,4 +1,7 @@
 import { useFormContext } from 'react-hook-form';
+import { useQuery } from '@tanstack/react-query';
+import { apiGet } from '../../../shared/apiHelpers';
+import type { Language, Country } from '../../../shared/types';
 import type { WizardFormData } from '../../pages/SubmitPage';
 
 const ASSET_TYPES = [
@@ -21,6 +24,16 @@ function FieldError({ name }: { name: keyof WizardFormData }) {
 
 export function Step1Metadata() {
   const { register } = useFormContext<WizardFormData>();
+
+  const { data: languages, isLoading: langsLoading } = useQuery<Language[]>({
+    queryKey: ['languages'],
+    queryFn: () => apiGet<Language[]>('/api/v1/languages/'),
+  });
+
+  const { data: countries, isLoading: countriesLoading } = useQuery<Country[]>({
+    queryKey: ['countries'],
+    queryFn: () => apiGet<Country[]>('/api/v1/countries/'),
+  });
 
   return (
     <div className="space-y-5">
@@ -98,9 +111,39 @@ export function Step1Metadata() {
         <FieldError name="description" />
       </div>
 
-      <p className="text-xs text-gray-400">
-        Language and country of production can be added by Didactik admin after review.
-      </p>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Primary language
+          <span className="ml-1 text-xs text-gray-400">(optional)</span>
+        </label>
+        <select
+          {...register('primary_language', { valueAsNumber: true })}
+          disabled={langsLoading}
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        >
+          <option value="">— select language —</option>
+          {languages?.map((l) => (
+            <option key={l.id} value={l.id}>{l.english_name}</option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Country of production
+          <span className="ml-1 text-xs text-gray-400">(optional)</span>
+        </label>
+        <select
+          {...register('production_country', { valueAsNumber: true })}
+          disabled={countriesLoading}
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        >
+          <option value="">— select country —</option>
+          {countries?.map((c) => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+        </select>
+      </div>
     </div>
   );
 }

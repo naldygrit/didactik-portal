@@ -28,6 +28,14 @@ const wizardSchema = z.object({
       z.number().int().min(1900).max(2030).optional(),
     ),
   description: z.string().max(5000).optional(),
+  primary_language: z.preprocess(
+    (v) => (v === '' || v === undefined || v === null || Number.isNaN(Number(v)) ? undefined : Number(v)),
+    z.number().int().positive().optional(),
+  ),
+  production_country: z.preprocess(
+    (v) => (v === '' || v === undefined || v === null || Number.isNaN(Number(v)) ? undefined : Number(v)),
+    z.number().int().positive().optional(),
+  ),
   // Step 2 — Submitter attestation
   submitter_name: z.string().min(1, 'Your name is required').max(300),
   submitter_contact: z.string().min(1, 'Contact info is required').max(300),
@@ -64,6 +72,8 @@ export function ProductionSubmitPage() {
       asset_type: undefined,
       production_year: undefined,
       description: '',
+      primary_language: undefined,
+      production_country: undefined,
       submitter_name: '',
       submitter_contact: user?.email ?? '',
       consented: false,

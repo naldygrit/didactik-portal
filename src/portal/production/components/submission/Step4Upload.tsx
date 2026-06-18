@@ -47,6 +47,8 @@ export function Step4Upload({ formData, onBack }: Props) {
       submitter_name: formData.submitter_name,
       submitter_contact: formData.submitter_contact,
       consented: true,
+      primary_language: formData.primary_language ?? undefined,
+      production_country: formData.production_country ?? undefined,
     };
 
     let initiated: UploadInitiatedResponse;

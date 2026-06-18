@@ -11,7 +11,12 @@ vi.mock('../../shared/AuthContext', () => ({
 }));
 
 vi.mock('../../shared/apiHelpers', () => ({
-  apiGet: vi.fn().mockResolvedValue({}),
+  apiGet: vi.fn().mockImplementation((path: string) => {
+    if (path === '/api/v1/languages/' || path === '/api/v1/countries/') {
+      return Promise.resolve([]);
+    }
+    return Promise.resolve({});
+  }),
   apiPost: vi.fn(),
   paginationPath: (url: string) => url,
 }));
@@ -69,7 +74,7 @@ describe('SubmitPage wizard', () => {
     const titleInput = screen.getByPlaceholderText('Working or anglicised title');
     fireEvent.change(titleInput, { target: { value: 'A Valid Title Here' } });
 
-    const typeSelect = screen.getByRole('combobox');
+    const typeSelect = screen.getByDisplayValue('Select type…');
     fireEvent.change(typeSelect, { target: { value: 'feature_film' } });
 
     fireEvent.click(screen.getByText('Next →'));
@@ -84,7 +89,7 @@ describe('SubmitPage wizard', () => {
     // Advance to Step 2
     const titleInput = screen.getByPlaceholderText('Working or anglicised title');
     fireEvent.change(titleInput, { target: { value: 'A Valid Title Here' } });
-    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'documentary' } });
+    fireEvent.change(screen.getByDisplayValue('Select type…'), { target: { value: 'documentary' } });
     fireEvent.click(screen.getByText('Next →'));
     await screen.findByPlaceholderText('As it appears on official documents');
 
@@ -105,7 +110,7 @@ describe('SubmitPage wizard', () => {
     // Go to Step 2
     const titleInput = screen.getByPlaceholderText('Working or anglicised title');
     fireEvent.change(titleInput, { target: { value: 'A Valid Title Here' } });
-    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'documentary' } });
+    fireEvent.change(screen.getByDisplayValue('Select type…'), { target: { value: 'documentary' } });
     fireEvent.click(screen.getByText('Next →'));
     await screen.findByPlaceholderText('As it appears on official documents');
 
