@@ -223,10 +223,10 @@ export default function Contact() {
                     Email
                   </h3>
                   <a
-                    href="mailto:emem@didactikmedia.com"
+                    href="mailto:onboarding@didactikmedia.com"
                     className="text-secondary hover:text-primary transition-colors ml-6"
                   >
-                    emem@didactikmedia.com
+                    onboarding@didactikmedia.com
                   </a>
                 </div>
 
