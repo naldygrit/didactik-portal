@@ -9,6 +9,7 @@ import type {
   DealDeskItem,
   MeResponse,
   PayoutAccount,
+  ProductionTitleStat,
   SearchAsset,
 } from '../../portal/shared/types';
 
@@ -278,5 +279,24 @@ describe('discovery', () => {
     await setInterests(['type:documentary']);
     const recs = (await (await fetch(`${BASE}/api/v1/recommendations/`)).json()) as AssetListItem[];
     expect(recs[0].asset_type).toBe('documentary');
+  });
+});
+
+describe('production analytics', () => {
+  it('returns per-title bid stats for the producer', async () => {
+    session.current = users.find((u) => u.username === 'producer') ?? null;
+    const stats = (await (
+      await fetch(`${BASE}/api/v1/production/title-stats/`)
+    ).json()) as ProductionTitleStat[];
+    // EbonyLife owns Lagos After Dark (101), which carries seeded rival bids.
+    const lagos = stats.find((s) => s.asset_id === 101);
+    expect(lagos).toBeDefined();
+    expect(lagos!.bid_count).toBeGreaterThanOrEqual(2);
+  });
+
+  it('forbids a broadcaster from the production stats', async () => {
+    session.current = users.find((u) => u.username === 'broadcaster') ?? null;
+    const res = await fetch(`${BASE}/api/v1/production/title-stats/`);
+    expect(res.status).toBe(403);
   });
 });

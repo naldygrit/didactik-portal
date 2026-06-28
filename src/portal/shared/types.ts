@@ -179,3 +179,14 @@ export interface InterestOption {
   key: string;
   label: string;
 }
+
+// Per-title market interest for the production Analytics view.
+export interface ProductionTitleStat {
+  asset_id: number;
+  title: string;
+  status: AssetStatus;
+  bid_count: number;
+  top_amount: number | null;
+  licensed_amount: number | null;
+  currency: string;
+}

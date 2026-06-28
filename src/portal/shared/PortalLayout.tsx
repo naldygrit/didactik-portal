@@ -1,5 +1,14 @@
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { FiGrid, FiCheckSquare, FiLayers } from 'react-icons/fi';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import {
+  FiGrid,
+  FiCheckSquare,
+  FiLayers,
+  FiHome,
+  FiFilm,
+  FiBarChart2,
+  FiDollarSign,
+  FiPlus,
+} from 'react-icons/fi';
 import { useAuth } from './AuthContext';
 import { postLogout } from './auth';
 
@@ -7,6 +16,13 @@ const ADMIN_NAV = [
   { to: '/portal/admin/overview', label: 'Overview', Icon: FiGrid },
   { to: '/portal/admin/deals', label: 'Deals desk', Icon: FiCheckSquare },
   { to: '/portal/admin/library', label: 'Library', Icon: FiLayers },
+];
+
+const PRODUCTION_NAV = [
+  { to: '/portal/production/dashboard', label: 'Dashboard', Icon: FiHome },
+  { to: '/portal/production/assets', label: 'Content', Icon: FiFilm },
+  { to: '/portal/production/analytics', label: 'Analytics', Icon: FiBarChart2 },
+  { to: '/portal/production/earnings', label: 'Earnings', Icon: FiDollarSign },
 ];
 
 export function PortalLayout() {
@@ -18,9 +34,6 @@ export function PortalLayout() {
   const cinema = pathname.includes('/broadcaster');
   const control = pathname.includes('/admin');
   const dark = cinema || control;
-
-  const lightLink = ({ isActive }: { isActive: boolean }) =>
-    isActive ? 'font-medium text-gray-900' : 'text-gray-500 transition-colors hover:text-gray-900';
 
   async function handleLogout() {
     await postLogout();
@@ -139,37 +152,61 @@ export function PortalLayout() {
     );
   }
 
+  // Production: YouTube Studio-style left sidebar.
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50">
-      <header className="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-3">
-        <div className="flex items-center gap-6">
-          {Brand}
-          <nav className="hidden items-center gap-5 text-sm md:flex">
-            {pathname.includes('/production') && (
-              <>
-                <NavLink to="/portal/production/dashboard" className={lightLink}>Home</NavLink>
-                <NavLink to="/portal/production/assets" className={lightLink}>Films</NavLink>
-                <NavLink to="/portal/production/earnings" className={lightLink}>Earnings</NavLink>
-              </>
-            )}
-            {pathname.includes('/admin') && (
-              <NavLink to="/portal/admin/deals" className={lightLink}>Deals desk</NavLink>
-            )}
-          </nav>
+    <div className="flex min-h-screen bg-gray-50">
+      <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col border-r border-gray-200 bg-white md:flex">
+        <div className="px-4 py-4">{Brand}</div>
+        <div className="px-3 pb-3">
+          <Link
+            to="/portal/production/submit"
+            className="flex w-full items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
+            style={{ backgroundColor: '#5343fd' }}
+          >
+            <FiPlus size={16} />
+            Submit a title
+          </Link>
         </div>
-        <div className="flex items-center gap-4">
-          {user && <span className="text-sm text-gray-600">{user.email}</span>}
+        <nav className="flex-grow space-y-0.5 px-2">
+          {PRODUCTION_NAV.map(({ to, label, Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) =>
+                `flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors ${
+                  isActive
+                    ? 'bg-gray-100 font-medium text-gray-900'
+                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                }`
+              }
+            >
+              <Icon size={16} />
+              {label}
+            </NavLink>
+          ))}
+        </nav>
+        <div className="border-t border-gray-200 px-4 py-3">
+          {user && <p className="truncate text-xs text-gray-500">{user.email}</p>}
           <button
             onClick={handleLogout}
-            className="text-sm text-gray-500 transition-colors hover:text-gray-800"
+            className="mt-1 text-xs text-gray-500 transition-colors hover:text-gray-800"
           >
             Sign out
           </button>
         </div>
-      </header>
-      <main className="flex-grow p-6">
-        <Outlet />
-      </main>
+      </aside>
+
+      <div className="flex min-h-screen flex-grow flex-col">
+        <header className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 md:hidden">
+          {Brand}
+          <button onClick={handleLogout} className="text-sm text-gray-500">
+            Sign out
+          </button>
+        </header>
+        <main className="flex-grow p-6 md:p-8">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }

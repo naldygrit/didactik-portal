@@ -17,6 +17,7 @@ import { ProductionAssetsPage } from './production/pages/AssetsPage';
 import { ProductionSubmitPage } from './production/pages/SubmitPage';
 import { ProductionAssetDetailPage } from './production/pages/AssetDetailPage';
 import { ProductionEarningsPage } from './production/pages/EarningsPage';
+import { ProductionAnalyticsPage } from './production/pages/AnalyticsPage';
 import { AdminOverviewPage } from './admin/pages/OverviewPage';
 import { AdminDealsPage } from './admin/pages/DealsPage';
 import { AdminLibraryPage } from './admin/pages/LibraryPage';
@@ -76,6 +77,14 @@ function PortalRoutes() {
           element={
             <ProtectedRoute isAllowed={isPC}>
               <ProductionEarningsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="production/analytics"
+          element={
+            <ProtectedRoute isAllowed={isPC}>
+              <ProductionAnalyticsPage />
             </ProtectedRoute>
           }
         />

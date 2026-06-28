@@ -4,6 +4,7 @@ import type {
   AssetListItem,
   BidBoard,
   DealDeskItem,
+  ProductionTitleStat,
   SearchAsset,
 } from '../portal/shared/types';
 import { encodeMockJwt } from './jwt';
@@ -353,6 +354,30 @@ export const handlers = [
     };
     payoutAccounts.push(account);
     return HttpResponse.json(account);
+  }),
+
+  // Per-title market interest for the production Analytics view.
+  http.get(`${API}/production/title-stats/`, () => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    const company = user.me.profile?.production_company;
+    if (!company) return HttpResponse.json({ detail: 'Production companies only.' }, { status: 403 });
+    const mine = assets.filter((a) => a.production_company?.id === company.id);
+    const stats: ProductionTitleStat[] = mine.map((a) => {
+      const assetBids = bids.filter((b) => b.asset_id === a.id);
+      const top = assetBids.length ? Math.max(...assetBids.map((b) => b.amount)) : null;
+      const deal = deals.find((d) => d.asset_id === a.id);
+      return {
+        asset_id: a.id,
+        title: a.title,
+        status: a.status,
+        bid_count: assetBids.length,
+        top_amount: top,
+        licensed_amount: deal?.amount ?? null,
+        currency: LICENSE_CURRENCY,
+      };
+    });
+    return HttpResponse.json(stats);
   }),
 
   // ── Discovery (interests + recommendations) ────────────────────────────────
