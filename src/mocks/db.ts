@@ -270,7 +270,7 @@ export const users: MockUser[] = [
       email: 'buyer@canalplus.example',
       is_staff: false,
       is_superuser: false,
-      profile: { role: 'broadcaster', production_company: null, broadcaster: { id: 1, name: 'Canal+ International' } },
+      profile: { role: 'broadcaster_user', production_company: null, broadcaster: { id: 1, name: 'Canal+ International' } },
     },
   },
   {
@@ -283,7 +283,7 @@ export const users: MockUser[] = [
       email: 'studio@ebonylife.example',
       is_staff: false,
       is_superuser: false,
-      profile: { role: 'production_company', production_company: { id: 1, name: 'EbonyLife Studios' }, broadcaster: null },
+      profile: { role: 'production_company_user', production_company: { id: 1, name: 'EbonyLife Studios' }, broadcaster: null },
     },
   },
   {
@@ -296,7 +296,7 @@ export const users: MockUser[] = [
       email: 'curator@didactikmedia.com',
       is_staff: true,
       is_superuser: true,
-      profile: { role: 'admin', production_company: null, broadcaster: null },
+      profile: { role: 'admin_staff', production_company: null, broadcaster: null },
     },
   },
 ];

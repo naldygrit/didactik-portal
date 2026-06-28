@@ -49,7 +49,7 @@ describe('mock auth', () => {
   it('logs in and returns the broadcaster profile', async () => {
     await login('broadcaster');
     const me = (await (await fetch(`${BASE}/api/v1/auth/me/`)).json()) as MeResponse;
-    expect(me.profile?.role).toBe('broadcaster');
+    expect(me.profile?.role).toBe('broadcaster_user');
     expect(me.profile?.broadcaster?.name).toBe('Canal+ International');
   });
 });

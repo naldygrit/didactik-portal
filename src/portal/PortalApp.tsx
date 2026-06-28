@@ -69,7 +69,7 @@ function PortalRoutes() {
           path="broadcaster/dashboard"
           element={
             <ProtectedRoute isAllowed={isBC}>
-              <Navigate to="/portal/broadcaster/discover" replace />
+              <BroadcasterDashboardPage />
             </ProtectedRoute>
           }
         />
@@ -96,14 +96,6 @@ function PortalRoutes() {
           element={
             <ProtectedRoute isAllowed={isPC}>
               <ProductionDashboardPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="broadcaster/dashboard-old"
-          element={
-            <ProtectedRoute isAllowed={isBC}>
-              <BroadcasterDashboardPage />
             </ProtectedRoute>
           }
         />

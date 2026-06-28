@@ -33,11 +33,11 @@ function visibleAssets(): AssetDetail[] {
   const user = session.current;
   if (!user) return [];
   const profile = user.me.profile;
-  if (user.me.is_staff || profile?.role === 'admin') return assets;
-  if (profile?.role === 'broadcaster') {
+  if (user.me.is_staff || profile?.role === 'admin_staff') return assets;
+  if (profile?.role === 'broadcaster_user') {
     return assets.filter((a) => a.status === 'ready_to_list');
   }
-  if (profile?.role === 'production_company' && profile.production_company) {
+  if (profile?.role === 'production_company_user' && profile.production_company) {
     return assets.filter((a) => a.production_company?.id === profile.production_company!.id);
   }
   return [];
