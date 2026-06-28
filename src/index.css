@@ -72,3 +72,55 @@
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Portal "cinema" surface — Netflix-structure browse experience carrying the
+   Didactik brand (Crimson Pro serif, cyan->purple gradient). Scoped to the
+   broadcaster portal so the light marketing site and production pages are
+   unaffected (Page Theme Lock).
+--------------------------------------------------------------------------- */
+@layer components {
+  /* Didactik display serif, for use outside h1-h6 (cards, billboard). */
+  .font-display {
+    font-family: "Crimson Pro", Georgia, serif;
+  }
+
+  .portal-cinema {
+    /* near-black, not pure #000, so posters keep depth */
+    --surface: #0b0b0f;
+    --surface-raised: #16161d;
+    --surface-hover: #1f1f29;
+    --ink: #f5f5f7;
+    --muted: #9a9aa6;
+    --accent: #5343fd;
+    --accent-2: #3fd7ff;
+    background-color: var(--surface);
+    color: var(--ink);
+  }
+
+  /* Brand gradient pill — the signature CTA from the marketing site. */
+  .btn-gradient {
+    background: linear-gradient(135deg, #5343fd 0%, #3fd7ff 100%);
+    color: #fff;
+    transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+      box-shadow 160ms ease;
+  }
+  .btn-gradient:hover {
+    box-shadow: 0 10px 30px rgba(83, 67, 253, 0.35);
+  }
+  .btn-gradient:active {
+    transform: scale(0.97);
+  }
+
+  /* Horizontal rail: scroll-snap, hidden scrollbar. */
+  .rail-scroll {
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+  }
+  .rail-scroll::-webkit-scrollbar {
+    display: none;
+  }
+  .rail-scroll > * {
+    scroll-snap-align: start;
+  }
+}
