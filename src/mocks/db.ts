@@ -360,9 +360,45 @@ export interface Deal {
   created_at: string;
 }
 
-export const deals: Deal[] = [];
+// One deal seeded so the producer's earnings and the broadcaster's licences are
+// populated on first view; Lagos After Dark is left open for the live
+// bid-and-accept demo.
+export const deals: Deal[] = [
+  {
+    id: 490,
+    asset_id: 103, // Harmattan Letters (EbonyLife Studios)
+    asset_title: 'Harmattan Letters',
+    broadcaster_id: 1,
+    broadcaster_name: 'Canal+ International',
+    amount: 18000,
+    currency: LICENSE_CURRENCY,
+    license_type: 'non_exclusive',
+    created_at: '2026-06-15T10:00:00Z',
+  },
+];
 
 let nextDealId = 500;
 export function allocateDealId(): number {
   return nextDealId++;
+}
+
+// ── Payouts (Phase 5) ───────────────────────────────────────────────────────
+// A production company's payout split: where licence revenue is sent and in
+// what proportion.
+export interface PayoutAccount {
+  id: number;
+  company_id: number;
+  label: string;
+  account_number: string;
+  percentage: number;
+}
+
+export const payoutAccounts: PayoutAccount[] = [
+  { id: 1, company_id: 1, label: 'EbonyLife Studios — GTBank', account_number: '0123456789', percentage: 80 },
+  { id: 2, company_id: 1, label: 'Director escrow — Access Bank', account_number: '0987654321', percentage: 20 },
+];
+
+let nextPayoutAccountId = 10;
+export function allocatePayoutAccountId(): number {
+  return nextPayoutAccountId++;
 }

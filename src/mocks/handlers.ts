@@ -11,6 +11,7 @@ import {
   allocateAssetId,
   allocateBidId,
   allocateDealId,
+  allocatePayoutAccountId,
   assets,
   bids,
   broadcasters,
@@ -19,11 +20,12 @@ import {
   languages,
   LICENSE_CURRENCY,
   licenseRanges,
+  payoutAccounts,
   productionCompanies,
   session,
   users,
 } from './db';
-import type { Deal, LicenseType, MockUser } from './db';
+import type { Deal, LicenseType, MockUser, PayoutAccount } from './db';
 
 const API = '/api/v1';
 
@@ -310,6 +312,32 @@ export const handlers = [
     };
     deals.push(deal);
     return HttpResponse.json(deal);
+  }),
+
+  // ── Payouts ───────────────────────────────────────────────────────────────
+  http.get(`${API}/payout-accounts/`, () => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    const company = user.me.profile?.production_company;
+    if (!company) return HttpResponse.json({ detail: 'Production companies only.' }, { status: 403 });
+    return HttpResponse.json(payoutAccounts.filter((a) => a.company_id === company.id));
+  }),
+
+  http.post(`${API}/payout-accounts/`, async ({ request }) => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    const company = user.me.profile?.production_company;
+    if (!company) return HttpResponse.json({ detail: 'Production companies only.' }, { status: 403 });
+    const body = (await request.json()) as { label?: string; account_number?: string; percentage?: number };
+    const account: PayoutAccount = {
+      id: allocatePayoutAccountId(),
+      company_id: company.id,
+      label: String(body.label ?? 'Account'),
+      account_number: String(body.account_number ?? ''),
+      percentage: typeof body.percentage === 'number' ? body.percentage : 0,
+    };
+    payoutAccounts.push(account);
+    return HttpResponse.json(account);
   }),
 
   // ── Search + suggest ──────────────────────────────────────────────────────

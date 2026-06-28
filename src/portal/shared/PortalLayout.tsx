@@ -7,7 +7,11 @@ export function PortalLayout() {
   const navigate = useNavigate();
   // The broadcaster browse experience is the dark "cinema" surface; production
   // and admin keep the light chrome they were built against.
-  const cinema = useLocation().pathname.includes('/broadcaster');
+  const pathname = useLocation().pathname;
+  const cinema = pathname.includes('/broadcaster');
+
+  const lightLink = ({ isActive }: { isActive: boolean }) =>
+    isActive ? 'font-medium text-gray-900' : 'text-gray-500 transition-colors hover:text-gray-900';
 
   async function handleLogout() {
     await postLogout();
@@ -72,7 +76,21 @@ export function PortalLayout() {
   return (
     <div className="flex min-h-screen flex-col bg-gray-50">
       <header className="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-3">
-        {Brand}
+        <div className="flex items-center gap-6">
+          {Brand}
+          <nav className="hidden items-center gap-5 text-sm md:flex">
+            {pathname.includes('/production') && (
+              <>
+                <NavLink to="/portal/production/assets" className={lightLink}>Assets</NavLink>
+                <NavLink to="/portal/production/submit" className={lightLink}>Submit</NavLink>
+                <NavLink to="/portal/production/earnings" className={lightLink}>Earnings</NavLink>
+              </>
+            )}
+            {pathname.includes('/admin') && (
+              <NavLink to="/portal/admin/deals" className={lightLink}>Deals desk</NavLink>
+            )}
+          </nav>
+        </div>
         <div className="flex items-center gap-4">
           {user && <span className="text-sm text-gray-600">{user.email}</span>}
           <button

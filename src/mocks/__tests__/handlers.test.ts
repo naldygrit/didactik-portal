@@ -1,8 +1,16 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { setupServer } from 'msw/node';
 import { handlers } from '../handlers';
-import { bids, deals, session, users } from '../db';
-import type { AssetListItem, BidBoard, Deal, DealDeskItem, MeResponse, SearchAsset } from '../../portal/shared/types';
+import { bids, deals, payoutAccounts, session, users } from '../db';
+import type {
+  AssetListItem,
+  BidBoard,
+  Deal,
+  DealDeskItem,
+  MeResponse,
+  PayoutAccount,
+  SearchAsset,
+} from '../../portal/shared/types';
 
 // Runtime smoke test for the mock layer: drives the same handlers the browser
 // worker uses, proving login, role-scoped visibility, search and suggest behave
@@ -205,5 +213,38 @@ describe('deals', () => {
     const lagos = desk.find((d) => d.asset_id === 101);
     expect(lagos?.top_amount).toBe(14500);
     expect(lagos?.deal).toBeNull();
+  });
+});
+
+describe('payouts', () => {
+  beforeEach(() => {
+    session.current = users.find((u) => u.username === 'producer') ?? null;
+    // Remove accounts added by earlier tests (seeded ids are 1 and 2).
+    for (let i = payoutAccounts.length - 1; i >= 0; i--) {
+      if (payoutAccounts[i].id >= 10) payoutAccounts.splice(i, 1);
+    }
+  });
+
+  it('returns the producer split accounts totalling 100%', async () => {
+    const accts = (await (await fetch(`${BASE}/api/v1/payout-accounts/`)).json()) as PayoutAccount[];
+    expect(accts).toHaveLength(2);
+    expect(accts.reduce((s, a) => s + a.percentage, 0)).toBe(100);
+  });
+
+  it('adds a payout account', async () => {
+    const res = await fetch(`${BASE}/api/v1/payout-accounts/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ label: 'Composer royalty', account_number: '5550001111', percentage: 10 }),
+    });
+    expect(res.status).toBe(200);
+    const accts = (await (await fetch(`${BASE}/api/v1/payout-accounts/`)).json()) as PayoutAccount[];
+    expect(accts).toHaveLength(3);
+  });
+
+  it('forbids a broadcaster from accessing payout accounts', async () => {
+    session.current = users.find((u) => u.username === 'broadcaster') ?? null;
+    const res = await fetch(`${BASE}/api/v1/payout-accounts/`);
+    expect(res.status).toBe(403);
   });
 });

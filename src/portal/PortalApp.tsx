@@ -14,6 +14,7 @@ import { ProductionDashboardPage } from './production/pages/DashboardPage';
 import { ProductionAssetsPage } from './production/pages/AssetsPage';
 import { ProductionSubmitPage } from './production/pages/SubmitPage';
 import { ProductionAssetDetailPage } from './production/pages/AssetDetailPage';
+import { ProductionEarningsPage } from './production/pages/EarningsPage';
 import { AdminDealsPage } from './admin/pages/DealsPage';
 
 function PortalRoutes() {
@@ -63,6 +64,14 @@ function PortalRoutes() {
           element={
             <ProtectedRoute isAllowed={isPC}>
               <ProductionSubmitPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="production/earnings"
+          element={
+            <ProtectedRoute isAllowed={isPC}>
+              <ProductionEarningsPage />
             </ProtectedRoute>
           }
         />

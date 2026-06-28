@@ -164,3 +164,12 @@ export interface DealDeskItem {
   currency: string;
   deal: Deal | null;
 }
+
+// A production company's payout split account (Phase 5).
+export interface PayoutAccount {
+  id: number;
+  company_id: number;
+  label: string;
+  account_number: string;
+  percentage: number;
+}
