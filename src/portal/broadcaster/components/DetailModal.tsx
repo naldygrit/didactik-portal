@@ -66,8 +66,18 @@ export function DetailModal({ asset, onClose }: Props) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="relative h-48 w-full md:h-60">
-              <img src={backdropUrl(asset)} alt="" className="h-full w-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface)] to-transparent" />
+              <img
+                src={backdropUrl(asset)}
+                alt=""
+                className="h-full w-full object-cover opacity-45"
+              />
+              <div
+                className="absolute inset-0"
+                style={{
+                  background:
+                    'linear-gradient(180deg, rgba(83,67,253,0.10) 0%, rgba(11,11,15,0.30) 40%, rgba(11,11,15,1) 100%)',
+                }}
+              />
               <button
                 type="button"
                 onClick={onClose}

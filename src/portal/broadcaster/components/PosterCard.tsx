@@ -7,8 +7,7 @@ interface Props {
   onSelect: (asset: AssetListItem) => void;
 }
 
-// Strong ease-out curve (emil): instant response, settles smoothly. Used for
-// the hover lift and the press.
+// Strong ease-out curve (emil): instant response, settles smoothly.
 const EASE = [0.23, 1, 0.32, 1] as const;
 
 export function PosterCard({ asset, onSelect }: Props) {
@@ -18,29 +17,39 @@ export function PosterCard({ asset, onSelect }: Props) {
     <motion.button
       type="button"
       onClick={() => onSelect(asset)}
-      className="group relative w-[150px] shrink-0 overflow-hidden rounded-lg bg-[var(--surface-raised)] text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-2)] md:w-[180px]"
+      className="group relative aspect-[2/3] w-[150px] shrink-0 overflow-hidden rounded-lg bg-[var(--surface-raised)] text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-2)] md:w-[180px]"
       whileHover={reduce ? undefined : { scale: 1.06, y: -6 }}
       whileTap={reduce ? undefined : { scale: 0.97 }}
       transition={{ duration: 0.22, ease: EASE }}
       aria-label={`${asset.title}, ${assetTypeLabel(asset.asset_type)}. View details.`}
     >
+      {/* Placeholder image, muted so it reads as texture under the title rather
+          than as literal (mismatched) content. Swapped for real key art later. */}
       <img
         src={posterUrl(asset)}
         alt=""
         loading="lazy"
-        className="aspect-[2/3] w-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover opacity-40 transition-opacity duration-200 group-hover:opacity-55"
+      />
+      {/* Brand-tinted scrim: dark at the base for title legibility. */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            'linear-gradient(180deg, rgba(83,67,253,0.12) 0%, rgba(11,11,15,0.35) 45%, rgba(11,11,15,0.96) 100%)',
+        }}
       />
 
-      {/* Hover scrim + quick facts. Revealed on pointer hover; on touch the tap
-          opens the detail view directly. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-2 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-3 opacity-0 transition-all duration-200 ease-out group-hover:translate-y-0 group-hover:opacity-100">
-        <p className="font-display text-sm font-semibold leading-tight text-white">
+      <div className="absolute inset-x-0 bottom-0 p-3">
+        <p className="text-[10px] font-medium uppercase tracking-wide text-[var(--accent-2)]">
+          {assetTypeLabel(asset.asset_type)}
+        </p>
+        <p className="font-display mt-0.5 text-sm font-semibold leading-tight text-white">
           {asset.title}
         </p>
-        <p className="mt-0.5 text-[11px] text-[var(--muted)]">
-          {[assetTypeLabel(asset.asset_type), asset.production_year, asset.production_country?.name]
-            .filter(Boolean)
-            .join(' · ')}
+        {/* Extra meta surfaces on hover. */}
+        <p className="mt-0.5 max-h-0 overflow-hidden text-[11px] text-[var(--muted)] opacity-0 transition-all duration-200 group-hover:max-h-8 group-hover:opacity-100">
+          {[asset.production_year, asset.production_country?.name].filter(Boolean).join(' · ')}
         </p>
       </div>
     </motion.button>
