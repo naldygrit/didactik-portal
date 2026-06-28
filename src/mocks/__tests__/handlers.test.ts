@@ -1,7 +1,7 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { setupServer } from 'msw/node';
 import { handlers } from '../handlers';
-import { bids, deals, payoutAccounts, session, users } from '../db';
+import { bids, deals, payoutAccounts, session, userInterests, users } from '../db';
 import type {
   AssetListItem,
   BidBoard,
@@ -246,5 +246,37 @@ describe('payouts', () => {
     session.current = users.find((u) => u.username === 'broadcaster') ?? null;
     const res = await fetch(`${BASE}/api/v1/payout-accounts/`);
     expect(res.status).toBe(403);
+  });
+});
+
+describe('discovery', () => {
+  beforeEach(() => {
+    session.current = users.find((u) => u.username === 'broadcaster') ?? null;
+    delete userInterests[1];
+  });
+
+  async function setInterests(interests: string[]) {
+    return fetch(`${BASE}/api/v1/me/interests/`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ interests }),
+    });
+  }
+
+  it('lists interest options', async () => {
+    const opts = (await (await fetch(`${BASE}/api/v1/interests/`)).json()) as unknown[];
+    expect(opts.length).toBeGreaterThan(0);
+  });
+
+  it('saves and returns the broadcaster interests', async () => {
+    await setInterests(['type:documentary']);
+    const mine = (await (await fetch(`${BASE}/api/v1/me/interests/`)).json()) as string[];
+    expect(mine).toEqual(['type:documentary']);
+  });
+
+  it('ranks recommendations by interest match', async () => {
+    await setInterests(['type:documentary']);
+    const recs = (await (await fetch(`${BASE}/api/v1/recommendations/`)).json()) as AssetListItem[];
+    expect(recs[0].asset_type).toBe('documentary');
   });
 });

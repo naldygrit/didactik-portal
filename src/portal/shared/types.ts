@@ -173,3 +173,9 @@ export interface PayoutAccount {
   account_number: string;
   percentage: number;
 }
+
+// A broadcaster interest chip used to personalise recommendations (Phase 6).
+export interface InterestOption {
+  key: string;
+  label: string;
+}

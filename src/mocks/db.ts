@@ -402,3 +402,28 @@ let nextPayoutAccountId = 10;
 export function allocatePayoutAccountId(): number {
   return nextPayoutAccountId++;
 }
+
+// ── Discovery (Phase 6) ─────────────────────────────────────────────────────
+// Interest chips a broadcaster picks at onboarding; keys encode the dimension
+// they match against (type / country / language).
+export interface InterestOption {
+  key: string;
+  label: string;
+}
+
+export const interestOptions: InterestOption[] = [
+  { key: 'type:feature_film', label: 'Feature films' },
+  { key: 'type:documentary', label: 'Documentaries' },
+  { key: 'type:short_film', label: 'Short films' },
+  { key: 'type:tv_episode', label: 'Series' },
+  { key: 'country:NG', label: 'Nigeria' },
+  { key: 'country:KE', label: 'Kenya' },
+  { key: 'country:SN', label: 'Senegal' },
+  { key: 'country:GH', label: 'Ghana' },
+  { key: 'lang:yor', label: 'Yoruba' },
+  { key: 'lang:swa', label: 'Swahili' },
+  { key: 'lang:fra', label: 'Francophone' },
+];
+
+// Picked interests per user id (set at onboarding).
+export const userInterests: Record<number, string[]> = {};

@@ -10,6 +10,7 @@ import { BroadcasterDashboardPage } from './broadcaster/pages/DashboardPage';
 import { BroadcasterDiscoverPage } from './broadcaster/pages/DiscoverPage';
 import { BroadcasterAssetDetailPage } from './broadcaster/pages/AssetDetailPage';
 import { BroadcasterLicensesPage } from './broadcaster/pages/LicensesPage';
+import { BroadcasterOnboardingPage } from './broadcaster/pages/OnboardingPage';
 import { ProductionDashboardPage } from './production/pages/DashboardPage';
 import { ProductionAssetsPage } from './production/pages/AssetsPage';
 import { ProductionSubmitPage } from './production/pages/SubmitPage';
@@ -106,6 +107,14 @@ function PortalRoutes() {
           element={
             <ProtectedRoute isAllowed={isBC}>
               <BroadcasterLicensesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="broadcaster/onboarding"
+          element={
+            <ProtectedRoute isAllowed={isBC}>
+              <BroadcasterOnboardingPage />
             </ProtectedRoute>
           }
         />

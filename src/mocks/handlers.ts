@@ -17,12 +17,14 @@ import {
   broadcasters,
   countries,
   deals,
+  interestOptions,
   languages,
   LICENSE_CURRENCY,
   licenseRanges,
   payoutAccounts,
   productionCompanies,
   session,
+  userInterests,
   users,
 } from './db';
 import type { Deal, LicenseType, MockUser, PayoutAccount } from './db';
@@ -84,6 +86,19 @@ function buildBidBoard(assetId: number, user: MockUser): BidBoard | null {
 
 function isAdmin(user: MockUser): boolean {
   return user.me.is_staff || user.me.profile?.role === 'admin_staff';
+}
+
+// Rule-based recommender stub: score a title by how many of the broadcaster's
+// interest chips it matches. Swapped for a real recommender behind this seam.
+function interestScore(asset: AssetDetail, interests: string[]): number {
+  let score = 0;
+  for (const key of interests) {
+    const [dim, val] = key.split(':');
+    if (dim === 'type' && asset.asset_type === val) score++;
+    else if (dim === 'country' && asset.production_country?.code === val) score++;
+    else if (dim === 'lang' && asset.primary_language?.code === val) score++;
+  }
+  return score;
 }
 
 export const handlers = [
@@ -338,6 +353,32 @@ export const handlers = [
     };
     payoutAccounts.push(account);
     return HttpResponse.json(account);
+  }),
+
+  // ── Discovery (interests + recommendations) ────────────────────────────────
+  http.get(`${API}/interests/`, () => HttpResponse.json(interestOptions)),
+
+  http.get(`${API}/me/interests/`, () => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    return HttpResponse.json(userInterests[user.user_id] ?? []);
+  }),
+
+  http.put(`${API}/me/interests/`, async ({ request }) => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    const body = (await request.json()) as { interests?: string[] };
+    userInterests[user.user_id] = Array.isArray(body.interests) ? body.interests : [];
+    return HttpResponse.json(userInterests[user.user_id]);
+  }),
+
+  http.get(`${API}/recommendations/`, () => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    const interests = userInterests[user.user_id] ?? [];
+    const listed = assets.filter((a) => a.status === 'ready_to_list');
+    const ranked = [...listed].sort((a, b) => interestScore(b, interests) - interestScore(a, interests));
+    return HttpResponse.json(ranked.map(toListItem));
   }),
 
   // ── Search + suggest ──────────────────────────────────────────────────────
