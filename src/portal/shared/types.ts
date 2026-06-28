@@ -125,3 +125,14 @@ export interface MeResponse {
   is_superuser: boolean;
   profile: MeProfile | null;
 }
+
+// The competitive state of one title's bidding, scoped to the current
+// broadcaster (Phase 3).
+export interface BidBoard {
+  license_floor: number;
+  license_ceiling: number;
+  currency: string;
+  bid_count: number;
+  highest_amount: number | null;
+  your_bid: { id: number; amount: number; created_at: string; is_top: boolean } | null;
+}

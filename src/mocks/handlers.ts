@@ -1,16 +1,21 @@
 import { http, HttpResponse } from 'msw';
-import type { AssetDetail, AssetListItem, SearchAsset } from '../portal/shared/types';
+import type { AssetDetail, AssetListItem, BidBoard, SearchAsset } from '../portal/shared/types';
 import { encodeMockJwt } from './jwt';
 import {
   allocateAssetId,
+  allocateBidId,
   assets,
+  bids,
   broadcasters,
   countries,
   languages,
+  LICENSE_CURRENCY,
+  licenseRanges,
   productionCompanies,
   session,
   users,
 } from './db';
+import type { MockUser } from './db';
 
 const API = '/api/v1';
 
@@ -45,6 +50,26 @@ function visibleAssets(): AssetDetail[] {
 
 function unauthorized() {
   return HttpResponse.json({ detail: 'Authentication credentials were not provided.' }, { status: 401 });
+}
+
+// Competitive bid state for one title, scoped to the current broadcaster.
+function buildBidBoard(assetId: number, user: MockUser): BidBoard | null {
+  const range = licenseRanges[assetId];
+  if (!range) return null;
+  const assetBids = bids.filter((b) => b.asset_id === assetId);
+  const highest = assetBids.length ? Math.max(...assetBids.map((b) => b.amount)) : null;
+  const bc = user.me.profile?.broadcaster;
+  const mine = bc ? assetBids.find((b) => b.broadcaster_id === bc.id) : undefined;
+  return {
+    license_floor: range.floor,
+    license_ceiling: range.ceiling,
+    currency: LICENSE_CURRENCY,
+    bid_count: assetBids.length,
+    highest_amount: highest,
+    your_bid: mine
+      ? { id: mine.id, amount: mine.amount, created_at: mine.created_at, is_top: mine.amount === highest }
+      : null,
+  };
 }
 
 export const handlers = [
@@ -147,6 +172,53 @@ export const handlers = [
     asset.status = 'withdrawn';
     asset.updated_at = new Date().toISOString();
     return HttpResponse.json(toListItem(asset));
+  }),
+
+  // ── Bidding ───────────────────────────────────────────────────────────────
+  http.get(`${API}/assets/:id/bids/`, ({ params }) => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    const board = buildBidBoard(Number(params.id), user);
+    if (!board) return HttpResponse.json({ detail: 'Not found.' }, { status: 404 });
+    return HttpResponse.json(board);
+  }),
+
+  http.post(`${API}/assets/:id/bids/`, async ({ params, request }) => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    const bc = user.me.profile?.broadcaster;
+    if (!bc) return HttpResponse.json({ detail: 'Only broadcasters can place bids.' }, { status: 403 });
+
+    const assetId = Number(params.id);
+    const range = licenseRanges[assetId];
+    if (!range) return HttpResponse.json({ detail: 'Not found.' }, { status: 404 });
+
+    const { amount } = (await request.json()) as { amount: number };
+    if (typeof amount !== 'number' || Number.isNaN(amount)) {
+      return HttpResponse.json({ detail: 'Enter a bid amount.' }, { status: 400 });
+    }
+    if (amount < range.floor || amount > range.ceiling) {
+      return HttpResponse.json(
+        { detail: `Bid must be within the licensing range (${range.floor}–${range.ceiling}).` },
+        { status: 400 },
+      );
+    }
+
+    const existing = bids.find((b) => b.asset_id === assetId && b.broadcaster_id === bc.id);
+    if (existing) {
+      existing.amount = amount;
+      existing.created_at = new Date().toISOString();
+    } else {
+      bids.push({
+        id: allocateBidId(),
+        asset_id: assetId,
+        broadcaster_id: bc.id,
+        broadcaster_name: bc.name,
+        amount,
+        created_at: new Date().toISOString(),
+      });
+    }
+    return HttpResponse.json(buildBidBoard(assetId, user));
   }),
 
   // ── Search + suggest ──────────────────────────────────────────────────────

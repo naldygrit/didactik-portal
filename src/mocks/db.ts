@@ -308,3 +308,37 @@ let nextAssetId = 200;
 export function allocateAssetId(): number {
   return nextAssetId++;
 }
+
+// ── Bidding (Phase 3) ───────────────────────────────────────────────────────
+// The producer's licensing range per title (what they have pre-authorised
+// Didactik to accept), plus a seeded bid book so the competitive signal shows
+// real rivalry from the first view.
+export const LICENSE_CURRENCY = 'USD';
+
+export const licenseRanges: Record<number, { floor: number; ceiling: number }> = {
+  101: { floor: 8000, ceiling: 25000 }, // Lagos After Dark
+  102: { floor: 3000, ceiling: 9000 }, // The Salt Harvesters
+  103: { floor: 10000, ceiling: 30000 }, // Harmattan Letters
+  104: { floor: 2000, ceiling: 7000 }, // Riverwood Nights
+  105: { floor: 4000, ceiling: 12000 }, // The Griot of Saint-Louis
+};
+
+export interface Bid {
+  id: number;
+  asset_id: number;
+  broadcaster_id: number;
+  broadcaster_name: string;
+  amount: number;
+  created_at: string;
+}
+
+export const bids: Bid[] = [
+  { id: 1, asset_id: 101, broadcaster_id: 2, broadcaster_name: 'Showmax', amount: 12000, created_at: '2026-06-20T10:00:00Z' },
+  { id: 2, asset_id: 101, broadcaster_id: 3, broadcaster_name: 'StarTimes Media', amount: 14500, created_at: '2026-06-24T09:00:00Z' },
+  { id: 3, asset_id: 102, broadcaster_id: 2, broadcaster_name: 'Showmax', amount: 5000, created_at: '2026-06-22T11:00:00Z' },
+];
+
+let nextBidId = 100;
+export function allocateBidId(): number {
+  return nextBidId++;
+}

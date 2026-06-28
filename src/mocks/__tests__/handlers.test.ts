@@ -1,8 +1,8 @@
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { setupServer } from 'msw/node';
 import { handlers } from '../handlers';
-import { session } from '../db';
-import type { AssetListItem, MeResponse, SearchAsset } from '../../portal/shared/types';
+import { bids, session, users } from '../db';
+import type { AssetListItem, BidBoard, MeResponse, SearchAsset } from '../../portal/shared/types';
 
 // Runtime smoke test for the mock layer: drives the same handlers the browser
 // worker uses, proving login, role-scoped visibility, search and suggest behave
@@ -93,5 +93,50 @@ describe('search + suggest', () => {
       const titles = (await (await fetch(`${BASE}${path}?q=lag`)).json()) as string[];
       expect(titles).toContain('Lagos After Dark');
     }
+  });
+});
+
+describe('bidding', () => {
+  beforeEach(() => {
+    session.current = users.find((u) => u.username === 'broadcaster') ?? null;
+    // Drop any bids placed by the logged-in broadcaster (id 1) in a prior test.
+    for (let i = bids.length - 1; i >= 0; i--) {
+      if (bids[i].broadcaster_id === 1) bids.splice(i, 1);
+    }
+  });
+
+  async function board(): Promise<BidBoard> {
+    return (await fetch(`${BASE}/api/v1/assets/101/bids/`)).json() as Promise<BidBoard>;
+  }
+
+  it('returns the competitive board scoped to the broadcaster', async () => {
+    const b = await board();
+    expect(b.license_floor).toBe(8000);
+    expect(b.license_ceiling).toBe(25000);
+    expect(b.bid_count).toBe(2);
+    expect(b.highest_amount).toBe(14500);
+    expect(b.your_bid).toBeNull();
+  });
+
+  it('places a leading bid within range', async () => {
+    const res = await fetch(`${BASE}/api/v1/assets/101/bids/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: 15000 }),
+    });
+    expect(res.status).toBe(200);
+    const b = (await res.json()) as BidBoard;
+    expect(b.bid_count).toBe(3);
+    expect(b.your_bid?.amount).toBe(15000);
+    expect(b.your_bid?.is_top).toBe(true);
+  });
+
+  it('rejects a bid outside the licensing range', async () => {
+    const res = await fetch(`${BASE}/api/v1/assets/101/bids/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: 100 }),
+    });
+    expect(res.status).toBe(400);
   });
 });

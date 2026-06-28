@@ -5,6 +5,7 @@ import { FiX } from 'react-icons/fi';
 import { apiGet } from '../../shared/apiHelpers';
 import type { AssetDetail, AssetListItem } from '../../shared/types';
 import { assetTypeLabel, backdropUrl } from '../posters';
+import { BidPanel } from './BidPanel';
 
 interface Props {
   asset: AssetListItem | null;
@@ -13,7 +14,7 @@ interface Props {
 
 export function DetailModal({ asset, onClose }: Props) {
   const reduce = useReducedMotion();
-  const [bidNote, setBidNote] = useState(false);
+  const [showBid, setShowBid] = useState(false);
 
   const { data } = useQuery<AssetDetail>({
     queryKey: ['asset', asset?.id],
@@ -23,7 +24,7 @@ export function DetailModal({ asset, onClose }: Props) {
 
   useEffect(() => {
     if (!asset) return;
-    setBidNote(false);
+    setShowBid(false);
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose();
     }
@@ -122,7 +123,7 @@ export function DetailModal({ asset, onClose }: Props) {
               <div className="flex flex-wrap items-center gap-3 pt-1">
                 <button
                   type="button"
-                  onClick={() => setBidNote(true)}
+                  onClick={() => setShowBid(true)}
                   className="btn-gradient inline-flex items-center rounded-full px-6 py-2.5 text-sm font-semibold"
                 >
                   Place a bid
@@ -136,12 +137,7 @@ export function DetailModal({ asset, onClose }: Props) {
                 </button>
               </div>
 
-              {bidNote && (
-                <p className="text-xs text-[var(--muted)]">
-                  Competitive bidding lands in the next build: place an offer within the
-                  producer's licensing range and see where it stands against rival bids.
-                </p>
-              )}
+              {showBid && <BidPanel assetId={asset.id} />}
             </div>
           </motion.div>
         </motion.div>
