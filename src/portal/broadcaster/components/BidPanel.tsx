@@ -40,7 +40,8 @@ export function BidPanel({ assetId }: Props) {
   const { currency, license_floor, license_ceiling, bid_count, highest_amount, your_bid } = board;
   const parsed = Number(amount);
   const inRange = amount !== '' && !Number.isNaN(parsed) && parsed >= license_floor && parsed <= license_ceiling;
-  const outbid = your_bid !== null && !your_bid.is_top;
+  // Suggest an amount that beats the current top so the placeholder is useful.
+  const suggested = highest_amount ? highest_amount + 500 : license_floor;
 
   return (
     <div className="space-y-4 rounded-xl border border-white/10 bg-[var(--surface-raised)] p-4">
@@ -82,14 +83,6 @@ export function BidPanel({ assetId }: Props) {
         </p>
       )}
 
-      {placeBid.isSuccess && !placeBid.isPending && (
-        <p className="text-sm text-emerald-400">
-          {placeBid.data.your_bid?.is_top
-            ? 'Bid placed — you are leading.'
-            : 'Bid updated. A rival is still ahead.'}
-        </p>
-      )}
-
       {/* Amount entry */}
       <div className="space-y-1">
         <label htmlFor={`bid-${assetId}`} className="block text-xs text-[var(--muted)]">
@@ -104,7 +97,7 @@ export function BidPanel({ assetId }: Props) {
             max={license_ceiling}
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            placeholder={String(outbid && highest_amount ? highest_amount + 500 : license_floor)}
+            placeholder={String(suggested)}
             className="w-full rounded-lg border border-white/15 bg-[var(--surface)] px-3 py-2 text-sm text-white placeholder:text-[var(--muted)] focus:border-[var(--accent-2)] focus:outline-none"
           />
           <button

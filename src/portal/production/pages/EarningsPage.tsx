@@ -117,7 +117,7 @@ export function ProductionEarningsPage() {
             type="button"
             disabled={!canAdd || addAccount.isPending}
             onClick={() => addAccount.mutate()}
-            className="rounded-lg px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+            className="rounded-lg px-4 py-2 text-sm font-semibold text-white transition-transform active:scale-[0.98] disabled:opacity-50"
             style={{ backgroundColor: '#5343fd' }}
           >
             Add account

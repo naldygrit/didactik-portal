@@ -41,6 +41,6 @@ describe('BidPanel', () => {
     const input = await screen.findByLabelText(/Your bid/i);
     fireEvent.change(input, { target: { value: '16000' } });
     fireEvent.click(screen.getByRole('button', { name: /Place bid/i }));
-    expect(await screen.findByText(/you are leading/i)).toBeInTheDocument();
+    expect(await screen.findByText(/is leading/i)).toBeInTheDocument();
   });
 });

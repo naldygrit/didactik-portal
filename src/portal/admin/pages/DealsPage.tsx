@@ -84,7 +84,7 @@ export function AdminDealsPage() {
                               licenseType: terms[row.asset_id] ?? 'non_exclusive',
                             })
                           }
-                          className="rounded-lg px-4 py-1.5 text-sm font-semibold text-white disabled:opacity-50"
+                          className="rounded-lg px-4 py-1.5 text-sm font-semibold text-white transition-transform active:scale-[0.98] disabled:opacity-50"
                           style={{ backgroundColor: '#5343fd' }}
                         >
                           Accept top bid
