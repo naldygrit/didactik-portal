@@ -9,9 +9,13 @@ export function PortalLayout() {
   // and admin keep the light chrome they were built against.
   const pathname = useLocation().pathname;
   const cinema = pathname.includes('/broadcaster');
+  const control = pathname.includes('/admin');
+  const dark = cinema || control;
 
   const lightLink = ({ isActive }: { isActive: boolean }) =>
     isActive ? 'font-medium text-gray-900' : 'text-gray-500 transition-colors hover:text-gray-900';
+  const darkLink = ({ isActive }: { isActive: boolean }) =>
+    isActive ? 'text-[var(--ink)]' : 'text-[var(--muted)] transition-colors hover:text-[var(--ink)]';
 
   async function handleLogout() {
     await postLogout();
@@ -26,8 +30,8 @@ export function PortalLayout() {
         className="h-5 w-5 rounded-full"
         style={{ background: 'linear-gradient(135deg, #5343fd 0%, #3fd7ff 100%)' }}
       />
-      <span style={{ color: cinema ? '#fff' : '#5343fd' }}>Didactik</span>
-      <span className={cinema ? 'font-light text-white/70' : 'font-light text-gray-500'}>Media</span>
+      <span style={{ color: dark ? '#fff' : '#5343fd' }}>Didactik</span>
+      <span className={dark ? 'font-light text-white/70' : 'font-light text-gray-500'}>Media</span>
     </span>
   );
 
@@ -67,6 +71,38 @@ export function PortalLayout() {
           </div>
         </header>
         <main className="flex-grow">
+          <Outlet />
+        </main>
+      </div>
+    );
+  }
+
+  if (control) {
+    return (
+      <div className="portal-control flex min-h-screen flex-col">
+        <header
+          className="sticky top-0 z-40 flex items-center justify-between border-b px-4 py-3 md:px-8"
+          style={{ borderColor: 'var(--hairline)', backgroundColor: 'var(--surface)' }}
+        >
+          <div className="flex items-center gap-6">
+            {Brand}
+            <nav className="hidden items-center gap-5 text-sm md:flex">
+              <NavLink to="/portal/admin/deals" className={darkLink}>
+                Deals desk
+              </NavLink>
+            </nav>
+          </div>
+          <div className="flex items-center gap-4">
+            {user && <span className="hidden text-sm text-[var(--muted)] sm:inline">{user.email}</span>}
+            <button
+              onClick={handleLogout}
+              className="text-sm text-[var(--muted)] transition-colors hover:text-[var(--ink)]"
+            >
+              Sign out
+            </button>
+          </div>
+        </header>
+        <main className="flex-grow px-4 py-8 md:px-8">
           <Outlet />
         </main>
       </div>

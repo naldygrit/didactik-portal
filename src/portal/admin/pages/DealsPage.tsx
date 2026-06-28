@@ -4,6 +4,8 @@ import { apiGet, apiPost } from '../../shared/apiHelpers';
 import { money, licenseTypeLabel } from '../../shared/format';
 import type { DealDeskItem, LicenseType } from '../../shared/types';
 
+const hairline = { borderColor: 'var(--hairline)' };
+
 export function AdminDealsPage() {
   const queryClient = useQueryClient();
   const [terms, setTerms] = useState<Record<number, LicenseType>>({});
@@ -19,58 +21,75 @@ export function AdminDealsPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['deals-desk'] }),
   });
 
+  const pending = (data ?? []).filter((d) => !d.deal).length;
+
   return (
     <div className="mx-auto max-w-5xl">
-      <h1 className="mb-1 text-2xl font-semibold text-gray-900">Deals desk</h1>
-      <p className="mb-6 text-sm text-gray-500">
-        Accept the leading bid on the producer's behalf and record the licence terms.
-      </p>
+      <div className="mb-6 flex items-baseline justify-between">
+        <div>
+          <h1 className="text-lg font-semibold text-[var(--ink)]">Deals desk</h1>
+          <p className="text-sm text-[var(--muted)]">Accept the leading bid on the producer's behalf.</p>
+        </div>
+        {data && (
+          <span className="font-mono text-xs tabular-nums text-[var(--muted)]">
+            {pending} awaiting
+          </span>
+        )}
+      </div>
 
-      {isLoading && <p className="text-sm text-gray-500">Loading…</p>}
+      {isLoading && <p className="text-sm text-[var(--muted)]">Loading…</p>}
 
       {data && data.length === 0 && (
-        <p className="text-sm text-gray-500">No titles have received bids yet.</p>
+        <p className="text-sm text-[var(--muted)]">No titles have received bids yet.</p>
       )}
 
       {data && data.length > 0 && (
-        <div className="overflow-hidden rounded-xl border border-gray-200">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
-              <tr>
-                <th className="px-4 py-3 font-medium">Title</th>
-                <th className="px-4 py-3 font-medium">Bids</th>
-                <th className="px-4 py-3 font-medium">Top bid</th>
-                <th className="px-4 py-3 font-medium">Leading broadcaster</th>
-                <th className="px-4 py-3 font-medium">Action</th>
+        <div className="overflow-hidden rounded-lg border" style={hairline}>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b text-left text-xs uppercase tracking-wide text-[var(--muted)]" style={hairline}>
+                <th className="px-4 py-2.5 font-medium">Title</th>
+                <th className="px-4 py-2.5 text-right font-medium">Bids</th>
+                <th className="px-4 py-2.5 text-right font-medium">Top bid</th>
+                <th className="px-4 py-2.5 font-medium">Leading</th>
+                <th className="px-4 py-2.5 text-right font-medium">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
-              {data.map((row) => (
-                <tr key={row.asset_id} className="text-gray-800">
+            <tbody>
+              {data.map((row, i) => (
+                <tr
+                  key={row.asset_id}
+                  className="transition-colors hover:bg-[var(--surface-hover)]"
+                  style={i === 0 ? undefined : { borderTop: '1px solid var(--hairline)' }}
+                >
                   <td className="px-4 py-3">
-                    <div className="font-medium text-gray-900">{row.title}</div>
+                    <div className="text-[var(--ink)]">{row.title}</div>
                     {row.production_company && (
-                      <div className="text-xs text-gray-500">{row.production_company}</div>
+                      <div className="text-xs text-[var(--muted)]">{row.production_company}</div>
                     )}
                   </td>
-                  <td className="px-4 py-3">{row.bid_count}</td>
-                  <td className="px-4 py-3 font-medium">
+                  <td className="px-4 py-3 text-right font-mono tabular-nums text-[var(--muted)]">
+                    {row.bid_count}
+                  </td>
+                  <td className="px-4 py-3 text-right font-mono tabular-nums text-[var(--ink)]">
                     {row.top_amount !== null ? money(row.top_amount, row.currency) : '—'}
                   </td>
-                  <td className="px-4 py-3">{row.top_broadcaster ?? '—'}</td>
+                  <td className="px-4 py-3 text-[var(--muted)]">{row.top_broadcaster ?? '—'}</td>
                   <td className="px-4 py-3">
                     {row.deal ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
-                        Licensed · {licenseTypeLabel(row.deal.license_type)} · {row.deal.broadcaster_name}
-                      </span>
+                      <div className="flex items-center justify-end gap-2 text-xs text-[var(--muted)]">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                        Licensed · {licenseTypeLabel(row.deal.license_type)}
+                      </div>
                     ) : (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center justify-end gap-2">
                         <select
                           value={terms[row.asset_id] ?? 'non_exclusive'}
                           onChange={(e) =>
                             setTerms((t) => ({ ...t, [row.asset_id]: e.target.value as LicenseType }))
                           }
-                          className="rounded-lg border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="rounded-md border bg-[var(--surface-raised)] px-2 py-1.5 text-xs text-[var(--ink)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                          style={hairline}
                         >
                           <option value="non_exclusive">Non-exclusive</option>
                           <option value="exclusive">Exclusive</option>
@@ -84,8 +103,8 @@ export function AdminDealsPage() {
                               licenseType: terms[row.asset_id] ?? 'non_exclusive',
                             })
                           }
-                          className="rounded-lg px-4 py-1.5 text-sm font-semibold text-white transition-transform active:scale-[0.98] disabled:opacity-50"
-                          style={{ backgroundColor: '#5343fd' }}
+                          className="rounded-md px-3 py-1.5 text-xs font-medium text-white transition-transform active:scale-[0.98] disabled:opacity-50"
+                          style={{ backgroundColor: 'var(--accent)' }}
                         >
                           Accept top bid
                         </button>
