@@ -15,7 +15,7 @@ export function DashboardRedirect() {
     return <Navigate to="/portal/production/dashboard" replace />;
   }
   if (user.role === 'admin_staff') {
-    return <Navigate to="/portal/admin/deals" replace />;
+    return <Navigate to="/portal/admin/overview" replace />;
   }
 
   return <Navigate to="/portal/login" replace />;
