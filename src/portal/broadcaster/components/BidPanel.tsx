@@ -1,18 +1,11 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiGet, apiPost } from '../../shared/apiHelpers';
+import { money } from '../../shared/format';
 import type { BidBoard } from '../../shared/types';
 
 interface Props {
   assetId: number;
-}
-
-function money(amount: number, currency: string): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
 }
 
 export function BidPanel({ assetId }: Props) {

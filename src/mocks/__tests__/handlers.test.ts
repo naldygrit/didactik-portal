@@ -1,8 +1,8 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { setupServer } from 'msw/node';
 import { handlers } from '../handlers';
-import { bids, session, users } from '../db';
-import type { AssetListItem, BidBoard, MeResponse, SearchAsset } from '../../portal/shared/types';
+import { bids, deals, session, users } from '../db';
+import type { AssetListItem, BidBoard, Deal, DealDeskItem, MeResponse, SearchAsset } from '../../portal/shared/types';
 
 // Runtime smoke test for the mock layer: drives the same handlers the browser
 // worker uses, proving login, role-scoped visibility, search and suggest behave
@@ -138,5 +138,72 @@ describe('bidding', () => {
       body: JSON.stringify({ amount: 100 }),
     });
     expect(res.status).toBe(400);
+  });
+});
+
+describe('deals', () => {
+  function setUser(username: string) {
+    session.current = users.find((u) => u.username === username) ?? null;
+  }
+
+  beforeEach(() => {
+    deals.length = 0;
+    for (let i = bids.length - 1; i >= 0; i--) {
+      if (bids[i].broadcaster_id === 1) bids.splice(i, 1);
+    }
+  });
+
+  async function acceptTopBid(license_type: string) {
+    return fetch(`${BASE}/api/v1/assets/101/accept-bid/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ license_type }),
+    });
+  }
+
+  it('lets the admin accept the top bid into a licensed deal', async () => {
+    // Canal+ outbids the seeded rivals, then admin accepts on the producer's behalf.
+    setUser('broadcaster');
+    await fetch(`${BASE}/api/v1/assets/101/bids/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: 20000 }),
+    });
+    setUser('admin');
+    const res = await acceptTopBid('exclusive');
+    expect(res.status).toBe(200);
+    const deal = (await res.json()) as Deal;
+    expect(deal.broadcaster_name).toBe('Canal+ International');
+    expect(deal.amount).toBe(20000);
+    expect(deal.license_type).toBe('exclusive');
+  });
+
+  it('shows the won deal to the broadcaster who licensed it', async () => {
+    setUser('broadcaster');
+    await fetch(`${BASE}/api/v1/assets/101/bids/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: 20000 }),
+    });
+    setUser('admin');
+    await acceptTopBid('non_exclusive');
+    setUser('broadcaster');
+    const mine = (await (await fetch(`${BASE}/api/v1/deals/`)).json()) as Deal[];
+    expect(mine).toHaveLength(1);
+    expect(mine[0].asset_title).toBe('Lagos After Dark');
+  });
+
+  it('forbids a non-admin from accepting bids', async () => {
+    setUser('broadcaster');
+    const res = await acceptTopBid('exclusive');
+    expect(res.status).toBe(403);
+  });
+
+  it('lists biddable titles on the admin deals desk', async () => {
+    setUser('admin');
+    const desk = (await (await fetch(`${BASE}/api/v1/admin/deals-desk/`)).json()) as DealDeskItem[];
+    const lagos = desk.find((d) => d.asset_id === 101);
+    expect(lagos?.top_amount).toBe(14500);
+    expect(lagos?.deal).toBeNull();
   });
 });

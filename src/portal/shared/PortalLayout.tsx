@@ -1,4 +1,4 @@
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { postLogout } from './auth';
 
@@ -31,7 +31,27 @@ export function PortalLayout() {
     return (
       <div className="portal-cinema flex min-h-screen flex-col">
         <header className="sticky top-0 z-40 flex items-center justify-between border-b border-white/5 bg-[var(--surface)]/80 px-4 py-3 backdrop-blur md:px-8">
-          {Brand}
+          <div className="flex items-center gap-6">
+            {Brand}
+            <nav className="hidden items-center gap-5 text-sm md:flex">
+              <NavLink
+                to="/portal/broadcaster/dashboard"
+                className={({ isActive }) =>
+                  isActive ? 'text-white' : 'text-[var(--muted)] transition-colors hover:text-white'
+                }
+              >
+                Browse
+              </NavLink>
+              <NavLink
+                to="/portal/broadcaster/licenses"
+                className={({ isActive }) =>
+                  isActive ? 'text-white' : 'text-[var(--muted)] transition-colors hover:text-white'
+                }
+              >
+                Licences
+              </NavLink>
+            </nav>
+          </div>
           <div className="flex items-center gap-4">
             {user && <span className="hidden text-sm text-[var(--muted)] sm:inline">{user.email}</span>}
             <button

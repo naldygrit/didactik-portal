@@ -342,3 +342,27 @@ let nextBidId = 100;
 export function allocateBidId(): number {
   return nextBidId++;
 }
+
+// ── Deals (Phase 4) ─────────────────────────────────────────────────────────
+// A licensed deal: the admin accepts the top bid on the producer's behalf
+// (pre-authorised) and records the licence terms.
+export type LicenseType = 'exclusive' | 'non_exclusive';
+
+export interface Deal {
+  id: number;
+  asset_id: number;
+  asset_title: string;
+  broadcaster_id: number;
+  broadcaster_name: string;
+  amount: number;
+  currency: string;
+  license_type: LicenseType;
+  created_at: string;
+}
+
+export const deals: Deal[] = [];
+
+let nextDealId = 500;
+export function allocateDealId(): number {
+  return nextDealId++;
+}

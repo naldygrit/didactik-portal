@@ -136,3 +136,31 @@ export interface BidBoard {
   highest_amount: number | null;
   your_bid: { id: number; amount: number; created_at: string; is_top: boolean } | null;
 }
+
+// A licensed deal struck from a winning bid (Phase 4).
+export type LicenseType = 'exclusive' | 'non_exclusive';
+
+export interface Deal {
+  id: number;
+  asset_id: number;
+  asset_title: string;
+  broadcaster_id: number;
+  broadcaster_name: string;
+  amount: number;
+  currency: string;
+  license_type: LicenseType;
+  created_at: string;
+}
+
+// One row of the admin deals desk: a title with bidding activity awaiting
+// acceptance, plus its deal once struck.
+export interface DealDeskItem {
+  asset_id: number;
+  title: string;
+  production_company: string | null;
+  bid_count: number;
+  top_amount: number | null;
+  top_broadcaster: string | null;
+  currency: string;
+  deal: Deal | null;
+}

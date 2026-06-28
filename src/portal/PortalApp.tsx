@@ -9,15 +9,18 @@ import { queryClient } from './shared/queryClient';
 import { BroadcasterDashboardPage } from './broadcaster/pages/DashboardPage';
 import { BroadcasterDiscoverPage } from './broadcaster/pages/DiscoverPage';
 import { BroadcasterAssetDetailPage } from './broadcaster/pages/AssetDetailPage';
+import { BroadcasterLicensesPage } from './broadcaster/pages/LicensesPage';
 import { ProductionDashboardPage } from './production/pages/DashboardPage';
 import { ProductionAssetsPage } from './production/pages/AssetsPage';
 import { ProductionSubmitPage } from './production/pages/SubmitPage';
 import { ProductionAssetDetailPage } from './production/pages/AssetDetailPage';
+import { AdminDealsPage } from './admin/pages/DealsPage';
 
 function PortalRoutes() {
   const { user } = useAuth();
   const isPC = user?.role === 'production_company_user';
   const isBC = user?.role === 'broadcaster_user';
+  const isAdmin = user?.role === 'admin_staff';
 
   return (
     <Routes>
@@ -86,6 +89,24 @@ function PortalRoutes() {
           element={
             <ProtectedRoute isAllowed={isBC}>
               <BroadcasterAssetDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="broadcaster/licenses"
+          element={
+            <ProtectedRoute isAllowed={isBC}>
+              <BroadcasterLicensesPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Admin routes */}
+        <Route
+          path="admin/deals"
+          element={
+            <ProtectedRoute isAllowed={isAdmin}>
+              <AdminDealsPage />
             </ProtectedRoute>
           }
         />

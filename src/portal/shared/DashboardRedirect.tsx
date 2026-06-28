@@ -14,7 +14,9 @@ export function DashboardRedirect() {
   if (user.role === 'production_company_user') {
     return <Navigate to="/portal/production/dashboard" replace />;
   }
+  if (user.role === 'admin_staff') {
+    return <Navigate to="/portal/admin/deals" replace />;
+  }
 
-  // admin_staff or unknown role — send to Django admin
-  return <Navigate to="/admin/" replace />;
+  return <Navigate to="/portal/login" replace />;
 }

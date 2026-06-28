@@ -1,13 +1,21 @@
 import { http, HttpResponse } from 'msw';
-import type { AssetDetail, AssetListItem, BidBoard, SearchAsset } from '../portal/shared/types';
+import type {
+  AssetDetail,
+  AssetListItem,
+  BidBoard,
+  DealDeskItem,
+  SearchAsset,
+} from '../portal/shared/types';
 import { encodeMockJwt } from './jwt';
 import {
   allocateAssetId,
   allocateBidId,
+  allocateDealId,
   assets,
   bids,
   broadcasters,
   countries,
+  deals,
   languages,
   LICENSE_CURRENCY,
   licenseRanges,
@@ -15,7 +23,7 @@ import {
   session,
   users,
 } from './db';
-import type { MockUser } from './db';
+import type { Deal, LicenseType, MockUser } from './db';
 
 const API = '/api/v1';
 
@@ -70,6 +78,10 @@ function buildBidBoard(assetId: number, user: MockUser): BidBoard | null {
       ? { id: mine.id, amount: mine.amount, created_at: mine.created_at, is_top: mine.amount === highest }
       : null,
   };
+}
+
+function isAdmin(user: MockUser): boolean {
+  return user.me.is_staff || user.me.profile?.role === 'admin_staff';
 }
 
 export const handlers = [
@@ -219,6 +231,85 @@ export const handlers = [
       });
     }
     return HttpResponse.json(buildBidBoard(assetId, user));
+  }),
+
+  // ── Deals ─────────────────────────────────────────────────────────────────
+  // Role-scoped: broadcaster sees deals they won, producer sees deals on their
+  // titles, admin sees all.
+  http.get(`${API}/deals/`, () => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    const p = user.me.profile;
+    if (isAdmin(user)) return HttpResponse.json(deals);
+    if (p?.role === 'broadcaster_user' && p.broadcaster) {
+      return HttpResponse.json(deals.filter((d) => d.broadcaster_id === p.broadcaster!.id));
+    }
+    if (p?.role === 'production_company_user' && p.production_company) {
+      const companyId = p.production_company.id;
+      return HttpResponse.json(
+        deals.filter((d) => assets.find((a) => a.id === d.asset_id)?.production_company?.id === companyId),
+      );
+    }
+    return HttpResponse.json([]);
+  }),
+
+  // Admin deals desk: every title with bidding activity, plus its deal if struck.
+  http.get(`${API}/admin/deals-desk/`, () => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    if (!isAdmin(user)) return HttpResponse.json({ detail: 'Admin only.' }, { status: 403 });
+
+    const assetIds = [...new Set(bids.map((b) => b.asset_id))];
+    const desk: DealDeskItem[] = assetIds.map((id) => {
+      const asset = assets.find((a) => a.id === id);
+      const assetBids = bids.filter((b) => b.asset_id === id);
+      const top = assetBids.reduce((m, b) => (b.amount > m.amount ? b : m), assetBids[0]);
+      return {
+        asset_id: id,
+        title: asset?.title ?? `#${id}`,
+        production_company: asset?.production_company?.name ?? null,
+        bid_count: assetBids.length,
+        top_amount: top?.amount ?? null,
+        top_broadcaster: top?.broadcaster_name ?? null,
+        currency: LICENSE_CURRENCY,
+        deal: deals.find((d) => d.asset_id === id) ?? null,
+      };
+    });
+    return HttpResponse.json(desk);
+  }),
+
+  // Admin accepts the top bid on the producer's behalf and records licence terms.
+  http.post(`${API}/assets/:id/accept-bid/`, async ({ params, request }) => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    if (!isAdmin(user)) return HttpResponse.json({ detail: 'Admin only.' }, { status: 403 });
+
+    const assetId = Number(params.id);
+    const asset = assets.find((a) => a.id === assetId);
+    if (!asset) return HttpResponse.json({ detail: 'Not found.' }, { status: 404 });
+    if (deals.some((d) => d.asset_id === assetId)) {
+      return HttpResponse.json({ detail: 'This title is already licensed.' }, { status: 409 });
+    }
+    const assetBids = bids.filter((b) => b.asset_id === assetId);
+    if (assetBids.length === 0) {
+      return HttpResponse.json({ detail: 'No bids to accept.' }, { status: 400 });
+    }
+    const top = assetBids.reduce((m, b) => (b.amount > m.amount ? b : m), assetBids[0]);
+    const { license_type } = (await request.json()) as { license_type: LicenseType };
+
+    const deal: Deal = {
+      id: allocateDealId(),
+      asset_id: assetId,
+      asset_title: asset.title,
+      broadcaster_id: top.broadcaster_id,
+      broadcaster_name: top.broadcaster_name,
+      amount: top.amount,
+      currency: LICENSE_CURRENCY,
+      license_type: license_type === 'exclusive' ? 'exclusive' : 'non_exclusive',
+      created_at: new Date().toISOString(),
+    };
+    deals.push(deal);
+    return HttpResponse.json(deal);
   }),
 
   // ── Search + suggest ──────────────────────────────────────────────────────
