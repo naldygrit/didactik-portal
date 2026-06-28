@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { apiGet } from '../../shared/apiHelpers';
 import { StatusBadge } from '../components/StatusBadge';
+import { thumbUrl } from '../../shared/media';
 import type { AssetListItem, AssetStatus } from '../../shared/types';
 
 const STATUS_OPTIONS: { value: AssetStatus | ''; label: string }[] = [
@@ -38,13 +39,13 @@ export function ProductionAssetsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">Your Assets</h1>
+        <h1 className="font-display text-2xl font-bold text-gray-900">Your films</h1>
         <Link
           to="/portal/production/submit"
-          className="px-4 py-2 rounded-md text-sm font-medium text-white"
+          className="rounded-full px-5 py-2 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
           style={{ backgroundColor: '#5343fd' }}
         >
-          Submit new asset
+          Submit a title
         </Link>
       </div>
 
@@ -82,8 +83,8 @@ export function ProductionAssetsPage() {
         <div className="text-center py-16 text-gray-400">
           <p className="text-base">
             {assets?.length === 0
-              ? 'No assets yet. Submit your first asset to get started.'
-              : 'No assets match the current filters.'}
+              ? 'No titles yet. Submit your first title to get started.'
+              : 'No titles match the current filters.'}
           </p>
         </div>
       )}
@@ -104,8 +105,15 @@ export function ProductionAssetsPage() {
             <tbody className="divide-y divide-gray-100">
               {filtered.map((asset) => (
                 <tr key={asset.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-gray-900 max-w-xs truncate">
-                    {asset.title}
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={thumbUrl(asset)}
+                        alt=""
+                        className="h-9 w-16 shrink-0 rounded object-cover"
+                      />
+                      <span className="max-w-xs truncate font-medium text-gray-900">{asset.title}</span>
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-gray-500 capitalize">
                     {asset.asset_type.replace(/_/g, ' ')}

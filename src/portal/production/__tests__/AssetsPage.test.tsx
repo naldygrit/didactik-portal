@@ -106,7 +106,7 @@ describe('ProductionAssetsPage', () => {
 
     render(<ProductionAssetsPage />, { wrapper: Wrapper });
 
-    expect(await screen.findByText(/No assets yet/)).toBeDefined();
+    expect(await screen.findByText(/No titles yet/)).toBeDefined();
   });
 
   it('shows error state when fetch fails', async () => {

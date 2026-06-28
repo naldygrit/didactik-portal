@@ -117,8 +117,8 @@ export function PortalLayout() {
           <nav className="hidden items-center gap-5 text-sm md:flex">
             {pathname.includes('/production') && (
               <>
-                <NavLink to="/portal/production/assets" className={lightLink}>Assets</NavLink>
-                <NavLink to="/portal/production/submit" className={lightLink}>Submit</NavLink>
+                <NavLink to="/portal/production/dashboard" className={lightLink}>Home</NavLink>
+                <NavLink to="/portal/production/assets" className={lightLink}>Films</NavLink>
                 <NavLink to="/portal/production/earnings" className={lightLink}>Earnings</NavLink>
               </>
             )}

@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './shared/AuthContext';
 import { ProtectedRoute } from './shared/ProtectedRoute';
@@ -12,6 +12,7 @@ import { BroadcasterAssetDetailPage } from './broadcaster/pages/AssetDetailPage'
 import { BroadcasterLicensesPage } from './broadcaster/pages/LicensesPage';
 import { BroadcasterOnboardingPage } from './broadcaster/pages/OnboardingPage';
 import { ProductionDashboardPage } from './production/pages/DashboardPage';
+import { ProductionStudioHomePage } from './production/pages/StudioHomePage';
 import { ProductionAssetsPage } from './production/pages/AssetsPage';
 import { ProductionSubmitPage } from './production/pages/SubmitPage';
 import { ProductionAssetDetailPage } from './production/pages/AssetDetailPage';
@@ -40,7 +41,7 @@ function PortalRoutes() {
           path="production/dashboard"
           element={
             <ProtectedRoute isAllowed={isPC}>
-              <Navigate to="/portal/production/assets" replace />
+              <ProductionStudioHomePage />
             </ProtectedRoute>
           }
         />
