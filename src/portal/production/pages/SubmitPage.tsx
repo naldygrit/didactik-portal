@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useForm, FormProvider } from 'react-hook-form';
+import { useForm, FormProvider, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '../../shared/AuthContext';
@@ -65,7 +65,10 @@ export function ProductionSubmitPage() {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
 
   const methods = useForm<WizardFormData>({
-    resolver: zodResolver(wizardSchema),
+    // zodResolver infers the schema INPUT type (unknown for preprocessed
+    // numeric fields), while the form is typed on the OUTPUT type. The cast
+    // reconciles the two; runtime validation is unaffected.
+    resolver: zodResolver(wizardSchema) as Resolver<WizardFormData>,
     defaultValues: {
       title: '',
       original_title: '',

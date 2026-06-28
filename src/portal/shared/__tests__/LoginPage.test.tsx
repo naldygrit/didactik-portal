@@ -2,7 +2,6 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { LoginPage } from '../LoginPage';
 import * as auth from '../auth';
-import * as AuthContextModule from '../AuthContext';
 import type { JwtPayload } from '../types';
 
 vi.mock('../auth', () => ({
