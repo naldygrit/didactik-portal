@@ -36,7 +36,8 @@ describe('AdminScreenerQueuePage', () => {
   it('lists requests with broadcaster identity and purpose', async () => {
     renderPage();
     expect(await screen.findByText('Canal+ International', { exact: false })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Screeners' })).toBeInTheDocument();
+    // The dense console renders the page title as a styled div, not a heading.
+    expect(screen.getByText('Screeners')).toBeInTheDocument();
   });
 
   it('approves a pending request and removes its Approve action', async () => {

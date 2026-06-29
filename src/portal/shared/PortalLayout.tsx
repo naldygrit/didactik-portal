@@ -1,21 +1,23 @@
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import type { ReactNode } from 'react';
 import {
-  FiGrid,
-  FiCheckSquare,
-  FiLayers,
   FiHome,
   FiFilm,
   FiBarChart2,
   FiPlus,
+  FiGrid,
+  FiBook,
+  FiClock,
+  FiEye,
+  FiVideo,
+  FiRadio,
+  FiShield,
 } from 'react-icons/fi';
 import { useAuth } from './AuthContext';
 import { postLogout } from './auth';
-
-const ADMIN_NAV = [
-  { to: '/portal/admin/overview', label: 'Overview', Icon: FiGrid },
-  { to: '/portal/admin/screeners', label: 'Screeners', Icon: FiCheckSquare },
-  { to: '/portal/admin/library', label: 'Library', Icon: FiLayers },
-];
+import { apiGet } from './apiHelpers';
+import type { AdminDashboard, AdminOrganisations } from './types';
 
 const PRODUCTION_NAV = [
   { to: '/portal/production/dashboard', label: 'Dashboard', Icon: FiHome },
@@ -31,7 +33,8 @@ export function PortalLayout() {
   const pathname = useLocation().pathname;
   const cinema = pathname.includes('/broadcaster');
   const control = pathname.includes('/admin');
-  const dark = cinema || control;
+  // Admin (control) is now a Stripe-style light surface; only the cinema is dark.
+  const dark = cinema;
 
   async function handleLogout() {
     await postLogout();
@@ -96,30 +99,15 @@ export function PortalLayout() {
   if (control) {
     return (
       <div className="portal-control flex min-h-screen">
-        {/* Linear-style left sidebar */}
+        {/* Dense grouped sidebar (200px), count badges from the live dashboard. */}
         <aside
-          className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col border-r md:flex"
-          style={{ borderColor: 'var(--hairline)' }}
+          className="sticky top-0 hidden h-screen w-[200px] shrink-0 flex-col border-r py-3 md:flex"
+          style={{ borderColor: 'var(--hairline)', background: 'var(--surface-raised)' }}
         >
-          <div className="px-4 py-4">{Brand}</div>
-          <nav className="flex-grow space-y-0.5 px-2">
-            {ADMIN_NAV.map(({ to, label, Icon }) => (
-              <NavLink
-                key={to}
-                to={to}
-                className={({ isActive }) =>
-                  `flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors ${
-                    isActive
-                      ? 'bg-[var(--surface-hover)] text-[var(--ink)]'
-                      : 'text-[var(--muted)] hover:bg-[var(--surface-raised)] hover:text-[var(--ink)]'
-                  }`
-                }
-              >
-                <Icon size={16} />
-                {label}
-              </NavLink>
-            ))}
-          </nav>
+          <div className="px-4 pb-3">{Brand}</div>
+          <div className="flex-grow overflow-y-auto">
+            <AdminSidebarNav />
+          </div>
           <div className="border-t px-4 py-3" style={{ borderColor: 'var(--hairline)' }}>
             {user && <p className="truncate text-xs text-[var(--muted)]">{user.email}</p>}
             <button
@@ -142,7 +130,7 @@ export function PortalLayout() {
               Sign out
             </button>
           </header>
-          <main className="flex-grow px-5 py-8 md:px-10">
+          <main className="flex-grow px-5 py-6 md:px-8">
             <Outlet />
           </main>
         </div>
@@ -206,5 +194,118 @@ export function PortalLayout() {
         </main>
       </div>
     </div>
+  );
+}
+
+type BadgeTone = '' | 'warn' | 'danger' | 'accent';
+
+// The admin grouped sidebar (Content / Screeners / Organisations …), with count
+// badges derived from the live dashboard + organisations aggregates. Uses the
+// ported .nav-* / .badge classes from admin.css (scoped under .portal-control).
+function AdminSidebarNav() {
+  const { data: dash } = useQuery<AdminDashboard>({
+    queryKey: ['admin-dashboard'],
+    queryFn: () => apiGet<AdminDashboard>('/api/v1/admin/dashboard/'),
+  });
+  const { data: orgs } = useQuery<AdminOrganisations>({
+    queryKey: ['admin-organisations'],
+    queryFn: () => apiGet<AdminOrganisations>('/api/v1/admin/organisations/'),
+  });
+
+  const underReview = dash?.content.by_status.under_review ?? 0;
+  const pendingScreeners = dash?.screeners.pending_queue ?? 0;
+  const pcs = orgs?.production_companies ?? [];
+  const bcs = orgs?.broadcasters ?? [];
+  const unverified =
+    pcs.filter((o) => o.verification_status !== 'verified').length +
+    bcs.filter((o) => o.verification_status !== 'verified').length;
+
+  return (
+    <>
+      <NavGroup label="Platform">
+        <NavItem to="/portal/admin/overview" label="Overview" Icon={FiGrid} />
+      </NavGroup>
+
+      <NavGroup label="Content">
+        <NavItem
+          to="/portal/admin/library"
+          label="Library"
+          Icon={FiBook}
+          badge={dash?.content.total_titles}
+        />
+        <NavItem
+          to="/portal/admin/library"
+          label="Under review"
+          Icon={FiClock}
+          badge={underReview || undefined}
+          tone="warn"
+        />
+      </NavGroup>
+
+      <NavGroup label="Screeners">
+        <NavItem
+          to="/portal/admin/screeners"
+          label="All requests"
+          Icon={FiEye}
+          badge={pendingScreeners || undefined}
+          tone="danger"
+        />
+      </NavGroup>
+
+      <NavGroup label="Organisations">
+        <NavItem
+          to="/portal/admin/production"
+          label="Production cos"
+          Icon={FiVideo}
+          badge={pcs.length || undefined}
+        />
+        <NavItem
+          to="/portal/admin/broadcasters"
+          label="Broadcasters"
+          Icon={FiRadio}
+          badge={bcs.length || undefined}
+        />
+        <NavItem
+          to="/portal/admin/production"
+          label="Verifications"
+          Icon={FiShield}
+          badge={unverified || undefined}
+          tone="warn"
+        />
+      </NavGroup>
+    </>
+  );
+}
+
+function NavGroup({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="nav-group">
+      <div className="nav-label">{label}</div>
+      {children}
+    </div>
+  );
+}
+
+function NavItem({
+  to,
+  label,
+  Icon,
+  badge,
+  tone = '',
+}: {
+  to: string;
+  label: string;
+  Icon: typeof FiBook;
+  badge?: number;
+  tone?: BadgeTone;
+}) {
+  return (
+    <NavLink to={to} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+      <span className="left">
+        <Icon size={15} />
+        {label}
+      </span>
+      {badge !== undefined && <span className={`badge ${tone}`}>{badge}</span>}
+    </NavLink>
   );
 }

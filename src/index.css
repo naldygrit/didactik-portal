@@ -126,18 +126,48 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Admin "control room" surface — Linear-style: cool near-black, hairline rows,
-   restrained. Distinct from the warm cinema so the two dark portals don't blur.
+   Admin "control room" surface — Stripe-style: near-white cool app bg, white
+   cards, deep-navy ink, blue-gray hairlines. A precise, data-dense ops console,
+   distinct from the dark cinema. (Brand accent ≈ Stripe indigo #533afd.)
 --------------------------------------------------------------------------- */
 @layer components {
   .portal-control {
-    --surface: #0c0c0f;
-    --surface-raised: #15151a;
-    --surface-hover: #1c1c23;
-    --hairline: rgba(255, 255, 255, 0.08);
-    --ink: #e7e7ea;
-    --muted: #8b8b95;
-    --accent: #6e63ff;
+    --surface: #f6f9fc;
+    --surface-raised: #ffffff;
+    --surface-hover: #eef2f7;
+    --hairline: rgba(50, 50, 93, 0.1);
+    --ink: #0d253d;
+    --muted: #525f7f;
+    --accent: #5343fd;
+    --card-shadow: 0 1px 3px rgba(50, 50, 93, 0.08),
+      0 1px 2px rgba(50, 50, 93, 0.06);
+
+    /* Dense-console tokens (the reference design's vocabulary). These sit
+       alongside the original ones above — admin.css reads these. */
+    --surface-0: #f6f9fc;
+    --surface-1: #ffffff;
+    --surface-2: #eef2f7;
+    --border: rgba(50, 50, 93, 0.1);
+    --border-strong: rgba(50, 50, 93, 0.18);
+    --border-accent: rgba(83, 67, 253, 0.4);
+    --text-primary: #0d253d;
+    --text-secondary: #425466;
+    --text-muted: #8792a2;
+    --text-accent: #5343fd;
+    --fill-accent: #5343fd;
+    --bg-accent: rgba(83, 67, 253, 0.1);
+    --bg-warning: rgba(186, 117, 23, 0.14);
+    --text-warning: #8a5a12;
+    --bg-danger: rgba(163, 45, 45, 0.1);
+    --text-danger: #a32d2d;
+    --bg-success: rgba(59, 109, 17, 0.12);
+    --text-success: #3b6d11;
+    --bg-pro: rgba(83, 74, 183, 0.12);
+    --text-pro: #534ab7;
+    --border-danger: rgba(163, 45, 45, 0.3);
+    --radius: 6px;
+    --font-sans: inherit;
+
     background-color: var(--surface);
     color: var(--ink);
   }

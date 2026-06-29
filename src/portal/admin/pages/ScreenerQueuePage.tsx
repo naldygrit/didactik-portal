@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiGet, apiPost } from '../../shared/apiHelpers';
-import type { AdminScreenerRequest, ScreenerStatus } from '../../shared/types';
-
-const hairline = { borderColor: 'var(--hairline)' };
+import { ageTone, relativeTime } from '../../shared/format';
+import type { AdminScreenerRequest } from '../../shared/types';
+import { humanize } from '../adminUi';
+import '../admin.css';
 
 const PURPOSE_LABELS: Record<string, string> = {
   acquisition_evaluation: 'Acquisition evaluation',
@@ -12,16 +13,19 @@ const PURPOSE_LABELS: Record<string, string> = {
   archival_research: 'Archival research',
 };
 
-const STATUS_DOT: Record<ScreenerStatus, string> = {
-  pending: 'bg-amber-400',
-  approved: 'bg-emerald-400',
-  declined: 'bg-red-400',
-  expired: 'bg-zinc-500',
-  accessed: 'bg-sky-400',
+type Tab = 'all' | 'pending' | 'approved' | 'declined';
+
+const PILL_CLASS: Record<string, string> = {
+  pending: 'pill-pending',
+  approved: 'pill-approved',
+  accessed: 'pill-approved',
+  declined: 'pill-declined',
+  expired: 'pill-declined',
 };
 
 export function AdminScreenerQueuePage() {
   const queryClient = useQueryClient();
+  const [tab, setTab] = useState<Tab>('all');
   // Per-request approve duration (hours) and decline reason, kept local until acted on.
   const [hours, setHours] = useState<Record<string, number>>({});
   const [reasons, setReasons] = useState<Record<string, string>>({});
@@ -43,120 +47,121 @@ export function AdminScreenerQueuePage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-screener-requests'] }),
   });
 
-  const pending = (data ?? []).filter((r) => r.status === 'pending').length;
+  const all = data ?? [];
+  const counts = {
+    all: all.length,
+    pending: all.filter((r) => r.status === 'pending').length,
+    approved: all.filter((r) => r.status === 'approved' || r.status === 'accessed').length,
+    declined: all.filter((r) => r.status === 'declined' || r.status === 'expired').length,
+  };
+
+  const rows = all.filter((r) => {
+    if (tab === 'all') return true;
+    if (tab === 'pending') return r.status === 'pending';
+    if (tab === 'approved') return r.status === 'approved' || r.status === 'accessed';
+    return r.status === 'declined' || r.status === 'expired';
+  });
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <div className="mb-6 flex items-baseline justify-between">
-        <div>
-          <h1 className="text-lg font-semibold text-[var(--ink)]">Screeners</h1>
-          <p className="text-sm text-[var(--muted)]">
-            Approve or decline broadcaster screener requests.
-          </p>
+    <div>
+      <div className="page-header">
+        <div className="page-title">Screeners</div>
+        <div className="page-sub">
+          Approve or decline broadcaster screener requests — {counts.pending} pending
         </div>
-        {data && (
-          <span className="font-mono text-xs tabular-nums text-[var(--muted)]">
-            {pending} pending
-          </span>
-        )}
       </div>
 
-      {isLoading && <p className="text-sm text-[var(--muted)]">Loading…</p>}
+      <div className="tab-bar">
+        <button type="button" className={`tab ${tab === 'all' ? 'active' : ''}`} onClick={() => setTab('all')}>
+          All ({counts.all})
+        </button>
+        <button type="button" className={`tab ${tab === 'pending' ? 'active' : ''}`} onClick={() => setTab('pending')}>
+          Pending ({counts.pending})
+        </button>
+        <button type="button" className={`tab ${tab === 'approved' ? 'active' : ''}`} onClick={() => setTab('approved')}>
+          Approved ({counts.approved})
+        </button>
+        <button type="button" className={`tab ${tab === 'declined' ? 'active' : ''}`} onClick={() => setTab('declined')}>
+          Declined ({counts.declined})
+        </button>
+      </div>
 
-      {data && data.length === 0 && (
-        <p className="text-sm text-[var(--muted)]">No screener requests yet.</p>
-      )}
+      {isLoading && <div className="page-sub">Loading…</div>}
+      {data && rows.length === 0 && <div className="page-sub">No requests in this view.</div>}
 
-      {data && data.length > 0 && (
-        <ul className="space-y-3">
-          {data.map((req) => {
-            const isPending = req.status === 'pending';
-            return (
-              <li key={req.uuid} className="rounded-lg border p-4" style={hairline}>
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="text-sm text-[var(--ink)]">{req.title_name}</div>
-                    <div className="text-xs text-[var(--muted)]">
-                      {req.broadcaster.name} · {PURPOSE_LABELS[req.purpose] ?? req.purpose}
-                    </div>
-                    {req.territory_interest.length > 0 && (
-                      <div className="mt-1 text-xs text-[var(--muted)]">
-                        Territories: {req.territory_interest.join(', ')}
-                      </div>
-                    )}
-                    {req.message_to_producer && (
-                      <p className="mt-1.5 text-xs italic text-[var(--muted)]">
-                        “{req.message_to_producer}”
-                      </p>
-                    )}
-                  </div>
-                  <span className="inline-flex shrink-0 items-center gap-2 text-xs capitalize text-[var(--muted)]">
-                    <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[req.status] ?? 'bg-zinc-500'}`} />
-                    {req.status}
-                  </span>
+      {rows.map((req) => {
+        const isPending = req.status === 'pending';
+        const tone = ageTone(req.requested_at);
+        const territory = req.territory_interest.length > 0 ? req.territory_interest.join(', ') : '—';
+        return (
+          <div className="screener-card" key={req.uuid} style={isPending ? undefined : { opacity: 0.85 }}>
+            <div className="screener-header">
+              <div>
+                <div className="screener-title">{req.title_name}</div>
+                <div className="screener-meta">
+                  {req.broadcaster.name} · {PURPOSE_LABELS[req.purpose] ?? humanize(req.purpose)} · Territories:{' '}
+                  {territory}
                 </div>
+              </div>
+              <span className={`status-pill ${PILL_CLASS[req.status] ?? 'pill-pending'}`}>
+                {humanize(req.status)}
+              </span>
+            </div>
 
-                {isPending ? (
-                  <div className="mt-3 flex flex-wrap items-end gap-2 border-t pt-3" style={hairline}>
-                    <label className="flex flex-col gap-1 text-xs text-[var(--muted)]">
-                      Access (hours)
-                      <input
-                        type="number"
-                        min={1}
-                        value={hours[req.uuid] ?? 48}
-                        onChange={(e) =>
-                          setHours((h) => ({ ...h, [req.uuid]: Number(e.target.value) }))
-                        }
-                        className="w-24 rounded-md border bg-[var(--surface-raised)] px-2 py-1.5 text-xs text-[var(--ink)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
-                        style={hairline}
-                      />
-                    </label>
-                    <button
-                      type="button"
-                      disabled={approve.isPending}
-                      onClick={() =>
-                        approve.mutate({
-                          uuid: req.uuid,
-                          access_duration_hours: hours[req.uuid] ?? 48,
-                        })
-                      }
-                      className="rounded-md px-3 py-1.5 text-xs font-medium text-white transition-transform active:scale-[0.98] disabled:opacity-50"
-                      style={{ backgroundColor: 'var(--accent)' }}
-                    >
-                      Approve
-                    </button>
-                    <input
-                      value={reasons[req.uuid] ?? ''}
-                      onChange={(e) => setReasons((r) => ({ ...r, [req.uuid]: e.target.value }))}
-                      placeholder="Decline reason (optional)"
-                      className="min-w-0 flex-grow rounded-md border bg-[var(--surface-raised)] px-2 py-1.5 text-xs text-[var(--ink)] placeholder:text-[var(--muted)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
-                      style={hairline}
-                    />
-                    <button
-                      type="button"
-                      disabled={decline.isPending}
-                      onClick={() =>
-                        decline.mutate({ uuid: req.uuid, reason: reasons[req.uuid] ?? '' })
-                      }
-                      className="rounded-md border px-3 py-1.5 text-xs font-medium text-[var(--muted)] transition-colors hover:text-[var(--ink)] disabled:opacity-50"
-                      style={hairline}
-                    >
-                      Decline
-                    </button>
-                  </div>
-                ) : (
-                  req.access_expires_at && (
-                    <p className="mt-2 text-xs text-[var(--muted)]">
-                      Access expires {new Date(req.access_expires_at).toLocaleDateString('en-GB')}
-                      {req.access_count > 0 && ` · ${req.access_count} views`}
-                    </p>
-                  )
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      )}
+            {req.message_to_producer && (
+              <div className="screener-msg">“{req.message_to_producer}”</div>
+            )}
+
+            {isPending ? (
+              <div className="screener-actions">
+                <label className="access-input">
+                  Access (hours)
+                  <input
+                    type="number"
+                    min={1}
+                    value={hours[req.uuid] ?? 48}
+                    onChange={(e) => setHours((h) => ({ ...h, [req.uuid]: Number(e.target.value) }))}
+                  />
+                </label>
+                <button
+                  type="button"
+                  className="btn-sm btn-primary"
+                  disabled={approve.isPending}
+                  onClick={() =>
+                    approve.mutate({ uuid: req.uuid, access_duration_hours: hours[req.uuid] ?? 48 })
+                  }
+                >
+                  Approve
+                </button>
+                <input
+                  className="decline-input"
+                  value={reasons[req.uuid] ?? ''}
+                  onChange={(e) => setReasons((r) => ({ ...r, [req.uuid]: e.target.value }))}
+                  placeholder="Decline reason (optional)"
+                />
+                <button
+                  type="button"
+                  className="btn-sm btn-danger"
+                  disabled={decline.isPending}
+                  onClick={() => decline.mutate({ uuid: req.uuid, reason: reasons[req.uuid] ?? '' })}
+                >
+                  Decline
+                </button>
+                <span className={`age ${tone}`} style={{ marginLeft: 'auto' }}>
+                  {relativeTime(req.requested_at, 'requested')}
+                </span>
+              </div>
+            ) : (
+              <div className="page-sub">
+                {req.access_expires_at &&
+                  `Access expires ${new Date(req.access_expires_at).toLocaleDateString('en-GB')}`}
+                {req.access_count > 0 && ` · ${req.access_count} views`}
+                {req.reviewed_at && ` · reviewed ${relativeTime(req.reviewed_at)}`}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -19,6 +19,8 @@ import { ProductionAnalyticsPage } from './production/pages/AnalyticsPage';
 import { AdminOverviewPage } from './admin/pages/OverviewPage';
 import { AdminScreenerQueuePage } from './admin/pages/ScreenerQueuePage';
 import { AdminLibraryPage } from './admin/pages/LibraryPage';
+import { AdminProductionCompaniesPage } from './admin/pages/ProductionCompaniesPage';
+import { AdminBroadcastersPage } from './admin/pages/BroadcastersPage';
 
 function PortalRoutes() {
   const { user } = useAuth();
@@ -143,6 +145,22 @@ function PortalRoutes() {
           element={
             <ProtectedRoute isAllowed={isAdmin}>
               <AdminLibraryPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="admin/production"
+          element={
+            <ProtectedRoute isAllowed={isAdmin}>
+              <AdminProductionCompaniesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="admin/broadcasters"
+          element={
+            <ProtectedRoute isAllowed={isAdmin}>
+              <AdminBroadcastersPage />
             </ProtectedRoute>
           }
         />

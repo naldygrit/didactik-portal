@@ -2,20 +2,10 @@ import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiGet, apiPatch } from '../../shared/apiHelpers';
+import { ageTone, relativeTime } from '../../shared/format';
 import type { AdminTitle, TitleStatus } from '../../shared/types';
-
-const hairline = { borderColor: 'var(--hairline)' };
-
-const STATUS_DOT: Record<TitleStatus, string> = {
-  draft: 'bg-zinc-500',
-  submitted: 'bg-amber-400',
-  under_review: 'bg-indigo-400',
-  changes_requested: 'bg-orange-400',
-  approved: 'bg-sky-400',
-  active: 'bg-emerald-400',
-  suspended: 'bg-red-400',
-  archived: 'bg-zinc-600',
-};
+import { humanize, scoreFillClass, statusDotClass } from '../adminUi';
+import '../admin.css';
 
 const STATUS_OPTIONS: TitleStatus[] = [
   'draft',
@@ -28,12 +18,9 @@ const STATUS_OPTIONS: TitleStatus[] = [
   'archived',
 ];
 
-function statusLabel(s: string): string {
-  return s.replace(/_/g, ' ');
-}
-
 export function AdminLibraryPage() {
   const [q, setQ] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | TitleStatus>('all');
   const [searchParams] = useSearchParams();
   const highlightSlug = searchParams.get('title');
   const queryClient = useQueryClient();
@@ -60,89 +47,124 @@ export function AdminLibraryPage() {
     changeStatus.mutate({ slug: title.slug, status: next, note });
   }
 
-  const rows = (data ?? []).filter((t) => !q || t.name.toLowerCase().includes(q.toLowerCase()));
+  const rows = (data ?? []).filter((t) => {
+    if (statusFilter !== 'all' && t.status !== statusFilter) return false;
+    if (!q) return true;
+    const needle = q.toLowerCase();
+    return (
+      t.name.toLowerCase().includes(needle) ||
+      (t.production_company?.name ?? '').toLowerCase().includes(needle)
+    );
+  });
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <div className="mb-6 flex items-baseline justify-between">
-        <div>
-          <h1 className="text-lg font-semibold text-[var(--ink)]">Library</h1>
-          <p className="text-sm text-[var(--muted)]">Every title on the platform.</p>
-        </div>
+    <div>
+      <div className="page-header">
+        <div className="page-title">Library</div>
+        <div className="page-sub">Every title on the platform</div>
+      </div>
+
+      <div className="filter-bar">
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Filter titles…"
-          className="rounded-md border bg-[var(--surface-raised)] px-3 py-1.5 text-sm text-[var(--ink)] placeholder:text-[var(--muted)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
-          style={hairline}
+          placeholder="Filter titles, producers…"
         />
+        <select
+          className="status-select"
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as 'all' | TitleStatus)}
+        >
+          <option value="all">All statuses</option>
+          {STATUS_OPTIONS.map((s) => (
+            <option key={s} value={s}>
+              {humanize(s)}
+            </option>
+          ))}
+        </select>
       </div>
 
-      {isLoading && <p className="text-sm text-[var(--muted)]">Loading…</p>}
-
-      {data && rows.length === 0 && <p className="text-sm text-[var(--muted)]">No titles match.</p>}
+      {isLoading && <div className="page-sub">Loading…</div>}
+      {data && rows.length === 0 && <div className="page-sub">No titles match.</div>}
 
       {rows.length > 0 && (
-        <div className="overflow-hidden rounded-lg border" style={hairline}>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b text-left text-xs uppercase tracking-wide text-[var(--muted)]" style={hairline}>
-                <th className="px-4 py-2.5 font-medium">Title</th>
-                <th className="px-4 py-2.5 font-medium">Producer</th>
-                <th className="px-4 py-2.5 text-right font-medium">Score</th>
-                <th className="px-4 py-2.5 font-medium">Status</th>
-                <th className="px-4 py-2.5 text-right font-medium">Change status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((t, i) => (
+        <table className="lib-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Producer</th>
+              <th>Score</th>
+              <th>Time in status</th>
+              <th>Status</th>
+              <th>Screeners</th>
+              <th>Change status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((t) => {
+              // status_changed_at is the truest "time in status"; fall back to
+              // updated_at when the title hasn't transitioned yet.
+              const since = t.status_changed_at ?? t.updated_at;
+              const tone = t.status === 'submitted' || t.status === 'under_review' ? ageTone(since) : '';
+              return (
                 <tr
                   key={t.slug}
-                  className="transition-colors hover:bg-[var(--surface-hover)]"
-                  style={{
-                    ...(i === 0 ? undefined : { borderTop: '1px solid var(--hairline)' }),
-                    ...(highlightSlug === t.slug ? { background: 'var(--surface-hover)' } : {}),
-                  }}
+                  style={highlightSlug === t.slug ? { background: 'var(--surface-2)' } : undefined}
                 >
-                  <td className="px-4 py-3">
-                    <div className="text-[var(--ink)]">{t.name}</div>
-                    <div className="text-xs text-[var(--muted)]">
-                      {statusLabel(t.title_type)}
+                  <td>
+                    <div style={{ fontWeight: 500, fontSize: 12 }}>{t.name}</div>
+                    <div className="title-type">
+                      {humanize(t.title_type)}
                       {t.production_year ? ` · ${t.production_year}` : ''}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-[var(--muted)]">
+                  <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
                     {t.production_company?.name ?? '—'}
                   </td>
-                  <td className="px-4 py-3 text-right font-mono tabular-nums text-[var(--muted)]">
-                    {t.metadata_score}
+                  <td>
+                    <div className="score-bar">
+                      <div className="score-track">
+                        <div
+                          className={`score-fill ${scoreFillClass(t.metadata_score)}`}
+                          style={{ width: `${t.metadata_score}%` }}
+                        />
+                      </div>
+                      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                        {t.metadata_score}
+                      </span>
+                    </div>
                   </td>
-                  <td className="px-4 py-3">
-                    <span className="inline-flex items-center gap-2 text-[var(--muted)]">
-                      <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[t.status] ?? 'bg-zinc-500'}`} />
-                      <span className="capitalize">{statusLabel(t.status)}</span>
-                    </span>
+                  <td>
+                    <span className={`age ${tone}`}>{relativeTime(since, humanize(t.status))}</span>
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <div className={`status-dot ${statusDotClass(t.status)}`} />
+                      <span style={{ fontSize: 12 }}>{humanize(t.status)}</span>
+                    </div>
+                  </td>
+                  {/* The admin Title projection carries no per-title screener
+                      count, so we honestly render an em dash rather than fake one. */}
+                  <td style={{ fontSize: 12, textAlign: 'center', color: 'var(--text-muted)' }}>—</td>
+                  <td>
                     <select
+                      className="status-select"
                       value={t.status}
                       disabled={changeStatus.isPending}
                       onChange={(e) => handleStatusChange(t, e.target.value as TitleStatus)}
-                      className="rounded-md border bg-[var(--surface-raised)] px-2 py-1.5 text-xs capitalize text-[var(--ink)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] disabled:opacity-50"
-                      style={hairline}
                     >
                       {STATUS_OPTIONS.map((s) => (
                         <option key={s} value={s}>
-                          {statusLabel(s)}
+                          {humanize(s)}
                         </option>
                       ))}
                     </select>
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              );
+            })}
+          </tbody>
+        </table>
       )}
     </div>
   );

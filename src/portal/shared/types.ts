@@ -300,6 +300,40 @@ export interface AdminDashboard {
     total_bytes: number;
   };
   featured_slots: number;
+  // Per-territory rights coverage for the Overview bars. pct is 0-100.
+  rights_coverage: { territory: string; titles: number; pct: number }[];
+}
+
+// ── Admin organisations (production companies + broadcasters tables) ──────────
+// The admin sees every registered organisation, with activity counts the public
+// projections withhold. Mirrors the live /api/v1/admin/organisations/ contract.
+export interface AdminProductionCompanyRow {
+  id: number;
+  name: string;
+  country: string;
+  verification_status: string;
+  title_count: number;
+  active_title_count: number;
+  screener_request_count: number;
+  last_activity: string | null;
+  created_at: string;
+}
+
+export interface AdminBroadcasterRow {
+  id: number;
+  name: string;
+  country: string;
+  category: string;
+  verification_status: string;
+  screener_request_count: number;
+  watchlist_count: number;
+  last_activity: string | null;
+  created_at: string;
+}
+
+export interface AdminOrganisations {
+  production_companies: AdminProductionCompanyRow[];
+  broadcasters: AdminBroadcasterRow[];
 }
 
 // A screener request as the admin sees it — unlike the broadcaster/production

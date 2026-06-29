@@ -18,6 +18,7 @@ import { encodeMockJwt } from './jwt';
 import {
   adminScreenerRequests,
   adminTitles,
+  buildAdminOrganisations,
   allocateAssetId,
   allocateRightsWindowId,
   allocateWatchlistId,
@@ -48,6 +49,25 @@ import {
 import type { MockUser } from './db';
 
 const API = '/api/v1';
+
+// Rights coverage by territory: for each territory, how many titles offer rights
+// there, as a percentage of the catalogue. Derived from the per-title rights
+// projections so the Overview bars reflect real seeded data (sorted widest first).
+function buildRightsCoverage(): { territory: string; titles: number; pct: number }[] {
+  const total = Object.keys(titleRights).length || 1;
+  const counts = new Map<string, number>();
+  for (const rows of Object.values(titleRights)) {
+    const seen = new Set<string>();
+    for (const r of rows) {
+      if (seen.has(r.territory)) continue;
+      seen.add(r.territory);
+      counts.set(r.territory, (counts.get(r.territory) ?? 0) + 1);
+    }
+  }
+  return Array.from(counts.entries())
+    .map(([territory, t]) => ({ territory, titles: t, pct: Math.round((t / total) * 100) }))
+    .sort((a, b) => b.pct - a.pct);
+}
 
 // Strip an AssetDetail down to the list-serializer shape the real API returns.
 function toListItem(a: AssetDetail): AssetListItem {
@@ -623,8 +643,21 @@ export const handlers = [
         total_bytes: 4_812_375_982_106,
       },
       featured_slots: adminTitles.filter((t) => t.is_featured).length,
+      // Rights coverage by territory: how many active titles offer rights in each
+      // territory, as a percentage of the active catalogue. Derived from the
+      // production rights windows so the bars track real data.
+      rights_coverage: buildRightsCoverage(),
     };
     return HttpResponse.json(dashboard);
+  }),
+
+  // The admin organisations roster (production companies + broadcasters), with
+  // activity counts derived from the title roster, screener queue, and watchlists.
+  http.get(`${API}/admin/organisations/`, () => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    if (!isAdmin(user)) return HttpResponse.json({ detail: 'Admin only.' }, { status: 403 });
+    return HttpResponse.json(buildAdminOrganisations());
   }),
 
   // Screener moderation queue — every broadcaster's request, with identity visible.

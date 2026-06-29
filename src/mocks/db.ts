@@ -4,6 +4,7 @@
 // screener requests, rights windows) happen against these arrays at runtime and
 // persist until reload.
 import type {
+  AdminOrganisations,
   AdminScreenerRequest,
   AdminTitle,
   AssetDetail,
@@ -705,6 +706,75 @@ export const adminScreenerRequests: AdminScreenerRequest[] = [
 
 export function findAdminScreener(uuid: string): AdminScreenerRequest | undefined {
   return adminScreenerRequests.find((r) => r.uuid === uuid);
+}
+
+// ── Admin organisations roster ───────────────────────────────────────────────
+// The admin organisations table sees every registered company/broadcaster with
+// activity counts the public projections withhold. We DERIVE these rows from the
+// existing seeds (admin titles, screener queue, watchlists) so the counts stay
+// internally consistent with the rest of the mock — mirrors the live
+// /api/v1/admin/organisations/ contract.
+
+// Broadcaster category + last-activity seeds (informational; the broadcaster
+// model proper only carries id/name/country).
+const broadcasterMeta: Record<number, { category: string; last_activity: string | null; created_at: string }> = {
+  1: { category: 'pay_tv', last_activity: '2026-06-29T07:00:00Z', created_at: '2025-10-01T09:00:00Z' },
+  2: { category: 'svod', last_activity: '2026-06-28T12:00:00Z', created_at: '2025-11-15T09:00:00Z' },
+  3: { category: 'pay_tv', last_activity: '2026-06-24T09:00:00Z', created_at: '2026-01-20T09:00:00Z' },
+};
+
+// Production-company last-submission seeds (the company's most recent activity).
+const productionMeta: Record<number, { last_activity: string | null }> = {
+  1: { last_activity: '2026-06-29T08:00:00Z' },
+  2: { last_activity: '2026-06-27T08:00:00Z' },
+  3: { last_activity: '2026-06-17T08:00:00Z' },
+};
+
+export function buildAdminOrganisations(): AdminOrganisations {
+  const production_companies = productionCompanies.map((c) => {
+    const titlesForCo = adminTitles.filter((t) => t.production_company?.id === c.id);
+    return {
+      id: c.id,
+      name: c.name,
+      country: c.country.name,
+      verification_status: c.verification_status,
+      title_count: titlesForCo.length,
+      active_title_count: titlesForCo.filter((t) => t.status === 'active').length,
+      screener_request_count: titlesForCo.reduce(
+        (n, t) =>
+          n + adminScreenerRequests.filter((r) => r.title_name === t.name).length,
+        0,
+      ),
+      last_activity: productionMeta[c.id]?.last_activity ?? null,
+      created_at: c.created_at,
+    };
+  });
+
+  const broadcasters_rows = broadcasters.map((b) => {
+    const meta = broadcasterMeta[b.id];
+    return {
+      id: b.id,
+      name: b.name,
+      country: b.country.name,
+      category: meta?.category ?? 'other',
+      // Every broadcaster seed is an established, verified partner.
+      verification_status: 'verified',
+      screener_request_count: adminScreenerRequests.filter((r) => r.broadcaster.id === b.id).length,
+      watchlist_count: watchlistCountFor(b.id),
+      last_activity: meta?.last_activity ?? null,
+      created_at: meta?.created_at ?? '2026-01-01T09:00:00Z',
+    };
+  });
+
+  return { production_companies, broadcasters: broadcasters_rows };
+}
+
+// Watchlist is keyed by USER id, not broadcaster id. Broadcaster 1 (Canal+) is
+// the seeded broadcaster user (user id 1); other broadcasters have no watchlist
+// seed, so their count is 0 — honest, not fabricated.
+function watchlistCountFor(broadcasterId: number): number {
+  if (broadcasterId === 1) return watchlist[1]?.length ?? 0;
+  return 0;
 }
 
 // ── Production (seller studio) screener/Title model ──────────────────────────

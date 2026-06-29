@@ -1,0 +1,628 @@
+/* ---------------------------------------------------------------------------
+   Admin "control room" dense console styles.
+
+   Ported verbatim from the reference mock (didactik_admin_portal_improved.html)
+   and scoped under .portal-control so these utility classes only apply inside
+   the admin portal — they never leak into the broadcaster (cinema) or
+   production surfaces, which share the same React tree. Theme variables
+   (--surface-1, --text-primary, …) are defined on .portal-control in index.css.
+
+   The layout shell (.shell/.sidebar/.main/.page) is owned by PortalLayout and
+   react-router, so it is intentionally NOT ported here; everything below is the
+   component vocabulary the pages render with.
+--------------------------------------------------------------------------- */
+
+/* Grouped sidebar nav (PortalLayout renders this for the admin surface). */
+.portal-control .nav-group {
+  padding: 0 8px;
+  margin-bottom: 4px;
+}
+.portal-control .nav-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 6px 8px 4px;
+  font-weight: 500;
+}
+.portal-control .nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  transition: background 0.1s;
+  text-decoration: none;
+}
+.portal-control .nav-item:hover {
+  background: var(--surface-2);
+  color: var(--text-primary);
+}
+.portal-control .nav-item.active {
+  background: var(--bg-accent);
+  color: var(--text-accent);
+  font-weight: 500;
+}
+.portal-control .nav-item .left {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.portal-control .badge {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-weight: 500;
+  background: var(--surface-2);
+  color: var(--text-secondary);
+}
+.portal-control .badge.warn {
+  background: var(--bg-warning);
+  color: var(--text-warning);
+}
+.portal-control .badge.danger {
+  background: var(--bg-danger);
+  color: var(--text-danger);
+}
+.portal-control .badge.accent {
+  background: var(--bg-accent);
+  color: var(--text-accent);
+}
+
+/* Page header */
+.portal-control .page-header {
+  margin-bottom: 16px;
+}
+.portal-control .page-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.portal-control .page-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* KPI grid */
+.portal-control .kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.portal-control .kpi {
+  background: var(--surface-1);
+  border-radius: var(--radius);
+  border: 0.5px solid var(--border);
+  padding: 10px 12px;
+}
+.portal-control .kpi-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+.portal-control .kpi-val {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1;
+}
+.portal-control .kpi-delta {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+.portal-control .kpi-delta.up {
+  color: var(--text-success);
+}
+.portal-control .kpi-delta.warn {
+  color: var(--text-warning);
+}
+.portal-control .kpi-delta.danger {
+  color: var(--text-danger);
+}
+
+/* Layout primitives */
+.portal-control .two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.portal-control .three-col {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.portal-control .card {
+  background: var(--surface-1);
+  border-radius: var(--radius);
+  border: 0.5px solid var(--border);
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+.portal-control .card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.portal-control .card-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.portal-control .card-link {
+  font-size: 11px;
+  color: var(--text-accent);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+/* Triage queue rows */
+.portal-control .triage-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-bottom: 0.5px solid var(--border);
+}
+.portal-control .triage-row:last-child {
+  border-bottom: none;
+}
+.portal-control .triage-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.portal-control .triage-thumb {
+  width: 28px;
+  height: 20px;
+  border-radius: 3px;
+  background: var(--surface-2);
+  flex-shrink: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.portal-control .triage-info {
+  display: flex;
+  flex-direction: column;
+}
+.portal-control .triage-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.portal-control .triage-meta {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.portal-control .triage-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Age badge */
+.portal-control .age {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--text-muted);
+}
+.portal-control .age.warn {
+  background: var(--bg-warning);
+  color: var(--text-warning);
+}
+.portal-control .age.danger {
+  background: var(--bg-danger);
+  color: var(--text-danger);
+}
+
+/* Buttons */
+.portal-control .btn-sm {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: var(--radius);
+  border: 0.5px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.portal-control .btn-sm:hover {
+  background: var(--surface-0);
+}
+.portal-control .btn-sm:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.portal-control .btn-primary {
+  background: var(--fill-accent);
+  color: #fff;
+  border-color: var(--fill-accent);
+}
+.portal-control .btn-primary:hover {
+  background: var(--fill-accent);
+}
+.portal-control .btn-danger {
+  background: var(--bg-danger);
+  color: var(--text-danger);
+  border-color: var(--border-danger);
+}
+
+/* Status dots */
+.portal-control .status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.portal-control .dot-green {
+  background: #3b6d11;
+}
+.portal-control .dot-blue {
+  background: #185fa5;
+}
+.portal-control .dot-amber {
+  background: #ba7517;
+}
+.portal-control .dot-purple {
+  background: #534ab7;
+}
+.portal-control .dot-gray {
+  background: #5f5e5a;
+}
+
+/* Organisation rows + avatars */
+.portal-control .org-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-bottom: 0.5px solid var(--border);
+}
+.portal-control .org-row:last-child {
+  border-bottom: none;
+}
+.portal-control .org-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--bg-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--text-accent);
+  flex-shrink: 0;
+}
+.portal-control .org-info {
+  display: flex;
+  flex-direction: column;
+  margin-left: 8px;
+}
+.portal-control .org-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.portal-control .org-meta {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* Stat rows */
+.portal-control .stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 0;
+  border-bottom: 0.5px solid var(--border);
+}
+.portal-control .stat-row:last-child {
+  border-bottom: none;
+}
+.portal-control .stat-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.portal-control .stat-val {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* Coverage bars */
+.portal-control .bar-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 6px;
+}
+.portal-control .bar-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.portal-control .bar-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+  width: 80px;
+  flex-shrink: 0;
+}
+.portal-control .bar-track {
+  flex: 1;
+  height: 6px;
+  background: var(--surface-2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.portal-control .bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--fill-accent);
+}
+.portal-control .bar-pct {
+  font-size: 10px;
+  color: var(--text-muted);
+  width: 28px;
+  text-align: right;
+}
+
+/* Screener request cards */
+.portal-control .screener-card {
+  background: var(--surface-1);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+.portal-control .screener-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 6px;
+}
+.portal-control .screener-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.portal-control .screener-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.portal-control .screener-msg {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-style: italic;
+  margin-bottom: 10px;
+  padding: 6px 8px;
+  background: var(--surface-2);
+  border-radius: var(--radius);
+  border-left: 2px solid var(--border-accent);
+}
+.portal-control .screener-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.portal-control .access-input {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.portal-control .access-input input {
+  width: 48px;
+  padding: 3px 6px;
+  font-size: 11px;
+  border-radius: var(--radius);
+  border: 0.5px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text-primary);
+  text-align: center;
+}
+.portal-control .decline-input {
+  flex: 1;
+  min-width: 140px;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: var(--radius);
+  border: 0.5px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-secondary);
+}
+
+/* Status pills */
+.portal-control .status-pill {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+.portal-control .pill-pending {
+  background: var(--bg-warning);
+  color: var(--text-warning);
+}
+.portal-control .pill-approved {
+  background: var(--bg-success);
+  color: var(--text-success);
+}
+.portal-control .pill-declined {
+  background: var(--bg-danger);
+  color: var(--text-danger);
+}
+
+/* Library + org data tables */
+.portal-control .lib-table,
+.portal-control .org-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.portal-control .lib-table th,
+.portal-control .org-table th {
+  text-align: left;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  padding: 6px 8px;
+  border-bottom: 0.5px solid var(--border);
+  font-weight: 500;
+}
+.portal-control .lib-table td,
+.portal-control .org-table td {
+  padding: 8px 8px;
+  border-bottom: 0.5px solid var(--border);
+  vertical-align: middle;
+}
+.portal-control .lib-table tr:last-child td,
+.portal-control .org-table tr:last-child td {
+  border-bottom: none;
+}
+.portal-control .lib-table tr:hover td,
+.portal-control .org-table tr:hover td {
+  background: var(--surface-1);
+}
+.portal-control .title-type {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* Score bars */
+.portal-control .score-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.portal-control .score-track {
+  width: 36px;
+  height: 4px;
+  background: var(--surface-2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.portal-control .score-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+.portal-control .score-fill.high {
+  background: #3b6d11;
+}
+.portal-control .score-fill.mid {
+  background: #ba7517;
+}
+.portal-control .score-fill.low {
+  background: #a32d2d;
+}
+
+/* Inline selects */
+.portal-control select.status-select {
+  font-size: 11px;
+  padding: 3px 6px;
+  border-radius: var(--radius);
+  border: 0.5px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.portal-control select.status-select:disabled {
+  opacity: 0.5;
+}
+
+/* Verified / activity badges */
+.portal-control .verified-badge {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+.portal-control .verified-yes {
+  background: var(--bg-success);
+  color: var(--text-success);
+}
+.portal-control .verified-no {
+  background: var(--bg-warning);
+  color: var(--text-warning);
+}
+.portal-control .activity-badge {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.portal-control .activity-badge.active {
+  color: var(--text-success);
+}
+
+/* Filter + tab bars */
+.portal-control .filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.portal-control .filter-bar input {
+  flex: 1;
+  padding: 5px 10px;
+  font-size: 12px;
+  border-radius: var(--radius);
+  border: 0.5px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text-primary);
+}
+.portal-control .tab-bar {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 14px;
+  background: var(--surface-1);
+  padding: 3px;
+  border-radius: var(--radius);
+  border: 0.5px solid var(--border);
+  width: fit-content;
+}
+.portal-control .tab {
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: calc(var(--radius) - 2px);
+  cursor: pointer;
+  color: var(--text-secondary);
+  border: none;
+  background: transparent;
+}
+.portal-control .tab.active {
+  background: var(--surface-2);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* One-column fallback below the lg breakpoint (the reference is desktop-first
+   at 200px sidebar + 6-up grid; keep it dense but legible on narrow screens). */
+@media (max-width: 1024px) {
+  .portal-control .kpi-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .portal-control .two-col {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 640px) {
+  .portal-control .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

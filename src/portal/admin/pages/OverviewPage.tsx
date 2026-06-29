@@ -1,142 +1,347 @@
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { apiGet } from '../../shared/apiHelpers';
-import type { AdminDashboard } from '../../shared/types';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { motion, useReducedMotion } from 'framer-motion';
+import { apiGet, apiPost } from '../../shared/apiHelpers';
+import { ageTone, hoursSince, relativeTime } from '../../shared/format';
+import type {
+  AdminDashboard,
+  AdminOrganisations,
+  AdminScreenerRequest,
+} from '../../shared/types';
+import { initials, statusThumbBg } from '../adminUi';
+import '../admin.css';
 
-const hairline = { borderColor: 'var(--hairline)' };
-
-// Compact bytes -> GB/TB. Storage on the platform is reported in raw bytes.
 function formatBytes(bytes: number): string {
   const tb = bytes / 1_000_000_000_000;
   if (tb >= 1) return `${tb.toFixed(1)} TB`;
-  const gb = bytes / 1_000_000_000;
-  return `${gb.toFixed(0)} GB`;
-}
-
-function titleCase(s: string): string {
-  return s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  return `${(bytes / 1_000_000_000).toFixed(0)} GB`;
 }
 
 export function AdminOverviewPage() {
+  const reduce = useReducedMotion();
+  const queryClient = useQueryClient();
+
   const { data } = useQuery<AdminDashboard>({
     queryKey: ['admin-dashboard'],
     queryFn: () => apiGet<AdminDashboard>('/api/v1/admin/dashboard/'),
   });
+  const { data: screeners } = useQuery<AdminScreenerRequest[]>({
+    queryKey: ['admin-screener-requests'],
+    queryFn: () => apiGet<AdminScreenerRequest[]>('/api/v1/admin/screener-requests/'),
+  });
+  const { data: orgs } = useQuery<AdminOrganisations>({
+    queryKey: ['admin-organisations'],
+    queryFn: () => apiGet<AdminOrganisations>('/api/v1/admin/organisations/'),
+  });
+
+  // Approve / decline straight from the Overview panel (same contract the
+  // Screeners page uses), so the queue is actionable without navigating away.
+  const approve = useMutation({
+    mutationFn: (uuid: string) =>
+      apiPost(`/api/v1/admin/screener-requests/${uuid}/approve/`, { access_duration_hours: 48 }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-screener-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
+    },
+  });
+  const decline = useMutation({
+    mutationFn: (uuid: string) =>
+      apiPost(`/api/v1/admin/screener-requests/${uuid}/decline/`, {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-screener-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
+    },
+  });
 
   const triage = data?.triage_queue ?? [];
-  const orgs = data?.organisations;
+  const byStatus = data?.content.by_status ?? {};
+  const pendingScreeners = (screeners ?? []).filter((r) => r.status === 'pending');
+  const overdueScreeners = pendingScreeners.filter((r) => hoursSince(r.requested_at) > 48).length;
+
+  const pcs = orgs?.production_companies ?? [];
+  const bcs = orgs?.broadcasters ?? [];
+  const unverified = [
+    ...pcs
+      .filter((o) => o.verification_status !== 'verified')
+      .map((o) => ({ id: `pc-${o.id}`, name: o.name, kind: 'Production company', country: o.country, created_at: o.created_at })),
+    ...bcs
+      .filter((o) => o.verification_status !== 'verified')
+      .map((o) => ({ id: `bc-${o.id}`, name: o.name, kind: 'Broadcaster', country: o.country, created_at: o.created_at })),
+  ];
+
+  // Production-company activity: most-recently-active first.
+  const pcActivity = [...pcs].sort(byLastActivity).slice(0, 4);
+  const bcActivity = [...bcs].sort(byLastActivity).slice(0, 4);
+
+  const coverage = data?.rights_coverage ?? [];
+
+  // Subtle, tasteful panel entrance — dense console, not a marketing reveal.
+  const panel = {
+    hidden: reduce ? {} : { opacity: 0, y: 6 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.25, ease: [0.23, 1, 0.32, 1] as const } },
+  };
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8">
-      <h1 className="text-lg font-semibold text-[var(--ink)]">Overview</h1>
-
-      {/* Metric tiles */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Metric label="Titles" value={data?.content.total_titles ?? '—'} />
-        <Metric label="Active" value={data?.content.active ?? '—'} />
-        <Metric
-          label="Screeners pending"
-          value={data?.screeners.pending_queue ?? '—'}
-          highlight={(data?.screeners.pending_queue ?? 0) > 0}
-        />
-        <Metric label="Unvalidated assets" value={data?.assets.unvalidated ?? '—'} />
+    <div>
+      <div className="page-header">
+        <div className="page-title">Overview</div>
+        <div className="page-sub">Platform health at a glance — updated now</div>
       </div>
 
-      {/* Title status breakdown */}
-      <section>
-        <h2 className="mb-3 text-sm font-medium text-[var(--ink)]">Catalogue by status</h2>
-        {data ? (
-          <div className="flex flex-wrap gap-2">
-            {Object.entries(data.content.by_status).map(([status, count]) => (
-              <span
-                key={status}
-                className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs text-[var(--muted)]"
-                style={hairline}
-              >
-                {titleCase(status)}
-                <span className="font-mono tabular-nums text-[var(--ink)]">{count}</span>
-              </span>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-[var(--muted)]">Loading…</p>
-        )}
-      </section>
-
-      {/* Triage queue — the admin's primary work surface */}
-      <section>
-        <div className="mb-3 flex items-baseline justify-between">
-          <h2 className="text-sm font-medium text-[var(--ink)]">Triage queue</h2>
-          <Link to="/portal/admin/library" className="text-xs text-[var(--accent)] hover:underline">
-            Library
-          </Link>
-        </div>
-        {triage.length > 0 ? (
-          <ul className="overflow-hidden rounded-lg border" style={hairline}>
-            {triage.map((row, i) => (
-              <li
-                key={row.slug}
-                style={i === 0 ? undefined : { borderTop: '1px solid var(--hairline)' }}
-              >
-                <Link
-                  to={`/portal/admin/library?title=${encodeURIComponent(row.slug)}`}
-                  className="flex items-center justify-between gap-4 px-4 py-2.5 text-sm transition-colors hover:bg-[var(--surface-hover)]"
-                >
-                  <span className="min-w-0 truncate">
-                    <span className="text-[var(--ink)]">{row.name}</span>
-                    <span className="text-[var(--muted)]"> · {row.production_company}</span>
-                  </span>
-                  <span className="flex shrink-0 items-center gap-3">
-                    <span className="text-xs capitalize text-[var(--muted)]">
-                      {titleCase(row.status)}
-                    </span>
-                    <span className="font-mono tabular-nums text-[var(--muted)]">
-                      {row.metadata_score}
-                    </span>
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-[var(--muted)]">Nothing to triage. The queue is clear.</p>
-        )}
-      </section>
-
-      {/* Organisations + storage */}
-      <section className="grid gap-3 sm:grid-cols-3">
-        <Metric label="Production companies" value={orgs?.production_companies ?? '—'} />
-        <Metric label="Broadcasters" value={orgs?.broadcasters ?? '—'} />
-        <Metric
-          label="Storage"
-          value={data ? formatBytes(data.storage.total_bytes) : '—'}
-          mono
+      {/* 6-up KPI grid. Deltas are only shown where a real sub-line exists. */}
+      <div className="kpi-grid">
+        <Kpi label="Titles" value={data?.content.total_titles} />
+        <Kpi label="Active" value={data?.content.active} />
+        <Kpi label="Under review" value={byStatus.under_review ?? 0} />
+        <Kpi
+          label="Screeners pending"
+          value={data?.screeners.pending_queue}
+          delta={overdueScreeners > 0 ? `${overdueScreeners} over 48h` : undefined}
+          deltaTone="danger"
         />
-      </section>
+        <Kpi
+          label="Unvalidated assets"
+          value={data?.assets.unvalidated}
+          delta={(data?.assets.unvalidated ?? 0) > 0 ? 'action needed' : undefined}
+          deltaTone="warn"
+        />
+        <Kpi
+          label="Storage"
+          value={data ? formatBytes(data.storage.total_bytes) : undefined}
+          small
+        />
+      </div>
+
+      <div className="two-col">
+        {/* Left column — the admin's work surfaces. */}
+        <div>
+          <motion.div className="card" variants={panel} initial="hidden" animate="show">
+            <div className="card-header">
+              <span className="card-title">Triage queue</span>
+              <Link className="card-link" to="/portal/admin/library">
+                View library →
+              </Link>
+            </div>
+            {triage.length === 0 ? (
+              <div className="page-sub">Nothing to triage — the queue is clear.</div>
+            ) : (
+              triage.map((row) => {
+                const tone = ageTone(row.updated_at);
+                return (
+                  <div className="triage-row" key={row.slug}>
+                    <div className="triage-left">
+                      <div className="triage-thumb" style={{ background: statusThumbBg(row.status) }} />
+                      <div className="triage-info">
+                        <span className="triage-name">{row.name}</span>
+                        <span className="triage-meta">
+                          {row.production_company} · {humanizeStatus(row.status)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="triage-right">
+                      <span className={`age ${tone}`}>{relativeTime(row.updated_at)}</span>
+                      <Link
+                        className="btn-sm"
+                        to={`/portal/admin/library?title=${encodeURIComponent(row.slug)}`}
+                      >
+                        Review
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </motion.div>
+
+          <motion.div className="card" variants={panel} initial="hidden" animate="show">
+            <div className="card-header">
+              <span className="card-title">Screeners pending</span>
+              <Link className="card-link" to="/portal/admin/screeners">
+                View all →
+              </Link>
+            </div>
+            {pendingScreeners.length === 0 ? (
+              <div className="page-sub">No pending screener requests.</div>
+            ) : (
+              pendingScreeners.map((req) => {
+                const tone = ageTone(req.requested_at);
+                return (
+                  <div className="triage-row" key={req.uuid}>
+                    <div className="triage-left">
+                      <div className="triage-info">
+                        <span className="triage-name">{req.title_name}</span>
+                        <span className="triage-meta">
+                          {req.broadcaster.name}
+                          {req.territory_interest.length > 0 &&
+                            ` · ${req.territory_interest.join(', ')}`}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="triage-right">
+                      <span className={`age ${tone}`}>{relativeTime(req.requested_at)}</span>
+                      <button
+                        type="button"
+                        className="btn-sm btn-primary"
+                        disabled={approve.isPending}
+                        onClick={() => approve.mutate(req.uuid)}
+                      >
+                        Approve
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-sm"
+                        disabled={decline.isPending}
+                        onClick={() => decline.mutate(req.uuid)}
+                      >
+                        Decline
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </motion.div>
+
+          <motion.div className="card" variants={panel} initial="hidden" animate="show">
+            <div className="card-header">
+              <span className="card-title">Organisations awaiting verification</span>
+            </div>
+            {unverified.length === 0 ? (
+              <div className="page-sub">Every organisation is verified.</div>
+            ) : (
+              unverified.map((o) => (
+                <div className="triage-row" key={o.id}>
+                  <div className="triage-left">
+                    <div
+                      className="org-avatar"
+                      style={{ background: 'var(--bg-warning)', color: 'var(--text-warning)' }}
+                    >
+                      {initials(o.name)}
+                    </div>
+                    <div className="triage-info" style={{ marginLeft: 8 }}>
+                      <span className="triage-name">{o.name}</span>
+                      <span className="triage-meta">
+                        {o.kind} · {o.country} · Applied {relativeTime(o.created_at)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="triage-right">
+                    <Link
+                      className="btn-sm btn-primary"
+                      to={
+                        o.kind === 'Broadcaster'
+                          ? '/portal/admin/broadcasters'
+                          : '/portal/admin/production'
+                      }
+                    >
+                      Verify
+                    </Link>
+                  </div>
+                </div>
+              ))
+            )}
+          </motion.div>
+        </div>
+
+        {/* Right column — context: org activity + rights coverage. */}
+        <div>
+          <motion.div className="card" variants={panel} initial="hidden" animate="show">
+            <div className="card-header">
+              <span className="card-title">Production company activity</span>
+              <Link className="card-link" to="/portal/admin/production">
+                View all →
+              </Link>
+            </div>
+            {pcActivity.map((o) => (
+              <div className="stat-row" key={o.id}>
+                <span className="stat-label">{o.name}</span>
+                <span className={`activity-badge ${activityClass(o.last_activity)}`}>
+                  {relativeTime(o.last_activity)} · {o.title_count} title
+                  {o.title_count === 1 ? '' : 's'}
+                </span>
+              </div>
+            ))}
+          </motion.div>
+
+          <motion.div className="card" variants={panel} initial="hidden" animate="show">
+            <div className="card-header">
+              <span className="card-title">Broadcaster activity</span>
+              <Link className="card-link" to="/portal/admin/broadcasters">
+                View all →
+              </Link>
+            </div>
+            {bcActivity.map((o) => (
+              <div className="stat-row" key={o.id}>
+                <span className="stat-label">{o.name}</span>
+                <span className={`activity-badge ${activityClass(o.last_activity)}`}>
+                  {relativeTime(o.last_activity)} · {o.screener_request_count} screener req
+                  {o.screener_request_count === 1 ? '' : 's'}
+                </span>
+              </div>
+            ))}
+          </motion.div>
+
+          <motion.div className="card" variants={panel} initial="hidden" animate="show">
+            <div className="card-header">
+              <span className="card-title">Rights coverage by territory</span>
+            </div>
+            <div className="bar-wrap">
+              {coverage.map((c) => (
+                <div className="bar-row" key={c.territory}>
+                  <span className="bar-label">{c.territory}</span>
+                  <div className="bar-track">
+                    <div className="bar-fill" style={{ width: `${c.pct}%` }} />
+                  </div>
+                  <span className="bar-pct">{c.pct}%</span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </div>
     </div>
   );
 }
 
-function Metric({
+function activityClass(iso: string | null): string {
+  const h = hoursSince(iso);
+  if (iso && h <= 72) return 'active';
+  return '';
+}
+
+function byLastActivity(a: { last_activity: string | null }, b: { last_activity: string | null }): number {
+  const ta = a.last_activity ? new Date(a.last_activity).getTime() : 0;
+  const tb = b.last_activity ? new Date(b.last_activity).getTime() : 0;
+  return tb - ta;
+}
+
+function humanizeStatus(value: string): string {
+  const spaced = value.replace(/_/g, ' ');
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}
+
+function Kpi({
   label,
   value,
-  mono,
-  highlight,
+  delta,
+  deltaTone,
+  small,
 }: {
   label: string;
-  value: string | number;
-  mono?: boolean;
-  highlight?: boolean;
+  value: number | string | undefined;
+  delta?: string;
+  deltaTone?: 'up' | 'warn' | 'danger';
+  small?: boolean;
 }) {
   return (
-    <div className="rounded-lg border p-4" style={hairline}>
-      <p className="text-xs uppercase tracking-wide text-[var(--muted)]">{label}</p>
-      <p
-        className={`mt-1 text-2xl font-semibold tabular-nums ${mono ? 'font-mono' : ''}`}
-        style={{ color: highlight ? 'var(--accent)' : 'var(--ink)' }}
-      >
-        {value}
-      </p>
+    <div className="kpi">
+      <div className="kpi-label">{label}</div>
+      <div className="kpi-val" style={small ? { fontSize: 15 } : undefined}>
+        {value ?? '—'}
+      </div>
+      {/* Reference shows a delta line on every KPI; we only render one where a
+          real, derived sub-line exists (no fabricated numbers). */}
+      {delta && <div className={`kpi-delta ${deltaTone ?? ''}`}>{delta}</div>}
     </div>
   );
 }
