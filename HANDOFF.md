@@ -130,6 +130,11 @@ all scoped under `.portal-control`. `PortalLayout` picks theme by path PREFIX
   (the established sidebar query-sync pattern; eslint still exits 0).
 
 ## Recent commits (newest first)
+- `feat(production)` upload-first wizard: the master file picker is on step 1 and
+  streams to B2 in the background (POST production/titles/upload-url/ then PUT)
+  while the filmmaker fills the form; step 3 is "Review & submit" and the submit
+  links the already-uploaded file_key. In mock mode upload-url returns a null URL
+  (treated as done). Added the genres picker (chips) on step 1 (GET /genres/).
 - `feat(production)` LOOP A frontend: the submit wizard now creates a canonical
   Title (not a legacy Asset). Step 1 is Title-grade: name, type (film/series/
   documentary/short/animation), year, runtime, logline, synopsis, original

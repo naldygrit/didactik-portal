@@ -308,27 +308,52 @@ export const handlers = [
     return HttpResponse.json(dashboard);
   }),
 
-  // Canonical Title intake. In mock mode there is no B2, so initiate returns 202
-  // (awaiting review) and the wizard shows the "submission received" success.
+  // Upload-first: in mock mode there is no B2, so upload-url returns a file_key
+  // with a null upload_url. The wizard treats a null upload_url as "done".
+  http.post(`${API}/production/titles/upload-url/`, async ({ request }) => {
+    if (!session.current) return unauthorized();
+    const body = (await request.json()) as { filename?: string };
+    const name = String(body.filename ?? 'master.mp4').replace(/[^\w.\-]/g, '_');
+    return HttpResponse.json({
+      upload_url: null,
+      file_key: `uploads/mock/${name}`,
+      expires_in_seconds: 3600,
+    });
+  }),
+
+  // Canonical Title intake. With a file_key (upload-first) the file is already in
+  // storage, so this returns 201 (submitted); otherwise 202 (awaiting review).
   http.post(`${API}/production/titles/initiate-upload/`, async ({ request }) => {
     if (!session.current) return unauthorized();
-    const body = (await request.json()) as { name?: string };
+    const body = (await request.json()) as { name?: string; file_key?: string };
     const base = String(body.name ?? 'untitled')
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '');
+    const preuploaded = Boolean(body.file_key);
     return HttpResponse.json(
       {
         title_slug: base || 'untitled',
         title_uuid: 'mock-uuid',
         upload_url: null,
         expires_in_seconds: null,
-        file_key: null,
-        status: 'draft',
+        file_key: body.file_key ?? null,
+        status: preuploaded ? 'submitted' : 'draft',
         message: 'Submission received. Your title is now in review.',
       },
-      { status: 202 },
+      { status: preuploaded ? 201 : 202 },
     );
+  }),
+
+  http.get(`${API}/genres/`, () => {
+    if (!session.current) return unauthorized();
+    return HttpResponse.json([
+      { id: 1, name: 'Drama', slug: 'drama' },
+      { id: 2, name: 'Thriller', slug: 'thriller' },
+      { id: 3, name: 'Comedy', slug: 'comedy' },
+      { id: 4, name: 'Documentary', slug: 'documentary' },
+      { id: 5, name: 'Romance', slug: 'romance' },
+    ]);
   }),
 
   http.post(`${API}/production/titles/:slug/confirm-upload/`, ({ params }) => {

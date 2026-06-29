@@ -18,6 +18,9 @@ vi.mock('../../shared/apiHelpers', () => ({
     if (path === '/api/v1/countries/') {
       return Promise.resolve([{ id: 1, name: 'Nigeria' }]);
     }
+    if (path === '/api/v1/genres/') {
+      return Promise.resolve([{ id: 1, name: 'Drama' }]);
+    }
     if (path === '/api/v1/auth/me/') {
       return Promise.resolve({ profile: { production_company: { id: 1, name: 'EbonyLife' } } });
     }
@@ -123,7 +126,7 @@ describe('SubmitPage wizard', () => {
     fireEvent.click(screen.getByText('Save and continue'));
     await screen.findByPlaceholderText('As it appears on official documents');
 
-    const continueBtn = screen.getByText('Continue to upload').closest('button') as HTMLButtonElement;
+    const continueBtn = screen.getByText('Continue to review').closest('button') as HTMLButtonElement;
     // Submitter name empty and consent unticked.
     expect(continueBtn.disabled).toBe(true);
 

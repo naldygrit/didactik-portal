@@ -9,7 +9,9 @@ import { Step1Metadata } from '../components/submission/Step1Metadata';
 import { Step2Submitter } from '../components/submission/Step2Submitter';
 import { LicensingPreference } from '../components/submission/LicensingPreference';
 import { Step3Consent } from '../components/submission/Step3Consent';
-import { Step4Upload } from '../components/submission/Step4Upload';
+import { FileUploadField, type UploadState } from '../components/submission/FileUploadField';
+import { apiPost } from '../../shared/apiHelpers';
+import type { TitleUploadInitiatedResponse } from '../../shared/types';
 import { useState } from 'react';
 
 // ---------------------------------------------------------------------------
@@ -74,8 +76,8 @@ const STEPS = [
   {
     title: 'Title details',
     rail: 'Title details',
-    desc: 'Name, type, year',
-    help: 'Tell us what the title is. You can refine any of this after submitting.',
+    desc: 'File, name, languages',
+    help: 'Choose your master file (it uploads in the background) and tell us what the title is. You can refine any of this after submitting.',
   },
   {
     title: 'Rights & consent',
@@ -84,10 +86,10 @@ const STEPS = [
     help: 'Confirm you can license this title and accept the terms. We review every submission before it goes live to broadcasters.',
   },
   {
-    title: 'Upload files',
-    rail: 'Upload',
-    desc: 'Master and screener',
-    help: 'Upload your master and a screener. Large files upload directly to storage and bypass our servers, so an unreliable connection is fine.',
+    title: 'Review & submit',
+    rail: 'Review',
+    desc: 'Confirm and submit',
+    help: 'Your file uploads while you work. Once it finishes, submit for review.',
   },
 ];
 
@@ -132,6 +134,93 @@ export function ProductionSubmitPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.email]);
+
+  // Upload-first: the master streams to storage in the background as soon as it
+  // is chosen, so it is usually finished by the time the form is.
+  const [upload, setUpload] = useState<UploadState>({ status: 'idle' });
+  const [submitState, setSubmitState] = useState<
+    | { kind: 'idle' }
+    | { kind: 'submitting' }
+    | { kind: 'success'; message: string }
+    | { kind: 'error'; message: string }
+  >({ kind: 'idle' });
+
+  async function startUpload(file: File) {
+    setUpload({ status: 'uploading', percent: 0, file });
+    try {
+      const { data, status } = await apiPost<{ upload_url: string | null; file_key: string }>(
+        '/api/v1/production/titles/upload-url/',
+        { filename: file.name, content_type: file.type || 'application/octet-stream' },
+      );
+      if (status !== 200) throw new Error('Could not start the upload.');
+      if (!data.upload_url) {
+        // Mock mode (or a backend without B2): treat as already uploaded.
+        setUpload({ status: 'done', fileKey: data.file_key, file });
+        return;
+      }
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('PUT', data.upload_url as string);
+        xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+        xhr.upload.addEventListener('progress', (e) => {
+          if (e.lengthComputable) {
+            setUpload({ status: 'uploading', percent: Math.round((e.loaded / e.total) * 100), file });
+          }
+        });
+        xhr.addEventListener('load', () =>
+          xhr.status >= 200 && xhr.status < 300
+            ? resolve()
+            : reject(new Error(`Upload failed (${xhr.status}).`)),
+        );
+        xhr.addEventListener('error', () => reject(new Error('Network error during upload.')));
+        xhr.send(file);
+      });
+      setUpload({ status: 'done', fileKey: data.file_key, file });
+    } catch (e) {
+      setUpload({ status: 'error', message: e instanceof Error ? e.message : 'Upload failed.', file });
+    }
+  }
+
+  async function handleFinalSubmit() {
+    if (upload.status !== 'done') return;
+    if (!(await methods.trigger())) return;
+    setSubmitState({ kind: 'submitting' });
+    const d = methods.getValues();
+    const payload = {
+      name: d.name,
+      original_title: d.original_title ?? '',
+      title_type: d.title_type,
+      production_year: d.production_year,
+      runtime_minutes: Number.isNaN(d.runtime_minutes) ? undefined : d.runtime_minutes ?? undefined,
+      logline: d.logline ?? '',
+      synopsis: d.synopsis,
+      original_language: d.original_language,
+      dialogue_languages: d.dialogue_languages ?? [],
+      country_of_origin: d.country_of_origin,
+      co_production_countries: d.co_production_countries ?? [],
+      genres: d.genres ?? [],
+      licensing_intent: d.licensing_preference,
+      submitter_name: d.submitter_name,
+      submitter_contact: d.submitter_contact,
+      consented: true,
+      filename: upload.file.name,
+      content_type: upload.file.type || 'application/octet-stream',
+      file_key: upload.fileKey,
+    };
+    try {
+      const { data, status } = await apiPost<TitleUploadInitiatedResponse>(
+        '/api/v1/production/titles/initiate-upload/',
+        payload,
+      );
+      if (status >= 200 && status < 300) {
+        setSubmitState({ kind: 'success', message: data.message });
+      } else {
+        setSubmitState({ kind: 'error', message: 'Submission failed. Please try again.' });
+      }
+    } catch {
+      setSubmitState({ kind: 'error', message: 'Submission failed. Please try again.' });
+    }
+  }
 
   async function handleNext() {
     if (step === 3) return;
@@ -216,7 +305,13 @@ export function ProductionSubmitPage() {
               <p className="mb-5 mt-0.5 text-sm text-gray-500">{current.help}</p>
 
               <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-                {step === 1 && <Step1Metadata />}
+                {step === 1 && (
+                  <div className="space-y-6">
+                    <FileUploadField upload={upload} onPick={startUpload} />
+                    <div className="border-t border-gray-100" />
+                    <Step1Metadata />
+                  </div>
+                )}
                 {step === 2 && (
                   <div className="space-y-6">
                     <Step2Submitter />
@@ -226,7 +321,70 @@ export function ProductionSubmitPage() {
                     <Step3Consent />
                   </div>
                 )}
-                {step === 3 && <Step4Upload formData={methods.getValues()} onBack={handleBack} />}
+                {step === 3 &&
+                  (submitState.kind === 'success' ? (
+                    <div className="space-y-3 py-6 text-center">
+                      <div className="text-4xl">✓</div>
+                      <h3 className="text-lg font-semibold text-gray-900">Submission received</h3>
+                      <p className="mx-auto max-w-sm text-sm text-gray-600">{submitState.message}</p>
+                      <a
+                        href="/portal/production/assets"
+                        className="mt-2 inline-block rounded-md px-5 py-2 text-sm font-medium text-white"
+                        style={{ backgroundColor: BRAND }}
+                      >
+                        View your catalogue
+                      </a>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {upload.status === 'done' && (
+                        <p className="text-sm text-emerald-600">
+                          Your master finished uploading. Submit when you are ready.
+                        </p>
+                      )}
+                      {upload.status === 'uploading' && (
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-xs text-gray-500">
+                            <span>Finishing the upload…</span>
+                            <span>{upload.percent}%</span>
+                          </div>
+                          <div className="h-2 w-full rounded-full bg-gray-200">
+                            <div
+                              className="h-2 rounded-full transition-all duration-150"
+                              style={{ width: `${upload.percent}%`, backgroundColor: BRAND }}
+                            />
+                          </div>
+                          <p className="text-xs text-gray-500">You can submit once it completes.</p>
+                        </div>
+                      )}
+                      {(upload.status === 'idle' || upload.status === 'error') && (
+                        <p className="text-sm text-amber-600">
+                          Go back to step 1 and choose your master file before submitting.
+                        </p>
+                      )}
+                      {submitState.kind === 'error' && (
+                        <p className="text-sm text-red-600">{submitState.message}</p>
+                      )}
+                      <div className="flex items-center justify-between border-t border-gray-100 pt-4">
+                        <button
+                          type="button"
+                          onClick={handleBack}
+                          className="text-sm font-medium text-gray-500 transition-colors hover:text-gray-800"
+                        >
+                          Back
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleFinalSubmit}
+                          disabled={upload.status !== 'done' || submitState.kind === 'submitting'}
+                          className="rounded-lg px-5 py-2 text-sm font-semibold text-white transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                          style={{ backgroundColor: BRAND }}
+                        >
+                          {submitState.kind === 'submitting' ? 'Submitting…' : 'Submit for review'}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
 
                 {step < 3 && (
                   <div className="mt-8 flex items-center justify-between border-t border-gray-100 pt-4">
@@ -245,7 +403,7 @@ export function ProductionSubmitPage() {
                       className="rounded-lg px-5 py-2 text-sm font-semibold text-white transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                       style={{ backgroundColor: BRAND }}
                     >
-                      {step === 2 ? 'Continue to upload' : 'Save and continue'}
+                      {step === 2 ? 'Continue to review' : 'Save and continue'}
                     </button>
                   </div>
                 )}

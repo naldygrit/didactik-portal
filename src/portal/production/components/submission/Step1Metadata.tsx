@@ -51,13 +51,21 @@ export function Step1Metadata() {
     queryKey: ['countries'],
     queryFn: () => apiGet<Country[]>('/api/v1/countries/'),
   });
+  const { data: genres } = useQuery<{ id: number; name: string }[]>({
+    queryKey: ['genres'],
+    queryFn: () => apiGet<{ id: number; name: string }[]>('/api/v1/genres/'),
+  });
 
   const dialogue = watch('dialogue_languages') ?? [];
   const coCountries = watch('co_production_countries') ?? [];
+  const genreIds = watch('genres') ?? [];
   const originalLanguage = watch('original_language');
   const countryOfOrigin = watch('country_of_origin');
 
-  function toggle(field: 'dialogue_languages' | 'co_production_countries', id: number) {
+  function toggle(
+    field: 'dialogue_languages' | 'co_production_countries' | 'genres',
+    id: number,
+  ) {
     const current = (watch(field) ?? []) as number[];
     setValue(
       field,
@@ -220,6 +228,22 @@ export function Step1Metadata() {
                 onClick={() => toggle('co_production_countries', c.id)}
               />
             ))}
+        </div>
+      </div>
+
+      <div>
+        <label className="mb-1 block text-sm font-medium text-gray-700">
+          Genres <span className="text-gray-400 text-xs">(optional)</span>
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {(genres ?? []).map((g) => (
+            <Chip
+              key={g.id}
+              label={g.name}
+              active={genreIds.includes(g.id)}
+              onClick={() => toggle('genres', g.id)}
+            />
+          ))}
         </div>
       </div>
     </div>
