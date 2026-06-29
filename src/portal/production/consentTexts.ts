@@ -14,13 +14,13 @@ interface ConsentEntry {
 
 export const CONSENT_TEXTS: Record<JurisdictionalBasis, ConsentEntry> = {
   ndpa_section_43: {
-    version: 'data_transfer_ndpa_v2_2026_05',
+    version: 'data_transfer_ndpa_v3_2026_06',
     text: `DATA TRANSFER CONSENT NOTICE
-Nigeria Data Protection Act 2023 — Section 43(1)(a) Derogation
+Nigeria Data Protection Act 2023, Section 43(1)(a) Derogation
 
-Didactik Media Limited ("Didactik") is a data controller under the Nigeria Data Protection Act 2023 (NDPA). When you submit content through this platform, personal data — including your name, contact details, and submission metadata — will be transferred to and stored on servers operated by Backblaze, Inc., a company incorporated in the United States of America.
+Didactik Media Limited ("Didactik") is a data controller under the Nigeria Data Protection Act 2023 (NDPA). When you submit content through this platform, personal data, including your name, contact details, and submission metadata, will be transferred to and stored on servers operated by Backblaze, Inc., a company incorporated in the United States of America.
 
-Section 41 of the NDPA restricts cross-border transfer of personal data from Nigeria unless the receiving country provides an adequate level of protection, or a derogation under Section 43 applies. The United States does not currently hold an adequacy decision from the Nigeria Data Protection Commission (NDPC) — either under an approved-country list (none has been published as of the date of this notice) or under any other NDPC adequacy determination. This transfer therefore relies on your explicit informed consent under Section 43(1)(a) of the NDPA.
+Section 41 of the NDPA restricts cross-border transfer of personal data from Nigeria unless the receiving country provides an adequate level of protection, or a derogation under Section 43 applies. The United States does not currently hold an adequacy decision from the Nigeria Data Protection Commission (NDPC), either under an approved-country list (none has been published as of the date of this notice) or under any other NDPC adequacy determination. This transfer therefore relies on your explicit informed consent under Section 43(1)(a) of the NDPA.
 
 STATUTORY RISK DISCLOSURE (required by NDPA Section 43): By consenting, you acknowledge that your personal data is being transferred to a country that has not received an NDPC adequacy decision, and that your personal data may not receive the same level of protection in the United States as it would under Nigerian law. You have the right to withdraw this consent at any time by contacting privacy@didactikmedia.com. Withdrawal does not affect the lawfulness of any transfer made before the withdrawal, but you will no longer be able to submit content through this platform if you withdraw.
 
@@ -30,9 +30,9 @@ Purpose: archival storage of your submitted audiovisual content.
 Retention: until you request deletion or your submission is removed from the archive. Contact privacy@didactikmedia.com to exercise your data subject rights.
 Full privacy policy: didactikmedia.com/privacy
 
-NIGERIAN COPYRIGHT ACT 2022 NOTICE: Under the Nigerian Copyright Act 2022, certain uses of copyrighted works are permitted by statute without requiring the copyright owner's consent. Fair dealing exceptions for educational purposes (Sections 21–24) — including use by educational establishments for instruction, examination, and non-commercial broadcast recording — are automatic statutory rights that operate independently of any licence you grant. The Act also provides compulsory licensing mechanisms (Sections 31–35), which allow the Nigerian Copyright Commission to authorise translation and reproduction of works for educational and public-interest purposes following a formal application process. Granting Didactik a licence to distribute and act on your behalf does not diminish or waive any of these statutory provisions. Didactik does not invoke fair dealing exceptions or compulsory licensing provisions in its routine commercial licensing operations.
+NIGERIAN COPYRIGHT ACT 2022 NOTICE: Under the Nigerian Copyright Act 2022, certain uses of copyrighted works are permitted by statute without requiring the copyright owner's consent. Fair dealing exceptions for educational purposes (Sections 21–24), including use by educational establishments for instruction, examination, and non-commercial broadcast recording, are automatic statutory rights that operate independently of any licence you grant. The Act also provides compulsory licensing mechanisms (Sections 31–35), which allow the Nigerian Copyright Commission to authorise translation and reproduction of works for educational and public-interest purposes following a formal application process. Granting Didactik a licence to distribute and act on your behalf does not diminish or waive any of these statutory provisions. Didactik does not invoke fair dealing exceptions or compulsory licensing provisions in its routine commercial licensing operations.
 
-By checking the box below, you explicitly and freely consent to the transfer of your personal data outside Nigeria on the basis of Section 43(1)(a) of the Nigeria Data Protection Act 2023. This consent is voluntary — you may decline without penalty other than being unable to submit content through this platform.`,
+By checking the box below, you explicitly and freely consent to the transfer of your personal data outside Nigeria on the basis of Section 43(1)(a) of the Nigeria Data Protection Act 2023. This consent is voluntary. You may decline without penalty other than being unable to submit content through this platform.`,
   },
 
   popia_section_72: {
@@ -125,5 +125,5 @@ By checking the box below, you acknowledge this disclosure and provide provision
 // licensing (licensing_preference 'international' or 'both'). Mirror of
 // consent_texts.INTERNATIONAL_LICENSEE_ADDENDUM in the backend, shown so the
 // filmmaker reads exactly what the backend will snapshot into the Consent record.
-export const INTERNATIONAL_LICENSEE_ADDENDUM = `INTERNATIONAL LICENSING — ADDITIONAL TRANSFER PURPOSE
+export const INTERNATIONAL_LICENSEE_ADDENDUM = `INTERNATIONAL LICENSING: ADDITIONAL TRANSFER PURPOSE
 You have asked Didactik to license this title to streaming services and broadcasters outside your country. To negotiate and administer those licences, your contact details and submission metadata may also be shared with prospective and contracting licensees located outside your country, some of which may be in countries that do not hold an adequacy decision for cross-border personal data transfer. This sharing relies on the same explicit-consent basis set out above. You may change your licensing preference or withdraw this consent at any time by contacting privacy@didactikmedia.com; withdrawal does not affect any licence already concluded before the withdrawal.`;

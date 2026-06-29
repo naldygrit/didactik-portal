@@ -132,6 +132,9 @@ export function ProductionSubmitPage() {
   }
 
   const current = STEPS[step - 1];
+  // The Rights & consent step cannot be left until the consent box is ticked.
+  const consented = methods.watch('consented');
+  const nextBlocked = step === 2 && !consented;
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -219,7 +222,8 @@ export function ProductionSubmitPage() {
                     <button
                       type="button"
                       onClick={handleNext}
-                      className="rounded-lg px-5 py-2 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
+                      disabled={nextBlocked}
+                      className="rounded-lg px-5 py-2 text-sm font-semibold text-white transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                       style={{ backgroundColor: BRAND }}
                     >
                       {step === 2 ? 'Continue to upload' : 'Save and continue'}

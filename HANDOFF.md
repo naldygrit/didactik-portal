@@ -25,7 +25,7 @@ authenticated portal app.
   then a NORMAL reload (F5, not Ctrl+Shift+R) so the worker registers. If still
   stale: `npx msw init public/ --save`. For reload-heavy QA prefer real mode —
   the httpOnly refresh cookie keeps you logged in across reloads.
-- **Verify:** `npx tsc -b --noEmit` and `npx vitest run` (currently 85 passing).
+- **Verify:** `npx tsc -b --noEmit` and `npx vitest run` (currently 86 passing).
 
 ## State of the three portals
 - **Broadcaster** (Netflix dark skin, KEEP): migrated off the legacy auction/Asset
@@ -130,6 +130,8 @@ all scoped under `.portal-control`. `PortalLayout` picks theme by path PREFIX
   (the established sidebar query-sync pattern; eslint still exits 0).
 
 ## Recent commits (newest first)
+- `feat(production)` "Continue to upload" is disabled until the consent box is
+  ticked. Removed em dashes from the NDPA consent text mirror (copy bench).
 - `feat(production)` licensing-destination on the filmmaker upload: a "Where would
   you like this licensed?" radio (Nigerian / international / Both [Recommended]) in
   the Rights & consent step. International/both appends the international-licensee

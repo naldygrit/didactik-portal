@@ -18,6 +18,12 @@ vi.mock('../../shared/apiHelpers', () => ({
     if (path === '/api/v1/countries/') {
       return Promise.resolve([{ id: 1, name: 'Nigeria' }]);
     }
+    if (path === '/api/v1/auth/me/') {
+      return Promise.resolve({ profile: { production_company: { id: 1, name: 'EbonyLife' } } });
+    }
+    if (path.startsWith('/api/v1/production-companies/')) {
+      return Promise.resolve({ id: 1, name: 'EbonyLife', country: { code: 'NG' } });
+    }
     return Promise.resolve({});
   }),
   apiPost: vi.fn(),
@@ -111,15 +117,29 @@ describe('SubmitPage wizard', () => {
     await screen.findByPlaceholderText('As it appears on official documents');
   });
 
+  it('keeps Continue to upload disabled until consent is ticked', async () => {
+    render(<ProductionSubmitPage />, { wrapper: Wrapper });
+    await fillStep1Valid();
+    fireEvent.click(screen.getByText('Save and continue'));
+    await screen.findByPlaceholderText('As it appears on official documents');
+
+    const continueBtn = screen.getByText('Continue to upload').closest('button') as HTMLButtonElement;
+    expect(continueBtn.disabled).toBe(true);
+    fireEvent.click(await screen.findByRole('checkbox'));
+    expect(continueBtn.disabled).toBe(false);
+  });
+
   it('blocks advance from the consent step when submitter name is empty', async () => {
     render(<ProductionSubmitPage />, { wrapper: Wrapper });
     await fillStep1Valid();
     fireEvent.click(screen.getByText('Save and continue'));
     await screen.findByPlaceholderText('As it appears on official documents');
 
-    const nameInput = screen.getByPlaceholderText('As it appears on official documents');
-    fireEvent.change(nameInput, { target: { value: '' } });
-
+    // Consent must be ticked before the step can be left.
+    fireEvent.click(await screen.findByRole('checkbox'));
+    fireEvent.change(screen.getByPlaceholderText('As it appears on official documents'), {
+      target: { value: '' },
+    });
     fireEvent.click(screen.getByText('Continue to upload'));
 
     await waitFor(() => {
