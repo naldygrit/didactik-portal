@@ -77,12 +77,20 @@ export function PortalLayout() {
                 Browse
               </NavLink>
               <NavLink
-                to="/portal/broadcaster/licenses"
+                to="/portal/broadcaster/watchlist"
                 className={({ isActive }) =>
                   isActive ? 'text-white' : 'text-[var(--muted)] transition-colors hover:text-white'
                 }
               >
-                My activity
+                Watchlist
+              </NavLink>
+              <NavLink
+                to="/portal/broadcaster/screeners"
+                className={({ isActive }) =>
+                  isActive ? 'text-white' : 'text-[var(--muted)] transition-colors hover:text-white'
+                }
+              >
+                Screeners
               </NavLink>
             </nav>
           </div>

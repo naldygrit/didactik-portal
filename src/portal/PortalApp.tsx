@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './shared/AuthContext';
 import { ProtectedRoute } from './shared/ProtectedRoute';
@@ -10,7 +10,8 @@ import { queryClient } from './shared/queryClient';
 import { BroadcasterDashboardPage } from './broadcaster/pages/DashboardPage';
 import { BroadcasterDiscoverPage } from './broadcaster/pages/DiscoverPage';
 import { BroadcasterAssetDetailPage } from './broadcaster/pages/AssetDetailPage';
-import { BroadcasterLicensesPage } from './broadcaster/pages/LicensesPage';
+import { BroadcasterWatchlistPage } from './broadcaster/pages/WatchlistPage';
+import { BroadcasterScreenerRequestsPage } from './broadcaster/pages/ScreenerRequestsPage';
 import { BroadcasterOnboardingPage } from './broadcaster/pages/OnboardingPage';
 import { ProductionDashboardPage } from './production/pages/DashboardPage';
 import { ProductionAssetsPage } from './production/pages/AssetsPage';
@@ -119,12 +120,25 @@ function PortalRoutes() {
           }
         />
         <Route
-          path="broadcaster/licenses"
+          path="broadcaster/watchlist"
           element={
             <ProtectedRoute isAllowed={isBC}>
-              <BroadcasterLicensesPage />
+              <BroadcasterWatchlistPage />
             </ProtectedRoute>
           }
+        />
+        <Route
+          path="broadcaster/screeners"
+          element={
+            <ProtectedRoute isAllowed={isBC}>
+              <BroadcasterScreenerRequestsPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* Legacy combined "My activity" path → watchlist. */}
+        <Route
+          path="broadcaster/licenses"
+          element={<Navigate to="/portal/broadcaster/watchlist" replace />}
         />
         <Route
           path="broadcaster/onboarding"

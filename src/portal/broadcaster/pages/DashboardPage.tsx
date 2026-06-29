@@ -92,9 +92,9 @@ function ActivityStrip({ dashboard }: { dashboard: BroadcasterDashboard }) {
   const byStatus = dashboard.activity.screener_requests_by_status;
   const items: { label: string; value: number; to: string; tone: string }[] = [
     { label: 'New in your territories', value: dashboard.rights_opening_soon.length, to: '/portal/broadcaster/discover', tone: '#22c55e' },
-    { label: 'On your watchlist', value: dashboard.activity.watchlist_count, to: '/portal/broadcaster/licenses', tone: 'var(--accent-2)' },
-    { label: 'Pending screeners', value: byStatus.pending ?? 0, to: '/portal/broadcaster/licenses', tone: '#f59e0b' },
-    { label: 'Active screeners', value: (byStatus.approved ?? 0) + (byStatus.accessed ?? 0), to: '/portal/broadcaster/licenses', tone: '#22c55e' },
+    { label: 'On your watchlist', value: dashboard.activity.watchlist_count, to: '/portal/broadcaster/watchlist', tone: 'var(--accent-2)' },
+    { label: 'Pending screeners', value: byStatus.pending ?? 0, to: '/portal/broadcaster/screeners', tone: '#f59e0b' },
+    { label: 'Active screeners', value: (byStatus.approved ?? 0) + (byStatus.accessed ?? 0), to: '/portal/broadcaster/screeners', tone: '#22c55e' },
   ];
   return (
     <div className="flex flex-wrap gap-x-6 gap-y-2 border-b border-white/5 bg-[var(--surface-raised)]/60 px-4 py-3 md:px-8">
