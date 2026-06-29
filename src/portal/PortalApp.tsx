@@ -23,6 +23,7 @@ import { AdminScreenerQueuePage } from './admin/pages/ScreenerQueuePage';
 import { AdminLibraryPage } from './admin/pages/LibraryPage';
 import { AdminProductionCompaniesPage } from './admin/pages/ProductionCompaniesPage';
 import { AdminBroadcastersPage } from './admin/pages/BroadcastersPage';
+import { AdminPlaceholderPage } from './admin/pages/PlaceholderPage';
 
 function PortalRoutes() {
   const { user } = useAuth();
@@ -172,6 +173,50 @@ function PortalRoutes() {
           element={
             <ProtectedRoute isAllowed={isAdmin}>
               <AdminBroadcastersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="admin/assets"
+          element={
+            <ProtectedRoute isAllowed={isAdmin}>
+              <AdminPlaceholderPage
+                title="Unvalidated assets"
+                description="Assets awaiting QC review before their titles can go active."
+              />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="admin/analytics"
+          element={
+            <ProtectedRoute isAllowed={isAdmin}>
+              <AdminPlaceholderPage
+                title="Analytics"
+                description="Platform-wide trends across content, screeners, and rights."
+              />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="admin/storage"
+          element={
+            <ProtectedRoute isAllowed={isAdmin}>
+              <AdminPlaceholderPage
+                title="Storage"
+                description="Master and proxy storage usage across the archive."
+              />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="admin/events"
+          element={
+            <ProtectedRoute isAllowed={isAdmin}>
+              <AdminPlaceholderPage
+                title="Event log"
+                description="Append-only audit trail of every state-changing action."
+              />
             </ProtectedRoute>
           }
         />

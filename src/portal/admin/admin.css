@@ -107,11 +107,19 @@
 }
 
 /* KPI grid */
+.portal-control .kpi-row-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  margin: 4px 0 10px;
+}
 .portal-control .kpi-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 .portal-control .kpi {
   background: var(--surface-1);
@@ -757,4 +765,47 @@
   .portal-control .kpi-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+}
+
+/* Library bulk moderation */
+.portal-control .bulk-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-accent);
+  border: 0.5px solid var(--border-accent);
+  border-radius: var(--radius);
+  padding: 8px 14px;
+  margin-bottom: 12px;
+}
+.portal-control .bulk-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-accent);
+}
+.portal-control .bulk-clear {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.portal-control .bulk-clear:hover {
+  color: var(--text-primary);
+}
+.portal-control .lib-table .check-col {
+  width: 28px;
+  padding-right: 0;
+}
+
+/* Placeholder (in-development) section box */
+.portal-control .placeholder-box {
+  background: var(--surface-2);
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius);
+  padding: 40px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
 }

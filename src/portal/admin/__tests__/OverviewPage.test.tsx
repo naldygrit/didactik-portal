@@ -31,9 +31,9 @@ function renderPage() {
 describe('AdminOverviewPage', () => {
   it('renders the KPI grid and the triage queue from the dashboard', async () => {
     renderPage();
-    // KPI label (the panel card also uses "Screeners pending", so Titles is the
+    // KPI label (the panel card also uses "Screeners pending", so this is the
     // unambiguous KPI check).
-    expect(await screen.findByText('Titles')).toBeInTheDocument();
+    expect(await screen.findByText('Total titles')).toBeInTheDocument();
     expect(screen.getAllByText('Screeners pending').length).toBeGreaterThan(0);
     // A triage submission (lowest-score-first; Riverwood Nights is score 47).
     expect(await screen.findByText('Riverwood Nights')).toBeInTheDocument();

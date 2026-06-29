@@ -21,6 +21,7 @@ const STATUS_OPTIONS: TitleStatus[] = [
 export function AdminLibraryPage() {
   const [q, setQ] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | TitleStatus>('all');
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [searchParams, setSearchParams] = useSearchParams();
   const highlightSlug = searchParams.get('title');
   const queryClient = useQueryClient();
@@ -63,6 +64,26 @@ export function AdminLibraryPage() {
       if (!note.trim()) return;
     }
     changeStatus.mutate({ slug: title.slug, status: next, note });
+  }
+
+  // Bulk moderation across the selected rows.
+  function bulkApprove() {
+    selected.forEach((slug) => changeStatus.mutate({ slug, status: 'approved' }));
+    setSelected(new Set());
+  }
+  function bulkRequestChanges() {
+    const note = window.prompt('What changes should the producers make? (applied to all selected)');
+    if (!note || !note.trim()) return;
+    selected.forEach((slug) => changeStatus.mutate({ slug, status: 'changes_requested', note }));
+    setSelected(new Set());
+  }
+  function toggleRow(slug: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(slug)) next.delete(slug);
+      else next.add(slug);
+      return next;
+    });
   }
 
   const rows = (data ?? []).filter((t) => {
@@ -142,10 +163,39 @@ export function AdminLibraryPage() {
         </div>
       )}
 
+      {selected.size > 0 && (
+        <div className="bulk-bar">
+          <span className="bulk-count">{selected.size} selected</span>
+          <button type="button" className="btn-sm btn-primary" onClick={bulkApprove}>
+            Approve all
+          </button>
+          <button type="button" className="btn-sm" onClick={bulkRequestChanges}>
+            Request changes
+          </button>
+          <button
+            type="button"
+            className="bulk-clear"
+            onClick={() => setSelected(new Set())}
+          >
+            Clear
+          </button>
+        </div>
+      )}
+
       {rows.length > 0 && (
         <table className="lib-table">
           <thead>
             <tr>
+              <th className="check-col">
+                <input
+                  type="checkbox"
+                  aria-label="Select all"
+                  checked={selected.size === rows.length && rows.length > 0}
+                  onChange={(e) =>
+                    setSelected(e.target.checked ? new Set(rows.map((t) => t.slug)) : new Set())
+                  }
+                />
+              </th>
               <th>Title</th>
               <th>Producer</th>
               <th>Score</th>
@@ -164,8 +214,20 @@ export function AdminLibraryPage() {
               return (
                 <tr
                   key={t.slug}
-                  style={highlightSlug === t.slug ? { background: 'var(--surface-2)' } : undefined}
+                  style={
+                    selected.has(t.slug) || highlightSlug === t.slug
+                      ? { background: 'var(--surface-2)' }
+                      : undefined
+                  }
                 >
+                  <td className="check-col">
+                    <input
+                      type="checkbox"
+                      aria-label={`Select ${t.name}`}
+                      checked={selected.has(t.slug)}
+                      onChange={() => toggleRow(t.slug)}
+                    />
+                  </td>
                   <td>
                     <div style={{ fontWeight: 500, fontSize: 12 }}>{t.name}</div>
                     <div className="title-type">

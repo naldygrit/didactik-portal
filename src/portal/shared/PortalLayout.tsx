@@ -12,6 +12,11 @@ import {
   FiVideo,
   FiRadio,
   FiShield,
+  FiAlertTriangle,
+  FiUploadCloud,
+  FiTrendingUp,
+  FiDatabase,
+  FiList,
 } from 'react-icons/fi';
 import { useAuth } from './AuthContext';
 import { postLogout } from './auth';
@@ -232,6 +237,8 @@ function AdminSidebarNav() {
   });
 
   const underReview = dash?.content.by_status.under_review ?? 0;
+  const changesRequested = dash?.content.by_status.changes_requested ?? 0;
+  const unvalidatedAssets = dash?.assets.unvalidated ?? 0;
   const pendingScreeners = dash?.screeners.pending_queue ?? 0;
   const pcs = orgs?.production_companies ?? [];
   const bcs = orgs?.broadcasters ?? [];
@@ -241,7 +248,7 @@ function AdminSidebarNav() {
 
   return (
     <>
-      <NavGroup label="Platform">
+      <NavGroup>
         <NavItem to="/portal/admin/overview" label="Overview" Icon={FiGrid} />
       </NavGroup>
 
@@ -257,6 +264,20 @@ function AdminSidebarNav() {
           label="Under review"
           Icon={FiClock}
           badge={underReview || undefined}
+          tone="warn"
+        />
+        <NavItem
+          to="/portal/admin/library?status=changes_requested"
+          label="Changes requested"
+          Icon={FiAlertTriangle}
+          badge={changesRequested || undefined}
+          tone="danger"
+        />
+        <NavItem
+          to="/portal/admin/assets"
+          label="Unvalidated assets"
+          Icon={FiUploadCloud}
+          badge={unvalidatedAssets || undefined}
           tone="warn"
         />
       </NavGroup>
@@ -292,14 +313,20 @@ function AdminSidebarNav() {
           tone="warn"
         />
       </NavGroup>
+
+      <NavGroup label="Platform">
+        <NavItem to="/portal/admin/analytics" label="Analytics" Icon={FiTrendingUp} />
+        <NavItem to="/portal/admin/storage" label="Storage" Icon={FiDatabase} />
+        <NavItem to="/portal/admin/events" label="Event log" Icon={FiList} />
+      </NavGroup>
     </>
   );
 }
 
-function NavGroup({ label, children }: { label: string; children: ReactNode }) {
+function NavGroup({ label, children }: { label?: string; children: ReactNode }) {
   return (
     <div className="nav-group">
-      <div className="nav-label">{label}</div>
+      {label && <div className="nav-label">{label}</div>}
       {children}
     </div>
   );

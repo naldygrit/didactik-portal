@@ -55,6 +55,8 @@ export function AdminOverviewPage() {
 
   const triage = data?.triage_queue ?? [];
   const byStatus = data?.content.by_status ?? {};
+  const screenerByStatus = data?.screeners.by_status ?? {};
+  const screenersApproved = (screenerByStatus.approved ?? 0) + (screenerByStatus.accessed ?? 0);
   const pendingScreeners = (screeners ?? []).filter((r) => r.status === 'pending');
   const overdueScreeners = pendingScreeners.filter((r) => hoursSince(r.requested_at) > 48).length;
 
@@ -88,11 +90,24 @@ export function AdminOverviewPage() {
         <div className="page-sub">Platform health and the work waiting on you</div>
       </div>
 
-      {/* 6-up KPI grid. Deltas are only shown where a real sub-line exists. */}
+      {/* Content pipeline — every status, so triage state reads at a glance. */}
+      <div className="kpi-row-label">Content pipeline</div>
       <div className="kpi-grid">
-        <Kpi label="Titles" value={data?.content.total_titles} />
-        <Kpi label="Active" value={data?.content.active} />
-        <Kpi label="Under review" value={byStatus.under_review ?? 0} />
+        <Kpi label="Total titles" value={data?.content.total_titles} />
+        <Kpi label="Active" value={byStatus.active ?? 0} />
+        <Kpi label="Under review" value={byStatus.under_review ?? 0} primary={(byStatus.under_review ?? 0) > 0} />
+        <Kpi
+          label="Changes requested"
+          value={byStatus.changes_requested ?? 0}
+          primary={(byStatus.changes_requested ?? 0) > 0}
+        />
+        <Kpi label="Approved" value={byStatus.approved ?? 0} delta="awaiting activation" />
+        <Kpi label="Drafts" value={byStatus.draft ?? 0} small />
+      </div>
+
+      {/* Engagement & organisations. Deltas only where a real sub-line exists. */}
+      <div className="kpi-row-label">Engagement &amp; organisations</div>
+      <div className="kpi-grid">
         <Kpi
           label="Screeners pending"
           value={data?.screeners.pending_queue}
@@ -100,12 +115,15 @@ export function AdminOverviewPage() {
           deltaTone="danger"
           primary
         />
+        <Kpi label="Screeners approved" value={screenersApproved} />
+        <Kpi label="Production cos" value={data?.organisations.production_companies} />
+        <Kpi label="Broadcasters" value={data?.organisations.broadcasters} />
         <Kpi
-          label="Unvalidated assets"
-          value={data?.assets.unvalidated}
-          delta={(data?.assets.unvalidated ?? 0) > 0 ? 'action needed' : undefined}
+          label="Awaiting verify"
+          value={unverified.length}
+          delta={unverified.length > 0 ? 'action needed' : undefined}
           deltaTone="warn"
-          primary
+          primary={unverified.length > 0}
         />
         <Kpi
           label="Storage"
