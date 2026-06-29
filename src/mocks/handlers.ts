@@ -358,6 +358,13 @@ export const handlers = [
     ]);
   }),
 
+  http.post(`${API}/production/titles/:slug/credits/`, async ({ request }) => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({ id: 999, role_display: '', ...body }, { status: 201 });
+  }),
+
   http.get(`${API}/production/titles/:slug/interest/`, () => {
     const user = session.current;
     if (!user) return unauthorized();

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { apiGet, apiPost, apiDelete } from '../../shared/apiHelpers';
 import { TitleStatusBadge } from '../components/TitleStatusBadge';
 import { ScoreRing } from '../components/ScoreRing';
@@ -163,7 +163,7 @@ export function ProductionAssetDetailPage() {
       </div>
 
       {panel === 'metadata' && <MetadataPanel title={title} completeness={completeness} />}
-      {panel === 'credits' && <CreditsPanel credits={title.credits ?? []} />}
+      {panel === 'credits' && <CreditsPanel credits={title.credits ?? []} slug={title.slug} qc={qc} />}
       {panel === 'assets' && <AssetsPanel slug={title.slug} />}
       {panel === 'rights' && <RightsWindowsPanel titleSlug={title.slug} qc={qc} />}
       {panel === 'interest' && <InterestPanel slug={title.slug} />}
@@ -354,9 +354,20 @@ function InterestPanel({ slug }: { slug: string }) {
 }
 
 // ── Credits panel ────────────────────────────────────────────────────────────
-// Wired to the real Credit records (PBCore contributorRole), grouped by craft.
-// "Add credit" stays disabled until a production write endpoint exists.
+// Wired to the real Credit records (PBCore contributorRole), grouped by craft,
+// with an inline add form (POST .../credits/) and per-row remove.
 const CREDIT_GROUP_ORDER = ['Direction', 'Cast', 'Producing', 'Crew'];
+const CREDIT_ROLES: [string, string][] = [
+  ['director', 'Director'],
+  ['producer', 'Producer'],
+  ['writer', 'Writer'],
+  ['lead_cast', 'Lead Cast'],
+  ['supporting_cast', 'Supporting Cast'],
+  ['cinematographer', 'Cinematographer'],
+  ['editor', 'Editor'],
+  ['composer', 'Composer'],
+  ['other', 'Other'],
+];
 
 function creditGroup(role: string): string {
   if (role === 'director') return 'Direction';
@@ -374,7 +385,28 @@ function initials(name: string): string {
     .join('');
 }
 
-function CreditsPanel({ credits }: { credits: Credit[] }) {
+function CreditsPanel({
+  credits,
+  slug,
+  qc,
+}: {
+  credits: Credit[];
+  slug: string;
+  qc: QueryClient;
+}) {
+  const [adding, setAdding] = useState(false);
+  const [form, setForm] = useState({ name: '', role: 'director', character: '' });
+
+  const addCredit = useMutation({
+    mutationFn: (body: { name: string; role: string; character: string }) =>
+      apiPost(`/api/v1/production/titles/${slug}/credits/`, { ...body, order: credits.length }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['production-title', slug] });
+      setForm({ name: '', role: 'director', character: '' });
+      setAdding(false);
+    },
+  });
+
   const grouped = new Map<string, Credit[]>();
   for (const c of [...credits].sort((a, b) => a.order - b.order)) {
     const g = creditGroup(c.role);
@@ -390,13 +422,55 @@ function CreditsPanel({ credits }: { credits: Credit[] }) {
         <h2 className="text-sm font-bold text-gray-900">Production credits</h2>
         <button
           type="button"
-          disabled
-          title="Editing credits is coming soon"
-          className="cursor-not-allowed rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-400"
+          onClick={() => setAdding((v) => !v)}
+          className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50"
         >
-          Add credit
+          {adding ? 'Cancel' : 'Add credit'}
         </button>
       </div>
+
+      {adding && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (form.name.trim()) addCredit.mutate(form);
+          }}
+          className="mb-4 flex flex-wrap items-end gap-2 rounded-xl border border-gray-200 bg-gray-50 p-3"
+        >
+          <input
+            value={form.name}
+            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+            placeholder="Name"
+            required
+            className="flex-1 rounded-md border border-gray-300 px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-400"
+          />
+          <select
+            value={form.role}
+            onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
+            className="rounded-md border border-gray-300 px-2.5 py-1.5 text-sm"
+          >
+            {CREDIT_ROLES.map(([v, l]) => (
+              <option key={v} value={v}>
+                {l}
+              </option>
+            ))}
+          </select>
+          <input
+            value={form.character}
+            onChange={(e) => setForm((f) => ({ ...f, character: e.target.value }))}
+            placeholder="Character (optional)"
+            className="rounded-md border border-gray-300 px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-400"
+          />
+          <button
+            type="submit"
+            disabled={addCredit.isPending}
+            className="rounded-md px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-60"
+            style={{ backgroundColor: BRAND }}
+          >
+            Add
+          </button>
+        </form>
+      )}
 
       {credits.length === 0 ? (
         <div className="rounded-xl border border-dashed border-gray-200 px-4 py-10 text-center">

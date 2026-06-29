@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
-import { apiGet } from '../../shared/apiHelpers';
+import { apiGet, apiPost } from '../../shared/apiHelpers';
 import { ageTone, relativeTime } from '../../shared/format';
 import type { AdminOrganisations, AdminProductionCompanyRow } from '../../shared/types';
 import { initials } from '../adminUi';
@@ -37,9 +37,15 @@ export function AdminProductionCompaniesPage() {
     unverified: 'Unverified',
   };
 
+  const qc = useQueryClient();
   const { data, isLoading } = useQuery<AdminOrganisations>({
     queryKey: ['admin-organisations'],
     queryFn: () => apiGet<AdminOrganisations>('/api/v1/admin/organisations/'),
+  });
+  const verify = useMutation({
+    mutationFn: (id: number) =>
+      apiPost(`/api/v1/admin/organisations/production_companies/${id}/verify/`, {}),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-organisations'] }),
   });
 
   const rows = (data?.production_companies ?? []).filter((c) => {
@@ -119,7 +125,7 @@ export function AdminProductionCompaniesPage() {
           </thead>
           <tbody>
             {rows.map((c) => (
-              <Row key={c.id} c={c} />
+              <Row key={c.id} c={c} onVerify={() => verify.mutate(c.id)} verifying={verify.isPending} />
             ))}
           </tbody>
         </table>
@@ -128,7 +134,15 @@ export function AdminProductionCompaniesPage() {
   );
 }
 
-function Row({ c }: { c: AdminProductionCompanyRow }) {
+function Row({
+  c,
+  onVerify,
+  verifying,
+}: {
+  c: AdminProductionCompanyRow;
+  onVerify: () => void;
+  verifying: boolean;
+}) {
   const verified = c.verification_status === 'verified';
   return (
     <tr>
@@ -182,7 +196,7 @@ function Row({ c }: { c: AdminProductionCompanyRow }) {
       <td>
         <div style={{ display: 'flex', gap: 4 }}>
           {!verified && (
-            <button type="button" className="btn-sm btn-primary" disabled title="Verification endpoint pending">
+            <button type="button" className="btn-sm btn-primary" onClick={onVerify} disabled={verifying}>
               Verify
             </button>
           )}
