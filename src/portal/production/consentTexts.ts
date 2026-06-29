@@ -120,3 +120,10 @@ Full privacy policy: didactikmedia.com/privacy
 By checking the box below, you acknowledge this disclosure and provide provisional consent to the transfer of your personal data as described above, pending Didactik's jurisdiction-specific compliance review.`,
   },
 };
+
+// Appended to the base consent text when the filmmaker chooses international
+// licensing (licensing_preference 'international' or 'both'). Mirror of
+// consent_texts.INTERNATIONAL_LICENSEE_ADDENDUM in the backend, shown so the
+// filmmaker reads exactly what the backend will snapshot into the Consent record.
+export const INTERNATIONAL_LICENSEE_ADDENDUM = `INTERNATIONAL LICENSING — ADDITIONAL TRANSFER PURPOSE
+You have asked Didactik to license this title to streaming services and broadcasters outside your country. To negotiate and administer those licences, your contact details and submission metadata may also be shared with prospective and contracting licensees located outside your country, some of which may be in countries that do not hold an adequacy decision for cross-border personal data transfer. This sharing relies on the same explicit-consent basis set out above. You may change your licensing preference or withdraw this consent at any time by contacting privacy@didactikmedia.com; withdrawal does not affect any licence already concluded before the withdrawal.`;

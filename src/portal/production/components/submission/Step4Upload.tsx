@@ -44,6 +44,7 @@ export function Step4Upload({ formData, onBack }: Props) {
         ? undefined
         : formData.production_year ?? undefined,
       description: formData.description ?? '',
+      licensing_preference: formData.licensing_preference,
       submitter_name: formData.submitter_name,
       submitter_contact: formData.submitter_contact,
       consented: true,

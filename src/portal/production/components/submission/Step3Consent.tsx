@@ -3,7 +3,7 @@ import { useFormContext } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
 import { apiGet } from '../../../shared/apiHelpers';
 import { jurisdictionalBasisForCountry } from '../../lib/jurisdiction';
-import { CONSENT_TEXTS } from '../../consentTexts';
+import { CONSENT_TEXTS, INTERNATIONAL_LICENSEE_ADDENDUM } from '../../consentTexts';
 import { PrivacyPolicyDrawer } from './PrivacyPolicyDrawer';
 import type { MeResponse, ProductionCompanyDetail } from '../../../shared/types';
 import type { WizardFormData } from '../../pages/SubmitPage';
@@ -11,7 +11,7 @@ import type { WizardFormData } from '../../pages/SubmitPage';
 export function Step3Consent() {
   const [expanded, setExpanded] = useState(false);
   const [isPolicyOpen, setIsPolicyOpen] = useState(false);
-  const { register, formState: { errors } } = useFormContext<WizardFormData>();
+  const { register, watch, formState: { errors } } = useFormContext<WizardFormData>();
 
   // Fetch /auth/me/ to get the production company ID
   const { data: me } = useQuery<MeResponse>({
@@ -31,6 +31,14 @@ export function Step3Consent() {
   const basis = jurisdictionalBasisForCountry(pc?.country?.code);
   const consent = CONSENT_TEXTS[basis];
 
+  // When the filmmaker chose international licensing, the consent they read (and
+  // the backend snapshots) gains the international-licensee clause.
+  const licensing = watch('licensing_preference');
+  const showInternational = licensing === 'international' || licensing === 'both';
+  const consentText = showInternational
+    ? `${consent.text}\n\n${INTERNATIONAL_LICENSEE_ADDENDUM}`
+    : consent.text;
+
   if (pcLoading || !pc) {
     return <p className="text-sm text-gray-500">Loading consent terms…</p>;
   }
@@ -43,6 +51,13 @@ export function Step3Consent() {
         personal data to Backblaze, Inc. in the United States. The specific terms
         depend on the data protection laws applicable to your jurisdiction.
       </p>
+
+      {showInternational && (
+        <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          You chose international licensing, so your contact details may also be shared with
+          licensees outside Nigeria when we negotiate deals. The full terms are below.
+        </p>
+      )}
 
       {/* Collapsible consent text — per consent_texts.py UX contract */}
       <div className="border border-gray-200 rounded-md">
@@ -57,7 +72,7 @@ export function Step3Consent() {
         {expanded && (
           <div className="px-4 pb-4 border-t border-gray-100">
             <pre className="text-xs text-gray-700 whitespace-pre-wrap font-sans leading-relaxed mt-3">
-              {consent.text}
+              {consentText}
             </pre>
           </div>
         )}

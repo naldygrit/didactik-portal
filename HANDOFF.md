@@ -25,7 +25,7 @@ authenticated portal app.
   then a NORMAL reload (F5, not Ctrl+Shift+R) so the worker registers. If still
   stale: `npx msw init public/ --save`. For reload-heavy QA prefer real mode —
   the httpOnly refresh cookie keeps you logged in across reloads.
-- **Verify:** `npx tsc -b --noEmit` and `npx vitest run` (currently 84 passing).
+- **Verify:** `npx tsc -b --noEmit` and `npx vitest run` (currently 85 passing).
 
 ## State of the three portals
 - **Broadcaster** (Netflix dark skin, KEEP): migrated off the legacy auction/Asset
@@ -130,6 +130,11 @@ all scoped under `.portal-control`. `PortalLayout` picks theme by path PREFIX
   (the established sidebar query-sync pattern; eslint still exits 0).
 
 ## Recent commits (newest first)
+- `feat(production)` licensing-destination on the filmmaker upload: a "Where would
+  you like this licensed?" radio (Nigerian / international / Both [Recommended]) in
+  the Rights & consent step. International/both appends the international-licensee
+  clause to the displayed consent text + shows a heads-up; payload carries
+  `licensing_preference`. Backend snapshots it into the NDPA s.43 Consent record.
 - `feat(production)` submit-a-title required-fields + bench polish: year, synopsis,
   language, country now required (Filmhub/Apple/MEC); removed duplicate sidebar
   submit entry (kept the pill); rail contrast fix; "Synopsis" label

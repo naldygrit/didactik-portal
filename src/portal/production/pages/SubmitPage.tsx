@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { useAuth } from '../../shared/AuthContext';
 import { Step1Metadata } from '../components/submission/Step1Metadata';
 import { Step2Submitter } from '../components/submission/Step2Submitter';
+import { LicensingPreference } from '../components/submission/LicensingPreference';
 import { Step3Consent } from '../components/submission/Step3Consent';
 import { Step4Upload } from '../components/submission/Step4Upload';
 import { useState } from 'react';
@@ -43,6 +44,8 @@ const wizardSchema = z.object({
   // Step 2 — Submitter attestation
   submitter_name: z.string().min(1, 'Your name is required').max(300),
   submitter_contact: z.string().min(1, 'Contact info is required').max(300),
+  // Step 2 — Licensing destination (drives the international-licensee consent clause)
+  licensing_preference: z.enum(['nigerian', 'international', 'both']).default('both'),
   // Step 3 — Consent
   consented: z.boolean().refine((v) => v === true, {
     message: 'You must accept the consent terms to proceed',
@@ -56,7 +59,7 @@ export type WizardFormData = z.infer<typeof wizardSchema>;
 // legal confirmation sits last, before upload, per submission-flow research.
 const STEP_FIELDS: Record<1 | 2, (keyof WizardFormData)[]> = {
   1: ['title', 'asset_type', 'production_year', 'description', 'primary_language', 'production_country'],
-  2: ['submitter_name', 'submitter_contact', 'consented'],
+  2: ['submitter_name', 'submitter_contact', 'licensing_preference', 'consented'],
 };
 
 const STEPS = [
@@ -104,6 +107,7 @@ export function ProductionSubmitPage() {
       production_country: undefined,
       submitter_name: '',
       submitter_contact: user?.email ?? '',
+      licensing_preference: 'both',
       consented: false,
     },
   });
@@ -194,6 +198,8 @@ export function ProductionSubmitPage() {
                 {step === 2 && (
                   <div className="space-y-6">
                     <Step2Submitter />
+                    <div className="border-t border-gray-100" />
+                    <LicensingPreference />
                     <div className="border-t border-gray-100" />
                     <Step3Consent />
                   </div>

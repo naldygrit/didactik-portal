@@ -127,6 +127,18 @@ describe('SubmitPage wizard', () => {
     });
   });
 
+  it('offers the licensing destination on step 2 with Both recommended', async () => {
+    render(<ProductionSubmitPage />, { wrapper: Wrapper });
+    await fillStep1Valid();
+    fireEvent.click(screen.getByText('Save and continue'));
+    await screen.findByPlaceholderText('As it appears on official documents');
+
+    expect(screen.getByText('Where would you like this title licensed?')).toBeDefined();
+    expect(screen.getByText('Nigerian broadcasters')).toBeDefined();
+    expect(screen.getByText('International streaming services')).toBeDefined();
+    expect(screen.getByText('Recommended')).toBeDefined();
+  });
+
   it('back button returns to the previous step', async () => {
     render(<ProductionSubmitPage />, { wrapper: Wrapper });
     await fillStep1Valid();
