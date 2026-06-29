@@ -20,6 +20,11 @@ authenticated portal app.
   (`cd ~/code/didactik-archive && .venv/bin/python manage.py runserver 8000` +
   `manage.py seed_demo`). Vite proxies `/api` → `:8000`.
 - **Logins (both modes), password `demo`:** `admin` / `producer` / `broadcaster`.
+- **Mock login flaky / "not logging in"?** The MSW session is in-memory (a reload
+  logs you out) and the service worker can go stale. Fix: restart `npm run dev`,
+  then a NORMAL reload (F5, not Ctrl+Shift+R) so the worker registers. If still
+  stale: `npx msw init public/ --save`. For reload-heavy QA prefer real mode —
+  the httpOnly refresh cookie keeps you logged in across reloads.
 - **Verify:** `npx tsc -b --noEmit` and `npx vitest run` (currently 82 passing).
 
 ## State of the three portals

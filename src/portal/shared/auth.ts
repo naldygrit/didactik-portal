@@ -29,14 +29,25 @@ export async function postLogin(
   username: string,
   password: string,
 ): Promise<string> {
-  const response = await fetch('/api/v1/auth/login/', {
-    method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password }),
-  });
+  let response: Response;
+  try {
+    response = await fetch('/api/v1/auth/login/', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+  } catch {
+    // Network-level failure: backend down (real mode) or mock worker inactive.
+    throw new Error('Cannot reach the server. Start the backend, or turn on mock mode and reload.');
+  }
+  if (response.status === 401) {
+    throw new Error('Wrong username or password.');
+  }
   if (!response.ok) {
-    throw new Error('Invalid credentials');
+    // 5xx / proxy error: the API is reachable but not answering (often a dead
+    // :8000 behind the Vite proxy, or an inactive mock worker).
+    throw new Error(`Login failed (${response.status}). The API may be unreachable.`);
   }
   const data = await response.json() as { access: string };
   return data.access;
