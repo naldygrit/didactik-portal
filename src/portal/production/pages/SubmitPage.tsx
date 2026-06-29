@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useForm, FormProvider, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -47,14 +48,34 @@ const wizardSchema = z.object({
 
 export type WizardFormData = z.infer<typeof wizardSchema>;
 
-// Fields validated on each step's Next press
-const STEP_FIELDS: Record<1 | 2 | 3, (keyof WizardFormData)[]> = {
+// Fields validated before leaving each step. The submitter attestation folds
+// into "Rights & consent" (it was a redundant standalone step); the sensitive
+// legal confirmation sits last, before upload, per submission-flow research.
+const STEP_FIELDS: Record<1 | 2, (keyof WizardFormData)[]> = {
   1: ['title', 'asset_type'],
-  2: ['submitter_name', 'submitter_contact'],
-  3: ['consented'],
+  2: ['submitter_name', 'submitter_contact', 'consented'],
 };
 
-const STEP_LABELS = ['Asset Details', 'Submitter', 'Consent', 'Upload'];
+const STEPS = [
+  {
+    title: 'Title details',
+    rail: 'Title details',
+    desc: 'Name, type, year',
+    help: 'Tell us what the title is. You can refine any of this after submitting.',
+  },
+  {
+    title: 'Rights & consent',
+    rail: 'Rights & consent',
+    desc: 'Confirm you hold the rights',
+    help: 'Confirm you can license this title and accept the terms. We review every submission before it goes live to broadcasters.',
+  },
+  {
+    title: 'Upload files',
+    rail: 'Upload',
+    desc: 'Master and screener',
+    help: 'Upload your master and a screener. Large files upload directly to storage and bypass our servers, so an unreliable connection is fine.',
+  },
+];
 
 // ---------------------------------------------------------------------------
 // SubmitPage
@@ -62,7 +83,8 @@ const STEP_LABELS = ['Asset Details', 'Submitter', 'Consent', 'Upload'];
 
 export function ProductionSubmitPage() {
   const { user } = useAuth();
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const reduce = useReducedMotion();
+  const [step, setStep] = useState<1 | 2 | 3>(1);
 
   const methods = useForm<WizardFormData>({
     // zodResolver infers the schema INPUT type (unknown for preprocessed
@@ -92,91 +114,116 @@ export function ProductionSubmitPage() {
   }, [user?.email]);
 
   async function handleNext() {
-    if (step === 4) return;
-    const fields = STEP_FIELDS[step as 1 | 2 | 3];
+    if (step === 3) return;
+    const fields = STEP_FIELDS[step as 1 | 2];
     const valid = await methods.trigger(fields);
-    if (valid) setStep((s) => (s + 1) as 1 | 2 | 3 | 4);
+    if (valid) setStep((s) => (s + 1) as 1 | 2 | 3);
   }
 
   function handleBack() {
-    if (step > 1) setStep((s) => (s - 1) as 1 | 2 | 3 | 4);
+    if (step > 1) setStep((s) => (s - 1) as 1 | 2 | 3);
   }
 
+  const current = STEPS[step - 1];
+
   return (
-    <div className="max-w-xl mx-auto">
-      {/* Back to assets */}
+    <div className="mx-auto max-w-4xl">
       <Link
         to="/portal/production/assets"
-        className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 mb-6"
+        className="inline-flex items-center text-sm font-medium text-gray-500 transition-colors hover:text-gray-800"
       >
-        ← Back to assets
+        ← Back to catalogue
       </Link>
 
-      <h1 className="text-2xl font-semibold text-gray-900 mb-6">Submit new asset</h1>
+      <div className="mt-4 grid gap-8 md:grid-cols-[230px_1fr]">
+        {/* Step rail */}
+        <aside>
+          <h1 className="font-display text-2xl font-bold text-gray-900">Submit a title</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Add a new title to your catalogue. We review it before it goes live.
+          </p>
+          <ol className="mt-6 space-y-1">
+            {STEPS.map((s, i) => {
+              const n = i + 1;
+              const active = n === step;
+              const done = n < step;
+              return (
+                <li key={s.rail} className="flex items-start gap-3 py-2">
+                  <span
+                    className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-colors"
+                    style={{
+                      background: done ? BRAND : active ? '#ede9fe' : '#f3f4f6',
+                      color: done ? '#fff' : active ? BRAND : '#9ca3af',
+                      boxShadow: active ? `inset 0 0 0 1.5px ${BRAND}` : undefined,
+                    }}
+                  >
+                    {done ? '✓' : n}
+                  </span>
+                  <div className="min-w-0">
+                    <div
+                      className="text-sm font-medium"
+                      style={{ color: active ? '#111827' : done ? '#374151' : '#9ca3af' }}
+                    >
+                      {s.rail}
+                    </div>
+                    <div className="text-xs text-gray-400">{s.desc}</div>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        </aside>
 
-      {/* Step indicator */}
-      <div className="flex items-center gap-2 mb-8">
-        {STEP_LABELS.map((label, i) => {
-          const n = (i + 1) as 1 | 2 | 3 | 4;
-          const active = n === step;
-          const done = n < step;
-          return (
-            <div key={n} className="flex items-center gap-2">
-              <div
-                className={`flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold
-                  ${done ? 'bg-indigo-600 text-white' : active ? 'ring-2 ring-indigo-600 text-indigo-600' : 'bg-gray-100 text-gray-400'}`}
-              >
-                {done ? '✓' : n}
+        {/* Content */}
+        <div>
+          <FormProvider {...methods}>
+            <motion.div
+              key={step}
+              initial={reduce ? false : { opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] as const }}
+            >
+              <h2 className="text-lg font-semibold text-gray-900">{current.title}</h2>
+              <p className="mb-5 mt-0.5 text-sm text-gray-500">{current.help}</p>
+
+              <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                {step === 1 && <Step1Metadata />}
+                {step === 2 && (
+                  <div className="space-y-6">
+                    <Step2Submitter />
+                    <div className="border-t border-gray-100" />
+                    <Step3Consent />
+                  </div>
+                )}
+                {step === 3 && <Step4Upload formData={methods.getValues()} onBack={handleBack} />}
+
+                {step < 3 && (
+                  <div className="mt-8 flex items-center justify-between border-t border-gray-100 pt-4">
+                    <button
+                      type="button"
+                      onClick={handleBack}
+                      disabled={step === 1}
+                      className="text-sm font-medium text-gray-500 transition-colors hover:text-gray-800 disabled:opacity-0"
+                    >
+                      Back
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleNext}
+                      className="rounded-lg px-5 py-2 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
+                      style={{ backgroundColor: BRAND }}
+                    >
+                      {step === 2 ? 'Continue to upload' : 'Save and continue'}
+                    </button>
+                  </div>
+                )}
               </div>
-              <span
-                className={`text-xs font-medium ${active ? 'text-indigo-700' : done ? 'text-indigo-500' : 'text-gray-400'}`}
-              >
-                {label}
-              </span>
-              {i < STEP_LABELS.length - 1 && (
-                <div className={`flex-1 h-px w-6 ${done ? 'bg-indigo-300' : 'bg-gray-200'}`} />
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Form */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <FormProvider {...methods}>
-          {step === 1 && <Step1Metadata />}
-          {step === 2 && <Step2Submitter />}
-          {step === 3 && <Step3Consent />}
-          {step === 4 && (
-            <Step4Upload
-              formData={methods.getValues()}
-              onBack={handleBack}
-            />
-          )}
-
-          {/* Navigation — not shown on Step 4 (it has its own buttons) */}
-          {step < 4 && (
-            <div className="flex justify-between mt-8 pt-4 border-t border-gray-100">
-              <button
-                type="button"
-                onClick={handleBack}
-                disabled={step === 1}
-                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 disabled:opacity-0"
-              >
-                ← Back
-              </button>
-              <button
-                type="button"
-                onClick={handleNext}
-                className="px-5 py-2 rounded-md text-sm font-medium text-white"
-                style={{ backgroundColor: '#5343fd' }}
-              >
-                {step === 3 ? 'Continue to upload →' : 'Next →'}
-              </button>
-            </div>
-          )}
-        </FormProvider>
+            </motion.div>
+          </FormProvider>
+        </div>
       </div>
     </div>
   );
 }
+
+const BRAND = '#5343fd';

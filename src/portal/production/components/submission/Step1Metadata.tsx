@@ -65,7 +65,7 @@ export function Step1Metadata() {
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Asset type <span className="text-red-500">*</span>
+          Type <span className="text-red-500">*</span>
         </label>
         <select
           {...register('asset_type')}

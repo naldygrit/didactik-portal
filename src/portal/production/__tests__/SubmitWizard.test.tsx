@@ -35,23 +35,21 @@ describe('SubmitPage wizard', () => {
 
   it('renders Step 1 on mount', () => {
     render(<ProductionSubmitPage />, { wrapper: Wrapper });
-    expect(screen.getByText('Submit new asset')).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'Submit a title' })).toBeDefined();
     expect(screen.getByPlaceholderText('Working or anglicised title')).toBeDefined();
   });
 
   it('blocks advance from Step 1 when title is too short', async () => {
     render(<ProductionSubmitPage />, { wrapper: Wrapper });
 
-    // Enter a title that is too short (< 5 chars)
     const titleInput = screen.getByPlaceholderText('Working or anglicised title');
     fireEvent.change(titleInput, { target: { value: 'Hi' } });
 
-    fireEvent.click(screen.getByText('Next →'));
+    fireEvent.click(screen.getByText('Save and continue'));
 
     await waitFor(() => {
       expect(screen.getByText('Title must be at least 5 characters')).toBeDefined();
     });
-    // Should still be on Step 1
     expect(screen.getByPlaceholderText('Working or anglicised title')).toBeDefined();
   });
 
@@ -61,14 +59,14 @@ describe('SubmitPage wizard', () => {
     const titleInput = screen.getByPlaceholderText('Working or anglicised title');
     fireEvent.change(titleInput, { target: { value: 'A Valid Title Here' } });
 
-    fireEvent.click(screen.getByText('Next →'));
+    fireEvent.click(screen.getByText('Save and continue'));
 
     await waitFor(() => {
       expect(screen.getByText('Select an asset type')).toBeDefined();
     });
   });
 
-  it('advances to Step 2 when Step 1 is valid', async () => {
+  it('advances to the Rights & consent step when Step 1 is valid', async () => {
     render(<ProductionSubmitPage />, { wrapper: Wrapper });
 
     const titleInput = screen.getByPlaceholderText('Working or anglicised title');
@@ -77,45 +75,40 @@ describe('SubmitPage wizard', () => {
     const typeSelect = screen.getByDisplayValue('Select type…');
     fireEvent.change(typeSelect, { target: { value: 'feature_film' } });
 
-    fireEvent.click(screen.getByText('Next →'));
+    fireEvent.click(screen.getByText('Save and continue'));
 
-    // Step 2 shows submitter name input
     await screen.findByPlaceholderText('As it appears on official documents');
   });
 
-  it('blocks advance from Step 2 when submitter name is empty', async () => {
+  it('blocks advance from the consent step when submitter name is empty', async () => {
     render(<ProductionSubmitPage />, { wrapper: Wrapper });
 
-    // Advance to Step 2
     const titleInput = screen.getByPlaceholderText('Working or anglicised title');
     fireEvent.change(titleInput, { target: { value: 'A Valid Title Here' } });
     fireEvent.change(screen.getByDisplayValue('Select type…'), { target: { value: 'documentary' } });
-    fireEvent.click(screen.getByText('Next →'));
+    fireEvent.click(screen.getByText('Save and continue'));
     await screen.findByPlaceholderText('As it appears on official documents');
 
-    // Clear submitter name and try to advance
     const nameInput = screen.getByPlaceholderText('As it appears on official documents');
     fireEvent.change(nameInput, { target: { value: '' } });
 
-    fireEvent.click(screen.getByText('Next →'));
+    fireEvent.click(screen.getByText('Continue to upload'));
 
     await waitFor(() => {
       expect(screen.getByText('Your name is required')).toBeDefined();
     });
   });
 
-  it('back button returns to previous step', async () => {
+  it('back button returns to the previous step', async () => {
     render(<ProductionSubmitPage />, { wrapper: Wrapper });
 
-    // Go to Step 2
     const titleInput = screen.getByPlaceholderText('Working or anglicised title');
     fireEvent.change(titleInput, { target: { value: 'A Valid Title Here' } });
     fireEvent.change(screen.getByDisplayValue('Select type…'), { target: { value: 'documentary' } });
-    fireEvent.click(screen.getByText('Next →'));
+    fireEvent.click(screen.getByText('Save and continue'));
     await screen.findByPlaceholderText('As it appears on official documents');
 
-    // Go back
-    fireEvent.click(screen.getByText('← Back'));
+    fireEvent.click(screen.getByText('Back'));
     expect(screen.getByPlaceholderText('Working or anglicised title')).toBeDefined();
   });
 });
