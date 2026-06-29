@@ -99,6 +99,13 @@
   border-radius: var(--radius);
   border: 0.5px solid var(--border);
   padding: 10px 12px;
+  box-shadow: 0 1px 2px rgba(50, 50, 93, 0.05);
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.portal-control .kpi:hover {
+  transform: scale(1.012);
+  box-shadow: 0 6px 18px rgba(50, 50, 93, 0.12), 0 2px 5px rgba(50, 50, 93, 0.07);
 }
 .portal-control .kpi-label {
   font-size: 10px;
@@ -157,6 +164,13 @@
   border: 0.5px solid var(--border);
   padding: 12px 14px;
   margin-bottom: 12px;
+  box-shadow: 0 1px 2px rgba(50, 50, 93, 0.05);
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.portal-control .card:hover {
+  transform: scale(1.008);
+  box-shadow: 0 6px 18px rgba(50, 50, 93, 0.12), 0 2px 5px rgba(50, 50, 93, 0.07);
 }
 .portal-control .card-header {
   display: flex;
@@ -399,6 +413,22 @@
   border-radius: var(--radius);
   padding: 12px 14px;
   margin-bottom: 10px;
+  box-shadow: 0 1px 2px rgba(50, 50, 93, 0.05);
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.portal-control .screener-card:hover {
+  transform: scale(1.006);
+  box-shadow: 0 6px 18px rgba(50, 50, 93, 0.12), 0 2px 5px rgba(50, 50, 93, 0.07);
+}
+
+/* Reduced motion: keep the shadow change, drop the scale. */
+@media (prefers-reduced-motion: reduce) {
+  .portal-control .kpi:hover,
+  .portal-control .card:hover,
+  .portal-control .screener-card:hover {
+    transform: none;
+  }
 }
 .portal-control .screener-header {
   display: flex;
