@@ -130,6 +130,9 @@ all scoped under `.portal-control`. `PortalLayout` picks theme by path PREFIX
   (the established sidebar query-sync pattern; eslint still exits 0).
 
 ## Recent commits (newest first)
+- `chore(mocks)` removed the legacy Asset intake mock handlers (/assets/initiate
+  -upload, confirm-upload, /_mock-upload) now that the backend intake is retired;
+  the wizard uses the Title intake. AssetViewSet withdraw + list/detail mocks stay.
 - `feat(production)` upload-first wizard: the master file picker is on step 1 and
   streams to B2 in the background (POST production/titles/upload-url/ then PUT)
   while the filmmaker fills the form; step 3 is "Review & submit" and the submit

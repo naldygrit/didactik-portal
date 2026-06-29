@@ -19,7 +19,6 @@ import {
   adminScreenerRequests,
   adminTitles,
   buildAdminOrganisations,
-  allocateAssetId,
   allocateRightsWindowId,
   allocateWatchlistId,
   assets,
@@ -193,54 +192,6 @@ export const handlers = [
     const asset = visibleAssets().find((a) => a.id === Number(params.id));
     if (!asset) return HttpResponse.json({ detail: 'Not found.' }, { status: 404 });
     return HttpResponse.json(asset);
-  }),
-
-  http.post(`${API}/assets/initiate-upload/`, async ({ request }) => {
-    if (!session.current) return unauthorized();
-    const body = (await request.json()) as Record<string, unknown>;
-    const profile = session.current.me.profile;
-    const id = allocateAssetId();
-    const storage_key = `mock/${id}/${String(body.filename ?? 'master.mp4')}`;
-    const asset: AssetDetail = {
-      id,
-      title: String(body.title ?? 'Untitled'),
-      original_title: String(body.original_title ?? ''),
-      asset_type: (body.asset_type as AssetDetail['asset_type']) ?? 'other',
-      status: 'pending_upload',
-      production_year: typeof body.production_year === 'number' ? body.production_year : null,
-      primary_language: languages.find((l) => l.id === body.primary_language) ?? null,
-      production_country: countries.find((c) => c.id === body.production_country) ?? null,
-      production_company: profile?.production_company ?? null,
-      storage_backend: 'b2',
-      created_at: new Date().toISOString(),
-      taxonomy_count: 0,
-      description: String(body.description ?? ''),
-      approved_at: null,
-      updated_at: new Date().toISOString(),
-      rejection_reason: '',
-      taxonomy_tags: [],
-    };
-    assets.push(asset);
-    return HttpResponse.json({
-      asset_id: id,
-      upload_url: `${location.origin}/_mock-upload/${encodeURIComponent(storage_key)}`,
-      expires_in_seconds: 3600,
-      storage_key,
-      status: 'pending_upload',
-      message: 'Upload initiated. PUT the file to the returned URL.',
-    });
-  }),
-
-  // Catch the wizard's direct PUT to "storage" so the upload flow completes offline.
-  http.put('/_mock-upload/:key', () => new HttpResponse(null, { status: 200 })),
-
-  http.post(`${API}/assets/:id/confirm-upload/`, ({ params }) => {
-    if (!session.current) return unauthorized();
-    const asset = assets.find((a) => a.id === Number(params.id));
-    if (!asset) return HttpResponse.json({ detail: 'Not found.' }, { status: 404 });
-    asset.status = 'under_review';
-    asset.updated_at = new Date().toISOString();
-    return HttpResponse.json({ asset_id: asset.id, status: asset.status, message: 'Upload confirmed. Asset is now under review.' });
   }),
 
   http.post(`${API}/assets/:id/withdraw/`, ({ params }) => {
