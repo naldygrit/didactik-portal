@@ -1,6 +1,7 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MemoryRouter } from 'react-router-dom';
 import { setupServer } from 'msw/node';
 import { handlers } from '../../../mocks/handlers';
 import { session, users } from '../../../mocks/db';
@@ -19,7 +20,11 @@ beforeEach(() => {
 
 function renderWith(node: React.ReactElement) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return render(<QueryClientProvider client={client}>{node}</QueryClientProvider>);
+  return render(
+    <QueryClientProvider client={client}>
+      <MemoryRouter>{node}</MemoryRouter>
+    </QueryClientProvider>,
+  );
 }
 
 describe('AdminProductionCompaniesPage', () => {

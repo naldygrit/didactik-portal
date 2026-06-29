@@ -31,9 +31,11 @@ export function PortalLayout() {
   // The broadcaster browse experience is the dark "cinema" surface; production
   // and admin keep the light chrome they were built against.
   const pathname = useLocation().pathname;
-  const cinema = pathname.includes('/broadcaster');
-  const control = pathname.includes('/admin');
-  // Admin (control) is now a Stripe-style light surface; only the cinema is dark.
+  // Match the portal PREFIX, not a bare substring — /portal/admin/broadcasters
+  // contains "broadcaster" and must NOT fall into the dark cinema surface.
+  const control = pathname.startsWith('/portal/admin');
+  const cinema = pathname.startsWith('/portal/broadcaster');
+  // Admin (control) is a Stripe-style light surface; only the cinema is dark.
   const dark = cinema;
 
   async function handleLogout() {
@@ -234,7 +236,7 @@ function AdminSidebarNav() {
           badge={dash?.content.total_titles}
         />
         <NavItem
-          to="/portal/admin/library"
+          to="/portal/admin/library?status=under_review"
           label="Under review"
           Icon={FiClock}
           badge={underReview || undefined}
@@ -255,7 +257,7 @@ function AdminSidebarNav() {
       <NavGroup label="Organisations">
         <NavItem
           to="/portal/admin/production"
-          label="Production cos"
+          label="Production companies"
           Icon={FiVideo}
           badge={pcs.length || undefined}
         />
@@ -266,7 +268,7 @@ function AdminSidebarNav() {
           badge={bcs.length || undefined}
         />
         <NavItem
-          to="/portal/admin/production"
+          to="/portal/admin/production?filter=unverified"
           label="Verifications"
           Icon={FiShield}
           badge={unverified || undefined}
@@ -286,6 +288,21 @@ function NavGroup({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
+// Query-aware active state: NavLink only matches pathname, so "Library" and
+// "Under review" (same path, different ?status) would both light up. We match
+// pathname AND the qualifying query so siblings are mutually exclusive.
+function isNavActive(pathname: string, search: string, to: string): boolean {
+  const [toPath, toQuery] = to.split('?');
+  if (pathname !== toPath) return false;
+  const params = new URLSearchParams(search);
+  if (toQuery) {
+    const [key, value] = toQuery.split('=');
+    return params.get(key) === value;
+  }
+  // A base item is active only when no sibling's qualifying filter is present.
+  return !params.has('status') && !params.has('filter');
+}
+
 function NavItem({
   to,
   label,
@@ -299,13 +316,15 @@ function NavItem({
   badge?: number;
   tone?: BadgeTone;
 }) {
+  const loc = useLocation();
+  const active = isNavActive(loc.pathname, loc.search, to);
   return (
-    <NavLink to={to} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+    <Link to={to} className={`nav-item ${active ? 'active' : ''}`}>
       <span className="left">
         <Icon size={15} />
         {label}
       </span>
       {badge !== undefined && <span className={`badge ${tone}`}>{badge}</span>}
-    </NavLink>
+    </Link>
   );
 }

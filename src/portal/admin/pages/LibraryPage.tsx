@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiGet, apiPatch } from '../../shared/apiHelpers';
@@ -24,6 +24,13 @@ export function AdminLibraryPage() {
   const [searchParams] = useSearchParams();
   const highlightSlug = searchParams.get('title');
   const queryClient = useQueryClient();
+
+  // Honour ?status=<x> from the sidebar (e.g. "Under review"), letting the user
+  // change the select afterwards.
+  const urlStatus = searchParams.get('status');
+  useEffect(() => {
+    if (urlStatus) setStatusFilter(urlStatus as TitleStatus);
+  }, [urlStatus]);
 
   const { data, isLoading } = useQuery<AdminTitle[]>({
     queryKey: ['admin-titles'],

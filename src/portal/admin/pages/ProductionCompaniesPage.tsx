@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import { apiGet } from '../../shared/apiHelpers';
 import { ageTone, relativeTime } from '../../shared/format';
 import type { AdminOrganisations, AdminProductionCompanyRow } from '../../shared/types';
@@ -11,6 +12,13 @@ type Filter = 'all' | 'verified' | 'unverified';
 export function AdminProductionCompaniesPage() {
   const [q, setQ] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
+  const [searchParams] = useSearchParams();
+
+  // The sidebar "Verifications" item routes here with ?filter=unverified.
+  const urlFilter = searchParams.get('filter');
+  useEffect(() => {
+    if (urlFilter === 'unverified' || urlFilter === 'verified') setFilter(urlFilter);
+  }, [urlFilter]);
 
   const { data, isLoading } = useQuery<AdminOrganisations>({
     queryKey: ['admin-organisations'],
