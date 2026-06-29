@@ -25,7 +25,7 @@ authenticated portal app.
   then a NORMAL reload (F5, not Ctrl+Shift+R) so the worker registers. If still
   stale: `npx msw init public/ --save`. For reload-heavy QA prefer real mode —
   the httpOnly refresh cookie keeps you logged in across reloads.
-- **Verify:** `npx tsc -b --noEmit` and `npx vitest run` (currently 82 passing).
+- **Verify:** `npx tsc -b --noEmit` and `npx vitest run` (currently 84 passing).
 
 ## State of the three portals
 - **Broadcaster** (Netflix dark skin, KEEP): migrated off the legacy auction/Asset
@@ -130,6 +130,12 @@ all scoped under `.portal-control`. `PortalLayout` picks theme by path PREFIX
   (the established sidebar query-sync pattern; eslint still exits 0).
 
 ## Recent commits (newest first)
+- `feat(production)` submit-a-title required-fields + bench polish: year, synopsis,
+  language, country now required (Filmhub/Apple/MEC); removed duplicate sidebar
+  submit entry (kept the pill); rail contrast fix; "Synopsis" label
+- `redesign(production)` submit flow: 4→3 steps (TuneCore left rail, motion, copy)
+- `feat(production)` hide Didactik commission on the earnings page (admin-only now)
+- `feat(offers)` screener + bid are parallel, not sequential; `screened` flag + badge
 - `polish(admin)` sidebar refinement (brand divider, footer avatar, nav rhythm +
   smoother motion, accent-tinted active badge)
 - `polish(admin)` subtle card shadow + hover lift; added HANDOFF.md

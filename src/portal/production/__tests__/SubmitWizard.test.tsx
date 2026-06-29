@@ -12,8 +12,11 @@ vi.mock('../../shared/AuthContext', () => ({
 
 vi.mock('../../shared/apiHelpers', () => ({
   apiGet: vi.fn().mockImplementation((path: string) => {
-    if (path === '/api/v1/languages/' || path === '/api/v1/countries/') {
-      return Promise.resolve([]);
+    if (path === '/api/v1/languages/') {
+      return Promise.resolve([{ id: 1, english_name: 'Yoruba' }]);
+    }
+    if (path === '/api/v1/countries/') {
+      return Promise.resolve([{ id: 1, name: 'Nigeria' }]);
     }
     return Promise.resolve({});
   }),
@@ -28,6 +31,24 @@ function Wrapper({ children }: { children: React.ReactNode }) {
       <MemoryRouter>{children}</MemoryRouter>
     </QueryClientProvider>
   );
+}
+
+// Fill every required field on step 1 so the wizard will advance. Language and
+// country come from the mocked reference endpoints above.
+async function fillStep1Valid() {
+  fireEvent.change(screen.getByPlaceholderText('Working or anglicised title'), {
+    target: { value: 'A Valid Title Here' },
+  });
+  fireEvent.change(screen.getByDisplayValue('Select type…'), { target: { value: 'documentary' } });
+  fireEvent.change(screen.getByPlaceholderText('e.g. 2023'), { target: { value: '2023' } });
+  fireEvent.change(screen.getByPlaceholderText('A short synopsis buyers read when deciding to license'), {
+    target: { value: 'A documentary following three Lagos street photographers over one year.' },
+  });
+  // Wait for the mocked reference data to render the <option>s before selecting.
+  await screen.findByRole('option', { name: 'Yoruba' });
+  fireEvent.change(screen.getByDisplayValue('— select language —'), { target: { value: '1' } });
+  await screen.findByRole('option', { name: 'Nigeria' });
+  fireEvent.change(screen.getByDisplayValue('— select country —'), { target: { value: '1' } });
 }
 
 describe('SubmitPage wizard', () => {
@@ -66,14 +87,24 @@ describe('SubmitPage wizard', () => {
     });
   });
 
+  it('blocks advance from Step 1 when the synopsis is missing', async () => {
+    render(<ProductionSubmitPage />, { wrapper: Wrapper });
+    await fillStep1Valid();
+    fireEvent.change(
+      screen.getByPlaceholderText('A short synopsis buyers read when deciding to license'),
+      { target: { value: '' } },
+    );
+
+    fireEvent.click(screen.getByText('Save and continue'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Write a short synopsis (at least 20 characters)')).toBeDefined();
+    });
+  });
+
   it('advances to the Rights & consent step when Step 1 is valid', async () => {
     render(<ProductionSubmitPage />, { wrapper: Wrapper });
-
-    const titleInput = screen.getByPlaceholderText('Working or anglicised title');
-    fireEvent.change(titleInput, { target: { value: 'A Valid Title Here' } });
-
-    const typeSelect = screen.getByDisplayValue('Select type…');
-    fireEvent.change(typeSelect, { target: { value: 'feature_film' } });
+    await fillStep1Valid();
 
     fireEvent.click(screen.getByText('Save and continue'));
 
@@ -82,10 +113,7 @@ describe('SubmitPage wizard', () => {
 
   it('blocks advance from the consent step when submitter name is empty', async () => {
     render(<ProductionSubmitPage />, { wrapper: Wrapper });
-
-    const titleInput = screen.getByPlaceholderText('Working or anglicised title');
-    fireEvent.change(titleInput, { target: { value: 'A Valid Title Here' } });
-    fireEvent.change(screen.getByDisplayValue('Select type…'), { target: { value: 'documentary' } });
+    await fillStep1Valid();
     fireEvent.click(screen.getByText('Save and continue'));
     await screen.findByPlaceholderText('As it appears on official documents');
 
@@ -101,10 +129,7 @@ describe('SubmitPage wizard', () => {
 
   it('back button returns to the previous step', async () => {
     render(<ProductionSubmitPage />, { wrapper: Wrapper });
-
-    const titleInput = screen.getByPlaceholderText('Working or anglicised title');
-    fireEvent.change(titleInput, { target: { value: 'A Valid Title Here' } });
-    fireEvent.change(screen.getByDisplayValue('Select type…'), { target: { value: 'documentary' } });
+    await fillStep1Valid();
     fireEvent.click(screen.getByText('Save and continue'));
     await screen.findByPlaceholderText('As it appears on official documents');
 

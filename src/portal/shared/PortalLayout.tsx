@@ -29,7 +29,6 @@ const PRODUCTION_NAV = [
   { to: '/portal/production/assets', label: 'My Catalogue', Icon: FiFilm },
   { to: '/portal/production/screeners', label: 'Screener Requests', Icon: FiEye },
   { to: '/portal/production/earnings', label: 'Earnings', Icon: FiDollarSign },
-  { to: '/portal/production/submit', label: 'Submit New Title', Icon: FiPlus },
 ];
 
 export function PortalLayout() {

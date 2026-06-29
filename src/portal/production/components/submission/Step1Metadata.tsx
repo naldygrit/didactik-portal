@@ -83,8 +83,7 @@ export function Step1Metadata() {
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Production year
-          <span className="ml-1 text-xs text-gray-400">(optional)</span>
+          Production year <span className="text-red-500">*</span>
         </label>
         <input
           type="number"
@@ -99,13 +98,12 @@ export function Step1Metadata() {
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Description
-          <span className="ml-1 text-xs text-gray-400">(optional)</span>
+          Synopsis <span className="text-red-500">*</span>
         </label>
         <textarea
           {...register('description')}
           rows={4}
-          placeholder="Brief synopsis or description of the content"
+          placeholder="A short synopsis buyers read when deciding to license"
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none"
         />
         <FieldError name="description" />
@@ -113,8 +111,7 @@ export function Step1Metadata() {
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Primary language
-          <span className="ml-1 text-xs text-gray-400">(optional)</span>
+          Primary language <span className="text-red-500">*</span>
         </label>
         <select
           {...register('primary_language', { valueAsNumber: true })}
@@ -126,12 +123,12 @@ export function Step1Metadata() {
             <option key={l.id} value={l.id}>{l.english_name}</option>
           ))}
         </select>
+        <FieldError name="primary_language" />
       </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Country of production
-          <span className="ml-1 text-xs text-gray-400">(optional)</span>
+          Country of production <span className="text-red-500">*</span>
         </label>
         <select
           {...register('production_country', { valueAsNumber: true })}
@@ -143,6 +140,7 @@ export function Step1Metadata() {
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
+        <FieldError name="production_country" />
       </div>
     </div>
   );

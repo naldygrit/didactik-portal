@@ -23,19 +23,22 @@ const wizardSchema = z.object({
     ['feature_film', 'short_film', 'documentary', 'tv_episode', 'music_video', 'broadcast_recording', 'interview', 'other'],
     { error: 'Select an asset type' },
   ),
-  production_year: z
-    .preprocess(
-      (v) => (v === '' || v === undefined || v === null || Number.isNaN(v) ? undefined : Number(v)),
-      z.number().int().min(1900).max(2030).optional(),
-    ),
-  description: z.string().max(5000).optional(),
+  // A licensing catalogue listing needs year, synopsis, language and country of
+  // origin to be discoverable and saleable (Filmhub, Apple TV and the MovieLabs
+  // MEC spec all require these), so they are not optional. Only the
+  // original-language title is genuinely optional.
+  production_year: z.preprocess(
+    (v) => (v === '' || v === undefined || v === null || Number.isNaN(v) ? undefined : Number(v)),
+    z.number({ error: 'Production year is required' }).int().min(1900).max(2030),
+  ),
+  description: z.string().min(20, 'Write a short synopsis (at least 20 characters)').max(5000),
   primary_language: z.preprocess(
     (v) => (v === '' || v === undefined || v === null || Number.isNaN(Number(v)) ? undefined : Number(v)),
-    z.number().int().positive().optional(),
+    z.number({ error: 'Select the primary language' }).int().positive(),
   ),
   production_country: z.preprocess(
     (v) => (v === '' || v === undefined || v === null || Number.isNaN(Number(v)) ? undefined : Number(v)),
-    z.number().int().positive().optional(),
+    z.number({ error: 'Select the country of production' }).int().positive(),
   ),
   // Step 2 — Submitter attestation
   submitter_name: z.string().min(1, 'Your name is required').max(300),
@@ -52,7 +55,7 @@ export type WizardFormData = z.infer<typeof wizardSchema>;
 // into "Rights & consent" (it was a redundant standalone step); the sensitive
 // legal confirmation sits last, before upload, per submission-flow research.
 const STEP_FIELDS: Record<1 | 2, (keyof WizardFormData)[]> = {
-  1: ['title', 'asset_type'],
+  1: ['title', 'asset_type', 'production_year', 'description', 'primary_language', 'production_country'],
   2: ['submitter_name', 'submitter_contact', 'consented'],
 };
 
@@ -166,7 +169,7 @@ export function ProductionSubmitPage() {
                     >
                       {s.rail}
                     </div>
-                    <div className="text-xs text-gray-400">{s.desc}</div>
+                    <div className="text-xs text-gray-500">{s.desc}</div>
                   </div>
                 </li>
               );

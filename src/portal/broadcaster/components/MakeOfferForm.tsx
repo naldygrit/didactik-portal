@@ -24,7 +24,8 @@ const fieldClass =
   'w-full rounded-lg border border-white/12 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[var(--accent)]';
 
 // The priced bid. An accepted offer becomes a deal on which Didactik takes its
-// commission. Gated server-side on screener access.
+// commission. Not gated on screening; the producer sees whether the bidder
+// screened.
 export function MakeOfferForm({ slug }: { slug: string }) {
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<State>('idle');
