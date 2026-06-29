@@ -63,9 +63,24 @@ all scoped under `.portal-control`. `PortalLayout` picks theme by path PREFIX
 (`/portal/admin` vs `/portal/broadcaster`) — do NOT use bare substring match
 (`/portal/admin/broadcasters` contains "broadcaster").
 
+## Onboarding (DONE)
+- Pre-auth "Apply for access" at `/portal/apply` (src/portal/onboarding/):
+  unified entry → choose broadcaster/production → minimal org+contact form →
+  submit → confirmation. Low-friction by design; profile enriched after
+  verification. Mock handler POST /api/v1/onboarding/applications/ (201).
+  Login page links to it. REAL BACKEND ENDPOINT PENDING: POST
+  /api/v1/onboarding/applications/ should create an UNVERIFIED org (+ contact)
+  that lands in the admin "Organisations awaiting verification" queue. Marketing
+  CTA added in didactik-media (Samuel's) Home -> /portal/apply.
+
 ## Known gaps / next
-- **Production → TuneCore reskin** (the remaining skin; production is still the
-  generic YouTube-Studio light).
+- **Broadcaster port NOT done**: a background agent died mid-run leaving only a
+  broken types.ts edit, which was reverted. The broadcaster IMDb-Pro title
+  detail + activity strip still need building (reference: Portal/didactik-broadcaster.jsx;
+  same rules — replace YouTube/audience panel with first-party in-territory
+  discovery; stub credits/awards/subtitles, now backed by Credit/TitleLanguageTrack).
+- **Wire Credits/Subtitles to real data**: backend now serves `credits` +
+  `language_tracks`; the production detail Credits panel still honest-stubs — wire it.
 - **Library "Screeners" column** shows `—` — needs `screener_request_count` on the
   backend admin titles serializer. Frontend column ready.
 - **Verify button** (org tables) disabled — needs a backend verification endpoint

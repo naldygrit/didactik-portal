@@ -133,6 +133,16 @@ export const handlers = [
     return HttpResponse.json({ access });
   }),
 
+  // Pre-auth onboarding application. Mirrors the planned backend contract: the
+  // application is accepted and queued for admin verification.
+  http.post(`${API}/onboarding/applications/`, async ({ request }) => {
+    const body = (await request.json()) as { org_name?: string };
+    if (!body?.org_name) {
+      return HttpResponse.json({ detail: 'org_name is required' }, { status: 400 });
+    }
+    return HttpResponse.json({ status: 'received', reference: 'APP-DEMO' }, { status: 201 });
+  }),
+
   http.post(`${API}/auth/refresh/`, () => {
     const user = session.current;
     if (!user) return unauthorized();

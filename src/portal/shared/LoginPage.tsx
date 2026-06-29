@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { postLogin, decodeToken } from './auth';
 import { useAuth } from './AuthContext';
 
@@ -96,6 +96,13 @@ export function LoginPage() {
             {submitting ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
+
+        <p className="mt-6 text-center text-sm text-gray-500">
+          New to Didactik?{' '}
+          <Link to="/portal/apply" className="font-medium" style={{ color: '#5343fd' }}>
+            Apply for access
+          </Link>
+        </p>
       </div>
     </div>
   );

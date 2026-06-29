@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './shared/AuthContext';
 import { ProtectedRoute } from './shared/ProtectedRoute';
 import { DashboardRedirect } from './shared/DashboardRedirect';
 import { LoginPage } from './shared/LoginPage';
+import { ApplyPage } from './onboarding/ApplyPage';
 import { PortalLayout } from './shared/PortalLayout';
 import { queryClient } from './shared/queryClient';
 import { BroadcasterDashboardPage } from './broadcaster/pages/DashboardPage';
@@ -32,6 +33,7 @@ function PortalRoutes() {
   return (
     <Routes>
       <Route path="login" element={<LoginPage />} />
+      <Route path="apply" element={<ApplyPage />} />
       <Route path="" element={<DashboardRedirect />} />
       <Route
         element={
