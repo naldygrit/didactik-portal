@@ -107,7 +107,7 @@ function PortalRoutes() {
           }
         />
         <Route
-          path="broadcaster/discover/:id"
+          path="broadcaster/discover/:slug"
           element={
             <ProtectedRoute isAllowed={isBC}>
               <BroadcasterAssetDetailPage />

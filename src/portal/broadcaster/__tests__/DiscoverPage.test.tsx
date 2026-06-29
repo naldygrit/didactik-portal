@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BroadcasterDiscoverPage } from '../pages/DiscoverPage';
-import type { AssetListItem, PaginatedResponse, SearchAsset } from '../../shared/types';
+import type { Title } from '../../shared/types';
 
 vi.mock('../../shared/apiHelpers', () => ({
   apiGet: vi.fn(),
@@ -11,35 +11,62 @@ vi.mock('../../shared/apiHelpers', () => ({
   paginationPath: (url: string) => url,
 }));
 
-const mockAssets: AssetListItem[] = [
+const mockTitles: Title[] = [
   {
     id: 10,
-    title: 'Mandela',
+    uuid: 'u-10',
+    slug: 'mandela',
+    name: 'Mandela',
     original_title: '',
-    asset_type: 'documentary',
-    status: 'ready_to_list',
-    production_year: 2021,
-    primary_language: { id: 1, code: 'en', english_name: 'English' },
-    production_country: { id: 1, code: 'ZA', name: 'South Africa' },
+    title_type: 'documentary',
     production_company: { id: 2, name: 'SA Films' },
-    storage_backend: 'b2',
-    created_at: new Date().toISOString(),
-    taxonomy_count: 3,
+    production_year: 2021,
+    country_of_origin: { id: 1, code: 'ZA', name: 'South Africa' },
+    co_production_countries: [],
+    original_language: { id: 1, code: 'eng', english_name: 'English' },
+    dialogue_languages: [],
+    genres: [],
+    cultural_tags: [],
+    maturity_rating: null,
+    logline: '',
+    synopsis: '',
+    runtime_minutes: 120,
+    episode_count: null,
+    season_count: null,
+    awards: [],
+    festival_selections: [],
+    resolution: 'HD',
+    aspect_ratio: '1.85:1',
+    is_featured: false,
+  },
+  {
+    id: 11,
+    uuid: 'u-11',
+    slug: 'riverwood-nights',
+    name: 'Riverwood Nights',
+    original_title: '',
+    title_type: 'tv_episode',
+    production_company: { id: 3, name: 'Riverwood Ensemble' },
+    production_year: 2025,
+    country_of_origin: { id: 2, code: 'KE', name: 'Kenya' },
+    co_production_countries: [],
+    original_language: { id: 5, code: 'swa', english_name: 'Swahili' },
+    dialogue_languages: [],
+    genres: [],
+    cultural_tags: [],
+    maturity_rating: null,
+    logline: '',
+    synopsis: '',
+    runtime_minutes: 44,
+    episode_count: 8,
+    season_count: 1,
+    awards: [],
+    festival_selections: [],
+    resolution: 'HD',
+    aspect_ratio: '1.78:1',
+    is_featured: false,
   },
 ];
-
-const mockSearchResults: PaginatedResponse<SearchAsset> = {
-  count: 1,
-  next: null,
-  previous: null,
-  results: [
-    {
-      ...mockAssets[0],
-      matched_fields: ['title'],
-      highlight: 'Mandela',
-    },
-  ],
-};
 
 function Wrapper({ children }: { children: React.ReactNode }) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -53,9 +80,9 @@ function Wrapper({ children }: { children: React.ReactNode }) {
 describe('BroadcasterDiscoverPage', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('renders asset list in default (non-search) state', async () => {
+  it('renders the title list in default (non-search) state', async () => {
     const { apiGet } = await import('../../shared/apiHelpers');
-    vi.mocked(apiGet).mockResolvedValue(mockAssets);
+    vi.mocked(apiGet).mockResolvedValue(mockTitles);
 
     render(<BroadcasterDiscoverPage />, { wrapper: Wrapper });
 
@@ -63,22 +90,22 @@ describe('BroadcasterDiscoverPage', () => {
     expect(screen.getByText('South Africa')).toBeDefined();
   });
 
-  it('switches to search results when query is typed', async () => {
+  it('filters client-side when a query is typed', async () => {
     const { apiGet } = await import('../../shared/apiHelpers');
-    // First call (idle): return assets. Second call (search): return paginated results.
-    vi.mocked(apiGet)
-      .mockResolvedValueOnce(mockAssets)
-      .mockResolvedValueOnce(mockSearchResults);
+    vi.mocked(apiGet).mockResolvedValue(mockTitles);
 
     render(<BroadcasterDiscoverPage />, { wrapper: Wrapper });
 
+    await screen.findByText('Mandela');
     const searchInput = screen.getByPlaceholderText(/Search titles/);
     fireEvent.change(searchInput, { target: { value: 'Mandela' } });
 
     expect(await screen.findByText('1 result')).toBeDefined();
+    // The non-matching title is filtered out.
+    expect(screen.queryByText('Riverwood Nights')).toBeNull();
   });
 
-  it('shows empty state when no assets available', async () => {
+  it('shows empty state when no titles available', async () => {
     const { apiGet } = await import('../../shared/apiHelpers');
     vi.mocked(apiGet).mockResolvedValue([]);
 

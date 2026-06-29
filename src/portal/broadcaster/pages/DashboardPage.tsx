@@ -2,28 +2,23 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { apiGet } from '../../shared/apiHelpers';
-import type { AssetListItem } from '../../shared/types';
+import type { Title } from '../../shared/types';
 import { Billboard } from '../components/Billboard';
 import { ContentRail } from '../components/ContentRail';
 import { DetailModal } from '../components/DetailModal';
 
 export function BroadcasterDashboardPage() {
-  const [selected, setSelected] = useState<AssetListItem | null>(null);
+  const [selected, setSelected] = useState<Title | null>(null);
 
-  const { data, isLoading, isError } = useQuery<AssetListItem[]>({
-    queryKey: ['assets'],
-    queryFn: () => apiGet<AssetListItem[]>('/api/v1/assets/'),
+  const { data, isLoading, isError } = useQuery<Title[]>({
+    queryKey: ['broadcaster-titles'],
+    queryFn: () => apiGet<Title[]>('/api/v1/broadcaster/titles/'),
   });
   const { data: interests } = useQuery<string[]>({
     queryKey: ['me-interests'],
     queryFn: () => apiGet<string[]>('/api/v1/me/interests/'),
   });
   const personalized = (interests?.length ?? 0) > 0;
-  const { data: recommended } = useQuery<AssetListItem[]>({
-    queryKey: ['recommendations'],
-    queryFn: () => apiGet<AssetListItem[]>('/api/v1/recommendations/'),
-    enabled: personalized,
-  });
 
   if (isLoading) return <BrowseSkeleton />;
 
@@ -38,21 +33,19 @@ export function BroadcasterDashboardPage() {
     );
   }
 
-  const [featured, ...rest] = data;
-  const rails: { title: string; assets: AssetListItem[] }[] = [];
-  if (personalized && recommended && recommended.length > 0) {
-    rails.push({ title: 'Top picks for you', assets: recommended });
-  }
-  rails.push(
-    { title: 'Ready to license', assets: data },
-    { title: 'Documentaries', assets: data.filter((a) => a.asset_type === 'documentary') },
-    { title: 'Feature films', assets: data.filter((a) => a.asset_type === 'feature_film') },
-    { title: 'More to explore', assets: rest },
-  );
+  // Lead with a featured title when one is flagged; otherwise the first title.
+  const featured = data.find((t) => t.is_featured) ?? data[0];
+  const rest = data.filter((t) => t.slug !== featured.slug);
+  const rails: { title: string; titles: Title[] }[] = [
+    { title: 'Available to license', titles: data },
+    { title: 'Documentaries', titles: data.filter((t) => t.title_type === 'documentary') },
+    { title: 'Feature films', titles: data.filter((t) => t.title_type === 'feature_film') },
+    { title: 'More to explore', titles: rest },
+  ];
 
   return (
     <div className="pb-16">
-      <Billboard asset={featured} onSelect={setSelected} />
+      <Billboard title={featured} onSelect={setSelected} />
       <div className="-mt-6 space-y-8 md:-mt-10">
         {/* Personalisation prompt / status */}
         <Link
@@ -70,10 +63,15 @@ export function BroadcasterDashboardPage() {
         </Link>
 
         {rails.map((rail) => (
-          <ContentRail key={rail.title} title={rail.title} assets={rail.assets} onSelect={setSelected} />
+          <ContentRail
+            key={rail.title}
+            title={rail.title}
+            titles={rail.titles}
+            onSelect={setSelected}
+          />
         ))}
       </div>
-      <DetailModal asset={selected} onClose={() => setSelected(null)} />
+      <DetailModal title={selected} onClose={() => setSelected(null)} />
     </div>
   );
 }

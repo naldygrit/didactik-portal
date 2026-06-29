@@ -1,18 +1,18 @@
 import { useRef } from 'react';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-import type { AssetListItem } from '../../shared/types';
+import type { Title } from '../../shared/types';
 import { PosterCard } from './PosterCard';
 
 interface Props {
   title: string;
-  assets: AssetListItem[];
-  onSelect: (asset: AssetListItem) => void;
+  titles: Title[];
+  onSelect: (title: Title) => void;
 }
 
-export function ContentRail({ title, assets, onSelect }: Props) {
+export function ContentRail({ title, titles, onSelect }: Props) {
   const trackRef = useRef<HTMLDivElement>(null);
 
-  if (assets.length === 0) return null;
+  if (titles.length === 0) return null;
 
   function nudge(direction: 1 | -1) {
     const track = trackRef.current;
@@ -30,8 +30,8 @@ export function ContentRail({ title, assets, onSelect }: Props) {
         ref={trackRef}
         className="rail-scroll flex gap-3 overflow-x-auto px-4 pb-2 md:px-8"
       >
-        {assets.map((asset) => (
-          <PosterCard key={asset.id} asset={asset} onSelect={onSelect} />
+        {titles.map((t) => (
+          <PosterCard key={t.slug} title={t} onSelect={onSelect} />
         ))}
       </div>
 

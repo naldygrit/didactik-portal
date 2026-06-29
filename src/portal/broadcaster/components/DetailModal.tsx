@@ -1,52 +1,46 @@
 import { useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { FiX } from 'react-icons/fi';
-import { apiGet } from '../../shared/apiHelpers';
-import type { AssetDetail, AssetListItem } from '../../shared/types';
-import { assetTypeLabel, backdropUrl } from '../posters';
-import { BidPanel } from './BidPanel';
+import type { Title } from '../../shared/types';
+import { titleTypeLabel, titleBackdropUrl } from '../posters';
+import { ScreenerPanel } from './ScreenerPanel';
 
 interface Props {
-  asset: AssetListItem | null;
+  title: Title | null;
   onClose: () => void;
 }
 
-export function DetailModal({ asset, onClose }: Props) {
+export function DetailModal({ title, onClose }: Props) {
   const reduce = useReducedMotion();
-  const [showBid, setShowBid] = useState(false);
-
-  const { data } = useQuery<AssetDetail>({
-    queryKey: ['asset', asset?.id],
-    queryFn: () => apiGet<AssetDetail>(`/api/v1/assets/${asset!.id}/`),
-    enabled: asset !== null,
-  });
+  const [showScreener, setShowScreener] = useState(false);
 
   useEffect(() => {
-    if (!asset) return;
-    setShowBid(false);
+    if (!title) return;
+    setShowScreener(false);
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose();
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [asset, onClose]);
+  }, [title, onClose]);
 
-  const meta = asset
+  const meta = title
     ? [
-        assetTypeLabel(asset.asset_type),
-        asset.production_year,
-        asset.primary_language?.english_name,
-        asset.production_country?.name,
-        asset.production_company?.name,
+        titleTypeLabel(title.title_type),
+        title.production_year,
+        title.original_language?.english_name,
+        title.country_of_origin?.name,
+        title.production_company?.name,
       ]
         .filter(Boolean)
         .join('  ·  ')
     : '';
 
+  const blurb = title ? title.synopsis || title.logline || '' : '';
+
   return (
     <AnimatePresence>
-      {asset && (
+      {title && (
         <motion.div
           className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm md:items-center"
           initial={{ opacity: 0 }}
@@ -58,7 +52,7 @@ export function DetailModal({ asset, onClose }: Props) {
           <motion.div
             role="dialog"
             aria-modal="true"
-            aria-label={asset.title}
+            aria-label={title.name}
             className="portal-cinema relative max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-2xl md:rounded-2xl"
             initial={reduce ? false : { scale: 0.96, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -68,7 +62,7 @@ export function DetailModal({ asset, onClose }: Props) {
           >
             <div className="relative h-48 w-full md:h-60">
               <img
-                src={backdropUrl(asset)}
+                src={titleBackdropUrl(title)}
                 alt=""
                 className="h-full w-full object-cover opacity-45"
               />
@@ -92,29 +86,34 @@ export function DetailModal({ asset, onClose }: Props) {
             <div className="space-y-4 p-5 md:p-7">
               <div>
                 <h2 className="font-display text-2xl font-bold text-white md:text-3xl">
-                  {asset.title}
+                  {title.name}
                 </h2>
-                {asset.original_title && asset.original_title !== asset.title && (
-                  <p className="text-sm italic text-[var(--muted)]">{asset.original_title}</p>
+                {title.original_title && title.original_title !== title.name && (
+                  <p className="text-sm italic text-[var(--muted)]">{title.original_title}</p>
                 )}
                 <p className="mt-1 text-xs font-medium uppercase tracking-wide text-[var(--accent-2)]">
                   {meta}
                 </p>
               </div>
 
-              <p className="text-sm leading-relaxed text-[var(--ink)]/85">
-                {data?.description ?? 'Loading…'}
-              </p>
+              <p className="text-sm leading-relaxed text-[var(--ink)]/85">{blurb}</p>
 
-              {data && data.taxonomy_tags.length > 0 && (
+              {(title.genres.length > 0 || title.cultural_tags.length > 0) && (
                 <div className="flex flex-wrap gap-2">
-                  {data.taxonomy_tags.map((t) => (
+                  {title.genres.map((g) => (
                     <span
-                      key={t.id}
+                      key={`g-${g.id}`}
                       className="rounded-full bg-[var(--surface-hover)] px-3 py-1 text-xs text-[var(--ink)]/80"
-                      title={t.english_gloss}
                     >
-                      {t.term}
+                      {g.name}
+                    </span>
+                  ))}
+                  {title.cultural_tags.map((t) => (
+                    <span
+                      key={`c-${t.id}`}
+                      className="rounded-full bg-[var(--surface-hover)] px-3 py-1 text-xs text-[var(--ink)]/80"
+                    >
+                      {t.name}
                     </span>
                   ))}
                 </div>
@@ -123,10 +122,10 @@ export function DetailModal({ asset, onClose }: Props) {
               <div className="flex flex-wrap items-center gap-3 pt-1">
                 <button
                   type="button"
-                  onClick={() => setShowBid(true)}
+                  onClick={() => setShowScreener(true)}
                   className="btn-gradient inline-flex items-center rounded-full px-6 py-2.5 text-sm font-semibold"
                 >
-                  Place a bid
+                  Request screener
                 </button>
                 <button
                   type="button"
@@ -137,7 +136,7 @@ export function DetailModal({ asset, onClose }: Props) {
                 </button>
               </div>
 
-              {showBid && <BidPanel assetId={asset.id} />}
+              {showScreener && <ScreenerPanel slug={title.slug} />}
             </div>
           </motion.div>
         </motion.div>

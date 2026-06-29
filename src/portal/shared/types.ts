@@ -180,6 +180,123 @@ export interface InterestOption {
   label: string;
 }
 
+// ── Screener model (broadcaster portal) ──────────────────────────────────────
+// The broadcaster portal browses Titles (slug-based, public projection),
+// inspects per-territory rights availability, requests watermarked screeners
+// (admin-moderated), and keeps a watchlist. These types mirror the live
+// /api/v1/broadcaster/* contracts and replace the legacy bid/deal flow.
+
+// A minimal {id,name} reference used inside Title for the production company.
+export interface TitleBrief {
+  id: number;
+  name: string;
+}
+
+// A reference {id,code,name} used for countries on a Title (distinct from the
+// admin Country which omits no fields — this is the same shape, kept explicit
+// so the broadcaster projection is self-documenting).
+export interface TitleCountry {
+  id: number;
+  code: string;
+  name: string;
+}
+
+// A reference {id,code,english_name} used for languages on a Title.
+export interface TitleLanguage {
+  id: number;
+  code: string;
+  english_name: string;
+}
+
+export interface TitleGenre {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+export interface TitleCulturalTag {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+export interface TitleMaturityRating {
+  id: number;
+  code: string;
+  rating_system: string;
+}
+
+// The public Title projection the broadcaster portal browses. Active titles
+// only; no status / metadata_score / licensing_intent (those are admin-only).
+export interface Title {
+  id: number;
+  uuid: string;
+  slug: string;
+  name: string;
+  original_title: string;
+  title_type: string;
+  production_company: TitleBrief;
+  production_year: number | null;
+  country_of_origin: TitleCountry | null;
+  co_production_countries: TitleCountry[];
+  original_language: TitleLanguage | null;
+  dialogue_languages: TitleLanguage[];
+  genres: TitleGenre[];
+  cultural_tags: TitleCulturalTag[];
+  maturity_rating: TitleMaturityRating | null;
+  logline: string;
+  synopsis: string;
+  runtime_minutes: number | null;
+  episode_count: number | null;
+  season_count: number | null;
+  awards: unknown[];
+  festival_selections: unknown[];
+  resolution: string;
+  aspect_ratio: string;
+  is_featured: boolean;
+}
+
+export type RightsType = 'broadcast' | 'svod' | 'avod' | 'tvod' | 'theatrical' | 'all';
+
+// One territory's rights window for a Title, from the broadcaster's perspective.
+export interface RightsRow {
+  territory: string;
+  rights_type: RightsType;
+  is_exclusive: boolean;
+  available_from: string | null;
+  available_until: string | null;
+  availability: 'available' | 'licensed';
+}
+
+export type WatchlistPriority = '' | 'high' | 'medium' | 'low';
+
+export interface WatchlistEntry {
+  id: number;
+  title_slug: string;
+  title_name: string;
+  internal_note: string;
+  priority: WatchlistPriority;
+  added_at: string;
+}
+
+export type ScreenerStatus = 'pending' | 'approved' | 'declined' | 'expired' | 'accessed';
+
+export type ScreenerPurpose =
+  | 'acquisition_evaluation'
+  | 'programming_review'
+  | 'co_production_interest'
+  | 'archival_research';
+
+export interface ScreenerSummary {
+  uuid: string;
+  title_slug: string;
+  title_name: string;
+  purpose: string;
+  status: ScreenerStatus;
+  requested_at: string;
+  access_expires_at: string | null;
+}
+
 // Per-title market interest for the production Analytics view.
 export interface ProductionTitleStat {
   asset_id: number;

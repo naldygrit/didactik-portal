@@ -74,7 +74,7 @@ export function PortalLayout() {
                   isActive ? 'text-white' : 'text-[var(--muted)] transition-colors hover:text-white'
                 }
               >
-                Licences
+                My activity
               </NavLink>
             </nav>
           </div>

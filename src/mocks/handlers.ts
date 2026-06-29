@@ -5,7 +5,10 @@ import type {
   BidBoard,
   DealDeskItem,
   ProductionTitleStat,
+  ScreenerPurpose,
+  ScreenerSummary,
   SearchAsset,
+  WatchlistEntry,
 } from '../portal/shared/types';
 import { encodeMockJwt } from './jwt';
 import {
@@ -13,20 +16,26 @@ import {
   allocateBidId,
   allocateDealId,
   allocatePayoutAccountId,
+  allocateWatchlistId,
   assets,
   bids,
   broadcasters,
   countries,
   deals,
+  findTitleBySlug,
   interestOptions,
   languages,
   LICENSE_CURRENCY,
   licenseRanges,
   payoutAccounts,
   productionCompanies,
+  screenerRequests,
   session,
+  titleRights,
+  titles,
   userInterests,
   users,
+  watchlist,
 } from './db';
 import type { Deal, LicenseType, MockUser, PayoutAccount } from './db';
 
@@ -435,6 +444,95 @@ export const handlers = [
       return HttpResponse.json(titles);
     }),
   ),
+
+  // ── Broadcaster: Titles (screener model) ───────────────────────────────────
+  // Public Title projection — active titles only, slug-based. Returns a bare
+  // array (no pagination wrapper), matching the live contract.
+  http.get(`${API}/broadcaster/titles/`, () => {
+    if (!session.current) return unauthorized();
+    return HttpResponse.json(titles);
+  }),
+
+  http.get(`${API}/broadcaster/titles/:slug/`, ({ params }) => {
+    if (!session.current) return unauthorized();
+    const title = findTitleBySlug(String(params.slug));
+    if (!title) return HttpResponse.json({ detail: 'Not found.' }, { status: 404 });
+    return HttpResponse.json(title);
+  }),
+
+  http.get(`${API}/broadcaster/titles/:slug/rights/`, ({ params }) => {
+    if (!session.current) return unauthorized();
+    const title = findTitleBySlug(String(params.slug));
+    if (!title) return HttpResponse.json({ detail: 'Not found.' }, { status: 404 });
+    return HttpResponse.json(titleRights[title.slug] ?? []);
+  }),
+
+  // ── Broadcaster: Watchlist ──────────────────────────────────────────────────
+  http.get(`${API}/broadcaster/watchlist/`, () => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    return HttpResponse.json(watchlist[user.user_id] ?? []);
+  }),
+
+  // Idempotent: 200 if the title is already on the list, 201 if newly added.
+  http.post(`${API}/broadcaster/watchlist/`, async ({ request }) => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    const body = (await request.json()) as {
+      title_slug?: string;
+      internal_note?: string;
+      priority?: string;
+    };
+    const title = body.title_slug ? findTitleBySlug(body.title_slug) : undefined;
+    if (!title) return HttpResponse.json({ detail: 'Not found.' }, { status: 404 });
+
+    const list = (watchlist[user.user_id] ??= []);
+    const existing = list.find((e) => e.title_slug === title.slug);
+    if (existing) return HttpResponse.json(existing, { status: 200 });
+
+    const entry: WatchlistEntry = {
+      id: allocateWatchlistId(),
+      title_slug: title.slug,
+      title_name: title.name,
+      internal_note: String(body.internal_note ?? ''),
+      priority: (body.priority as WatchlistEntry['priority']) ?? '',
+      added_at: new Date().toISOString(),
+    };
+    list.push(entry);
+    return HttpResponse.json(entry, { status: 201 });
+  }),
+
+  // ── Broadcaster: Screener requests ──────────────────────────────────────────
+  http.get(`${API}/broadcaster/screener-requests/`, () => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    return HttpResponse.json(screenerRequests[user.user_id] ?? []);
+  }),
+
+  http.post(`${API}/broadcaster/screener-requests/`, async ({ request }) => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    const body = (await request.json()) as {
+      title_slug?: string;
+      purpose?: ScreenerPurpose;
+      territory_interest?: number[];
+      message_to_producer?: string;
+    };
+    const title = body.title_slug ? findTitleBySlug(body.title_slug) : undefined;
+    if (!title) return HttpResponse.json({ detail: 'Not found.' }, { status: 404 });
+
+    const summary: ScreenerSummary = {
+      uuid: crypto.randomUUID(),
+      title_slug: title.slug,
+      title_name: title.name,
+      purpose: body.purpose ?? 'acquisition_evaluation',
+      status: 'pending',
+      requested_at: new Date().toISOString(),
+      access_expires_at: null,
+    };
+    (screenerRequests[user.user_id] ??= []).push(summary);
+    return HttpResponse.json(summary, { status: 201 });
+  }),
 
   // ── Reference data ────────────────────────────────────────────────────────
   http.get(`${API}/languages/`, () => HttpResponse.json(languages)),

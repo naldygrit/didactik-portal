@@ -7,7 +7,11 @@ import type {
   Country,
   Language,
   MeResponse,
+  RightsRow,
+  ScreenerSummary,
   TaxonomyTag,
+  Title,
+  WatchlistEntry,
 } from '../portal/shared/types';
 
 export interface MockUser {
@@ -427,3 +431,215 @@ export const interestOptions: InterestOption[] = [
 
 // Picked interests per user id (set at onboarding).
 export const userInterests: Record<number, string[]> = {};
+
+// ── Screener model (broadcaster portal) ──────────────────────────────────────
+// The broadcaster portal browses Titles (slug-based public projection), inspects
+// per-territory rights availability, requests watermarked screeners, and keeps a
+// watchlist. These seeds mirror the live /api/v1/broadcaster/* contracts. Names
+// intentionally match the listable assets above so demos read consistently.
+
+const tLang = (code: string, english_name: string, id: number) => ({ id, code, english_name });
+const tCountry = (code: string, name: string, id: number) => ({ id, code, name });
+
+export const titles: Title[] = [
+  {
+    id: 101,
+    uuid: '00000000-0000-0000-0000-000000000101',
+    slug: 'lagos-after-dark',
+    name: 'Lagos After Dark',
+    original_title: 'Èkó Lálẹ́',
+    title_type: 'feature_film',
+    production_company: { id: 1, name: 'EbonyLife Studios' },
+    production_year: 2024,
+    country_of_origin: tCountry('NG', 'Nigeria', 1),
+    co_production_countries: [],
+    original_language: tLang('yor', 'Yoruba', 1),
+    dialogue_languages: [tLang('yor', 'Yoruba', 1), tLang('pcm', 'Nigerian Pidgin', 4)],
+    genres: [{ id: 1, name: 'Crime Drama', slug: 'crime-drama' }],
+    cultural_tags: [{ id: 1, name: 'Lagos', slug: 'lagos' }],
+    maturity_rating: { id: 1, code: '18', rating_system: 'NFVCB' },
+    logline: 'One night across Lagos, three strangers collide.',
+    synopsis:
+      'A neon-lit crime drama tracing one night across Lagos through the eyes of a danfo driver, a market trader, and an off-duty officer whose paths collide.',
+    runtime_minutes: 118,
+    episode_count: null,
+    season_count: null,
+    awards: [],
+    festival_selections: [],
+    resolution: '4K',
+    aspect_ratio: '2.39:1',
+    is_featured: true,
+  },
+  {
+    id: 102,
+    uuid: '00000000-0000-0000-0000-000000000102',
+    slug: 'the-salt-harvesters',
+    name: 'The Salt Harvesters',
+    original_title: 'Wavunaji wa Chumvi',
+    title_type: 'documentary',
+    production_company: { id: 2, name: 'Riverwood Ensemble' },
+    production_year: 2023,
+    country_of_origin: tCountry('KE', 'Kenya', 2),
+    co_production_countries: [],
+    original_language: tLang('swa', 'Swahili', 5),
+    dialogue_languages: [tLang('swa', 'Swahili', 5)],
+    genres: [{ id: 2, name: 'Documentary', slug: 'documentary' }],
+    cultural_tags: [{ id: 2, name: 'Lake Magadi', slug: 'lake-magadi' }],
+    maturity_rating: null,
+    logline: 'Three generations reckon with a vanishing trade.',
+    synopsis:
+      'Along the shores of Lake Magadi, three generations of salt harvesters reckon with drought, tourism, and a vanishing trade.',
+    runtime_minutes: 92,
+    episode_count: null,
+    season_count: null,
+    awards: [],
+    festival_selections: [],
+    resolution: 'HD',
+    aspect_ratio: '1.85:1',
+    is_featured: false,
+  },
+  {
+    id: 103,
+    uuid: '00000000-0000-0000-0000-000000000103',
+    slug: 'harmattan-letters',
+    name: 'Harmattan Letters',
+    original_title: 'Harmattan Letters',
+    title_type: 'feature_film',
+    production_company: { id: 1, name: 'EbonyLife Studios' },
+    production_year: 2025,
+    country_of_origin: tCountry('GH', 'Ghana', 7),
+    co_production_countries: [],
+    original_language: tLang('eng', 'English', 10),
+    dialogue_languages: [tLang('eng', 'English', 10)],
+    genres: [{ id: 3, name: 'Drama', slug: 'drama' }],
+    cultural_tags: [],
+    maturity_rating: { id: 2, code: 'PG', rating_system: 'NFVCB' },
+    logline: 'Two estranged sisters rebuild through a year of letters.',
+    synopsis:
+      'Two estranged sisters in Accra rebuild their relationship through a year of handwritten letters as the dry Harmattan winds sweep down from the Sahel.',
+    runtime_minutes: 105,
+    episode_count: null,
+    season_count: null,
+    awards: [],
+    festival_selections: [],
+    resolution: '4K',
+    aspect_ratio: '1.85:1',
+    is_featured: false,
+  },
+  {
+    id: 104,
+    uuid: '00000000-0000-0000-0000-000000000104',
+    slug: 'riverwood-nights',
+    name: 'Riverwood Nights',
+    original_title: 'Riverwood Nights',
+    title_type: 'tv_episode',
+    production_company: { id: 2, name: 'Riverwood Ensemble' },
+    production_year: 2025,
+    country_of_origin: tCountry('KE', 'Kenya', 2),
+    co_production_countries: [],
+    original_language: tLang('swa', 'Swahili', 5),
+    dialogue_languages: [tLang('swa', 'Swahili', 5)],
+    genres: [{ id: 4, name: 'Comedy', slug: 'comedy' }],
+    cultural_tags: [],
+    maturity_rating: null,
+    logline: 'A Nairobi film crew shoots on a shoestring.',
+    synopsis:
+      'Episode 1 of the anthology series following a Nairobi film crew shooting on a shoestring budget.',
+    runtime_minutes: 44,
+    episode_count: 8,
+    season_count: 1,
+    awards: [],
+    festival_selections: [],
+    resolution: 'HD',
+    aspect_ratio: '1.78:1',
+    is_featured: false,
+  },
+  {
+    id: 105,
+    uuid: '00000000-0000-0000-0000-000000000105',
+    slug: 'the-griot-of-saint-louis',
+    name: 'The Griot of Saint-Louis',
+    original_title: 'Le Griot de Saint-Louis',
+    title_type: 'documentary',
+    production_company: { id: 3, name: 'Celluloïde Dakar' },
+    production_year: 2024,
+    country_of_origin: tCountry('SN', 'Senegal', 3),
+    co_production_countries: [],
+    original_language: tLang('fra', 'French', 9),
+    dialogue_languages: [tLang('fra', 'French', 9), tLang('wol', 'Wolof', 6)],
+    genres: [{ id: 2, name: 'Documentary', slug: 'documentary' }],
+    cultural_tags: [{ id: 3, name: 'Oral history', slug: 'oral-history' }],
+    maturity_rating: null,
+    logline: 'An ageing griot preserves four centuries of memory.',
+    synopsis:
+      'A portrait of an ageing griot preserving four centuries of oral history on the island city of Saint-Louis.',
+    runtime_minutes: 78,
+    episode_count: null,
+    season_count: null,
+    awards: [],
+    festival_selections: [],
+    resolution: 'HD',
+    aspect_ratio: '1.85:1',
+    is_featured: false,
+  },
+];
+
+// Per-title territory rights windows, keyed by slug. Mirrors RightsRow[].
+export const titleRights: Record<string, RightsRow[]> = {
+  'lagos-after-dark': [
+    { territory: 'Nigeria', rights_type: 'broadcast', is_exclusive: true, available_from: null, available_until: null, availability: 'available' },
+    { territory: 'Pan-Africa', rights_type: 'svod', is_exclusive: false, available_from: '2026-07-29', available_until: null, availability: 'available' },
+    { territory: 'France', rights_type: 'all', is_exclusive: true, available_from: null, available_until: null, availability: 'licensed' },
+  ],
+  'the-salt-harvesters': [
+    { territory: 'East Africa', rights_type: 'broadcast', is_exclusive: false, available_from: null, available_until: null, availability: 'available' },
+    { territory: 'Worldwide', rights_type: 'avod', is_exclusive: false, available_from: null, available_until: null, availability: 'available' },
+  ],
+  'harmattan-letters': [
+    { territory: 'Worldwide', rights_type: 'svod', is_exclusive: false, available_from: '2026-09-01', available_until: null, availability: 'available' },
+  ],
+  'riverwood-nights': [
+    { territory: 'Kenya', rights_type: 'broadcast', is_exclusive: true, available_from: null, available_until: null, availability: 'available' },
+  ],
+  'the-griot-of-saint-louis': [
+    { territory: 'Francophone Africa', rights_type: 'all', is_exclusive: false, available_from: null, available_until: null, availability: 'available' },
+  ],
+};
+
+// Watchlist entries, keyed by user id (the broadcaster keeps a private list).
+export const watchlist: Record<number, WatchlistEntry[]> = {
+  1: [
+    {
+      id: 1,
+      title_slug: 'the-griot-of-saint-louis',
+      title_name: 'The Griot of Saint-Louis',
+      internal_note: 'Strong fit for the documentary strand.',
+      priority: 'high',
+      added_at: '2026-06-22T09:00:00Z',
+    },
+  ],
+};
+
+let nextWatchlistId = 100;
+export function allocateWatchlistId(): number {
+  return nextWatchlistId++;
+}
+
+// Screener requests, keyed by user id.
+export const screenerRequests: Record<number, ScreenerSummary[]> = {
+  1: [
+    {
+      uuid: '00000000-0000-0000-0000-0000000000a1',
+      title_slug: 'harmattan-letters',
+      title_name: 'Harmattan Letters',
+      purpose: 'acquisition_evaluation',
+      status: 'pending',
+      requested_at: '2026-06-24T11:00:00Z',
+      access_expires_at: null,
+    },
+  ],
+};
+
+export function findTitleBySlug(slug: string): Title | undefined {
+  return titles.find((t) => t.slug === slug);
+}

@@ -33,10 +33,10 @@ function renderDashboard() {
 describe('broadcaster browse surface', () => {
   it('renders the billboard and rails from the catalogue', async () => {
     renderDashboard();
-    // Billboard headline (the first ready_to_list title)
+    // Billboard headline (the featured title)
     expect(await screen.findByRole('heading', { name: 'Lagos After Dark' })).toBeInTheDocument();
     // Rail titles
-    expect(screen.getByText('Ready to license')).toBeInTheDocument();
+    expect(screen.getByText('Available to license')).toBeInTheDocument();
     expect(screen.getByText('Documentaries')).toBeInTheDocument();
   });
 
@@ -46,8 +46,8 @@ describe('broadcaster browse surface', () => {
     // Click a poster card (cards are buttons labelled with the title)
     const cards = screen.getAllByRole('button', { name: /The Salt Harvesters/i });
     fireEvent.click(cards[0]);
-    // Modal dialog appears with the title and a bid CTA
+    // Modal dialog appears with the title and a screener CTA
     expect(await screen.findByRole('dialog', { name: 'The Salt Harvesters' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Place a bid' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Request screener' })).toBeInTheDocument();
   });
 });
