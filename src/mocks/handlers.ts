@@ -3,8 +3,11 @@ import type {
   AdminDashboard,
   AssetDetail,
   AssetListItem,
-  BidBoard,
-  ProductionTitleStat,
+  Completeness,
+  ProductionDashboard,
+  ProductionRightsWindow,
+  ProductionScreenerRequest,
+  ProductionTitle,
   ScreenerPurpose,
   ScreenerSummary,
   SearchAsset,
@@ -16,33 +19,33 @@ import {
   adminScreenerRequests,
   adminTitles,
   allocateAssetId,
-  allocateBidId,
-  allocateDealId,
-  allocatePayoutAccountId,
+  allocateRightsWindowId,
   allocateWatchlistId,
   assets,
-  bids,
   broadcasters,
+  completenessBreakdowns,
   countries,
-  deals,
   findAdminScreener,
   findAdminTitleBySlug,
+  findTerritory,
   findTitleBySlug,
   interestOptions,
   languages,
-  LICENSE_CURRENCY,
-  licenseRanges,
-  payoutAccounts,
   productionCompanies,
+  productionEditorial,
+  productionRightsWindows,
+  productionScreenerRequests,
+  productionTitlePool,
   screenerRequests,
   session,
+  territories,
   titleRights,
   titles,
   userInterests,
   users,
   watchlist,
 } from './db';
-import type { Deal, LicenseType, MockUser, PayoutAccount } from './db';
+import type { MockUser } from './db';
 
 const API = '/api/v1';
 
@@ -77,26 +80,6 @@ function visibleAssets(): AssetDetail[] {
 
 function unauthorized() {
   return HttpResponse.json({ detail: 'Authentication credentials were not provided.' }, { status: 401 });
-}
-
-// Competitive bid state for one title, scoped to the current broadcaster.
-function buildBidBoard(assetId: number, user: MockUser): BidBoard | null {
-  const range = licenseRanges[assetId];
-  if (!range) return null;
-  const assetBids = bids.filter((b) => b.asset_id === assetId);
-  const highest = assetBids.length ? Math.max(...assetBids.map((b) => b.amount)) : null;
-  const bc = user.me.profile?.broadcaster;
-  const mine = bc ? assetBids.find((b) => b.broadcaster_id === bc.id) : undefined;
-  return {
-    license_floor: range.floor,
-    license_ceiling: range.ceiling,
-    currency: LICENSE_CURRENCY,
-    bid_count: assetBids.length,
-    highest_amount: highest,
-    your_bid: mine
-      ? { id: mine.id, amount: mine.amount, created_at: mine.created_at, is_top: mine.amount === highest }
-      : null,
-  };
 }
 
 function isAdmin(user: MockUser): boolean {
@@ -218,155 +201,221 @@ export const handlers = [
     return HttpResponse.json(toListItem(asset));
   }),
 
-  // ── Bidding ───────────────────────────────────────────────────────────────
-  http.get(`${API}/assets/:id/bids/`, ({ params }) => {
+  // ── Production (seller studio) screener/Title model ─────────────────────────
+  // The production portal manages the company's own catalogue. Every endpoint is
+  // scoped to the authed production company (here: the demo producer's EbonyLife).
+  // Returns 403 for non-production users, mirroring the backend's role gate.
+  http.get(`${API}/production/dashboard/`, () => {
     const user = session.current;
     if (!user) return unauthorized();
-    const board = buildBidBoard(Number(params.id), user);
-    if (!board) return HttpResponse.json({ detail: 'Not found.' }, { status: 404 });
-    return HttpResponse.json(board);
-  }),
+    const company = user.me.profile?.production_company;
+    if (!company) return HttpResponse.json({ detail: 'Production companies only.' }, { status: 403 });
 
-  http.post(`${API}/assets/:id/bids/`, async ({ params, request }) => {
-    const user = session.current;
-    if (!user) return unauthorized();
-    const bc = user.me.profile?.broadcaster;
-    if (!bc) return HttpResponse.json({ detail: 'Only broadcasters can place bids.' }, { status: 403 });
-
-    const assetId = Number(params.id);
-    const range = licenseRanges[assetId];
-    if (!range) return HttpResponse.json({ detail: 'Not found.' }, { status: 404 });
-
-    const { amount } = (await request.json()) as { amount: number };
-    if (typeof amount !== 'number' || Number.isNaN(amount)) {
-      return HttpResponse.json({ detail: 'Enter a bid amount.' }, { status: 400 });
+    const mine = productionTitlePool.filter((t) => t.production_company.id === company.id);
+    const byStatus: Record<string, number> = {};
+    let scoreSum = 0;
+    let needsAttention = 0;
+    for (const t of mine) {
+      const ed = productionEditorial[t.slug];
+      const status = ed?.status ?? 'active';
+      byStatus[status] = (byStatus[status] ?? 0) + 1;
+      scoreSum += ed?.metadata_score ?? 0;
+      if ((ed?.metadata_score ?? 0) < 60) needsAttention++;
     }
-    if (amount < range.floor || amount > range.ceiling) {
-      return HttpResponse.json(
-        { detail: `Bid must be within the licensing range (${range.floor}–${range.ceiling}).` },
-        { status: 400 },
-      );
+    const avg = mine.length ? Math.round(scoreSum / mine.length) : 0;
+
+    const screenerByStatus: Record<string, number> = {};
+    let screenerTotal = 0;
+    for (const t of mine) {
+      for (const r of productionScreenerRequests[t.slug] ?? []) {
+        screenerByStatus[r.status] = (screenerByStatus[r.status] ?? 0) + 1;
+        screenerTotal++;
+      }
     }
 
-    const existing = bids.find((b) => b.asset_id === assetId && b.broadcaster_id === bc.id);
-    if (existing) {
-      existing.amount = amount;
-      existing.created_at = new Date().toISOString();
-    } else {
-      bids.push({
-        id: allocateBidId(),
-        asset_id: assetId,
-        broadcaster_id: bc.id,
-        broadcaster_name: bc.name,
-        amount,
-        created_at: new Date().toISOString(),
-      });
+    // Watched titles: how many broadcasters keep each of the company's titles on
+    // their watchlist. Derived from the broadcaster watchlists for realism.
+    const watchCounts = new Map<string, number>();
+    for (const list of Object.values(watchlist)) {
+      for (const entry of list) watchCounts.set(entry.title_slug, (watchCounts.get(entry.title_slug) ?? 0) + 1);
     }
-    return HttpResponse.json(buildBidBoard(assetId, user));
-  }),
+    const watched = mine
+      .map((t) => ({ slug: t.slug, name: t.name, watchers: watchCounts.get(t.slug) ?? 0 }))
+      .filter((w) => w.watchers > 0)
+      .sort((a, b) => b.watchers - a.watchers);
 
-  // ── Deals ─────────────────────────────────────────────────────────────────
-  // Role-scoped: broadcaster sees deals they won, producer sees deals on their
-  // titles, admin sees all.
-  http.get(`${API}/deals/`, () => {
-    const user = session.current;
-    if (!user) return unauthorized();
-    const p = user.me.profile;
-    if (isAdmin(user)) return HttpResponse.json(deals);
-    if (p?.role === 'broadcaster_user' && p.broadcaster) {
-      return HttpResponse.json(deals.filter((d) => d.broadcaster_id === p.broadcaster!.id));
-    }
-    if (p?.role === 'production_company_user' && p.production_company) {
-      const companyId = p.production_company.id;
-      return HttpResponse.json(
-        deals.filter((d) => assets.find((a) => a.id === d.asset_id)?.production_company?.id === companyId),
-      );
-    }
-    return HttpResponse.json([]);
-  }),
-
-  // Admin accepts the top bid on the producer's behalf and records licence terms.
-  http.post(`${API}/assets/:id/accept-bid/`, async ({ params, request }) => {
-    const user = session.current;
-    if (!user) return unauthorized();
-    if (!isAdmin(user)) return HttpResponse.json({ detail: 'Admin only.' }, { status: 403 });
-
-    const assetId = Number(params.id);
-    const asset = assets.find((a) => a.id === assetId);
-    if (!asset) return HttpResponse.json({ detail: 'Not found.' }, { status: 404 });
-    if (deals.some((d) => d.asset_id === assetId)) {
-      return HttpResponse.json({ detail: 'This title is already licensed.' }, { status: 409 });
-    }
-    const assetBids = bids.filter((b) => b.asset_id === assetId);
-    if (assetBids.length === 0) {
-      return HttpResponse.json({ detail: 'No bids to accept.' }, { status: 400 });
-    }
-    const top = assetBids.reduce((m, b) => (b.amount > m.amount ? b : m), assetBids[0]);
-    const { license_type } = (await request.json()) as { license_type: LicenseType };
-
-    const deal: Deal = {
-      id: allocateDealId(),
-      asset_id: assetId,
-      asset_title: asset.title,
-      broadcaster_id: top.broadcaster_id,
-      broadcaster_name: top.broadcaster_name,
-      amount: top.amount,
-      currency: LICENSE_CURRENCY,
-      license_type: license_type === 'exclusive' ? 'exclusive' : 'non_exclusive',
-      created_at: new Date().toISOString(),
+    const dashboard: ProductionDashboard = {
+      catalogue_health: {
+        total_titles: mine.length,
+        by_status: byStatus,
+        needs_attention: needsAttention,
+        average_metadata_score: avg,
+      },
+      screener_activity: { by_status: screenerByStatus, total: screenerTotal },
+      watched_titles: watched,
     };
-    deals.push(deal);
-    return HttpResponse.json(deal);
+    return HttpResponse.json(dashboard);
   }),
 
-  // ── Payouts ───────────────────────────────────────────────────────────────
-  http.get(`${API}/payout-accounts/`, () => {
+  http.get(`${API}/production/titles/`, () => {
     const user = session.current;
     if (!user) return unauthorized();
     const company = user.me.profile?.production_company;
     if (!company) return HttpResponse.json({ detail: 'Production companies only.' }, { status: 403 });
-    return HttpResponse.json(payoutAccounts.filter((a) => a.company_id === company.id));
-  }),
 
-  http.post(`${API}/payout-accounts/`, async ({ request }) => {
-    const user = session.current;
-    if (!user) return unauthorized();
-    const company = user.me.profile?.production_company;
-    if (!company) return HttpResponse.json({ detail: 'Production companies only.' }, { status: 403 });
-    const body = (await request.json()) as { label?: string; account_number?: string; percentage?: number };
-    const account: PayoutAccount = {
-      id: allocatePayoutAccountId(),
-      company_id: company.id,
-      label: String(body.label ?? 'Account'),
-      account_number: String(body.account_number ?? ''),
-      percentage: typeof body.percentage === 'number' ? body.percentage : 0,
-    };
-    payoutAccounts.push(account);
-    return HttpResponse.json(account);
-  }),
-
-  // Per-title market interest for the production Analytics view.
-  http.get(`${API}/production/title-stats/`, () => {
-    const user = session.current;
-    if (!user) return unauthorized();
-    const company = user.me.profile?.production_company;
-    if (!company) return HttpResponse.json({ detail: 'Production companies only.' }, { status: 403 });
-    const mine = assets.filter((a) => a.production_company?.id === company.id);
-    const stats: ProductionTitleStat[] = mine.map((a) => {
-      const assetBids = bids.filter((b) => b.asset_id === a.id);
-      const top = assetBids.length ? Math.max(...assetBids.map((b) => b.amount)) : null;
-      const deal = deals.find((d) => d.asset_id === a.id);
+    const mine = productionTitlePool.filter((t) => t.production_company.id === company.id);
+    const projection: ProductionTitle[] = mine.map((t) => {
+      const ed = productionEditorial[t.slug];
       return {
-        asset_id: a.id,
-        title: a.title,
-        status: a.status,
-        bid_count: assetBids.length,
-        top_amount: top,
-        licensed_amount: deal?.amount ?? null,
-        currency: LICENSE_CURRENCY,
+        ...t,
+        status: ed?.status ?? 'active',
+        metadata_score: ed?.metadata_score ?? 0,
+        licensing_intent: ed?.licensing_intent ?? '',
+        screener_request_count: ed?.screener_request_count ?? 0,
+        created_at: '2026-04-01T09:00:00Z',
+        updated_at: '2026-06-20T09:00:00Z',
       };
     });
-    return HttpResponse.json(stats);
+    return HttpResponse.json(projection);
+  }),
+
+  http.get(`${API}/production/titles/:slug/completeness/`, ({ params }) => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    const company = user.me.profile?.production_company;
+    if (!company) return HttpResponse.json({ detail: 'Production companies only.' }, { status: 403 });
+
+    const slug = String(params.slug);
+    const title = productionTitlePool.find((t) => t.slug === slug && t.production_company.id === company.id);
+    if (!title) return HttpResponse.json({ detail: 'Not found.' }, { status: 404 });
+
+    const breakdown = completenessBreakdowns[slug] ?? [];
+    const score = breakdown.filter((r) => r.completed).reduce((s, r) => s + r.points, 0);
+    const missingRequired = breakdown.filter((r) => r.required && !r.completed).map((r) => r.label);
+    const completeness: Completeness = {
+      score,
+      can_activate: missingRequired.length === 0,
+      missing_required: missingRequired,
+      breakdown,
+    };
+    return HttpResponse.json(completeness);
+  }),
+
+  http.get(`${API}/production/titles/:slug/screener-requests/`, ({ params }) => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    const company = user.me.profile?.production_company;
+    if (!company) return HttpResponse.json({ detail: 'Production companies only.' }, { status: 403 });
+
+    const slug = String(params.slug);
+    const title = productionTitlePool.find((t) => t.slug === slug && t.production_company.id === company.id);
+    if (!title) return HttpResponse.json({ detail: 'Not found.' }, { status: 404 });
+
+    // TERRITORY-ONLY: deliberately no broadcaster identity in this projection.
+    const reqs: ProductionScreenerRequest[] = (productionScreenerRequests[slug] ?? []).map((r) => ({
+      uuid: r.uuid,
+      purpose: r.purpose,
+      territory_interest: r.territory_interest,
+      status: r.status,
+      requested_at: r.requested_at,
+    }));
+    return HttpResponse.json(reqs);
+  }),
+
+  // ── Production rights windows (CRUD) ────────────────────────────────────────
+  http.get(`${API}/production/rights-windows/`, ({ request }) => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    const company = user.me.profile?.production_company;
+    if (!company) return HttpResponse.json({ detail: 'Production companies only.' }, { status: 403 });
+
+    const ownedSlugs = new Set(
+      productionTitlePool.filter((t) => t.production_company.id === company.id).map((t) => t.slug),
+    );
+    const titleFilter = new URL(request.url).searchParams.get('title');
+    const rows: ProductionRightsWindow[] = productionRightsWindows
+      .filter((w) => ownedSlugs.has(w.title_slug))
+      .filter((w) => !titleFilter || w.title_slug === titleFilter)
+      .map((w) => ({
+        id: w.id,
+        title: w.title,
+        territory: w.territory,
+        rights_type: w.rights_type,
+        is_exclusive: w.is_exclusive,
+        available_from: w.available_from,
+        available_until: w.available_until,
+        availability: w.availability,
+      }));
+    return HttpResponse.json(rows);
+  }),
+
+  http.post(`${API}/production/rights-windows/`, async ({ request }) => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    const company = user.me.profile?.production_company;
+    if (!company) return HttpResponse.json({ detail: 'Production companies only.' }, { status: 403 });
+
+    const body = (await request.json()) as {
+      title_slug?: string;
+      territory?: number;
+      rights_type?: ProductionRightsWindow['rights_type'];
+      is_exclusive?: boolean;
+      available_from?: string | null;
+      available_until?: string | null;
+    };
+    const title = body.title_slug
+      ? productionTitlePool.find((t) => t.slug === body.title_slug && t.production_company.id === company.id)
+      : undefined;
+    if (!title) return HttpResponse.json({ detail: 'Not found.' }, { status: 404 });
+    const territory = typeof body.territory === 'number' ? findTerritory(body.territory) : undefined;
+    if (!territory) return HttpResponse.json({ detail: 'territory is required.' }, { status: 400 });
+
+    const window = {
+      id: allocateRightsWindowId(),
+      title_slug: title.slug,
+      title: title.slug,
+      territory: territory.name,
+      rights_type: body.rights_type ?? 'broadcast',
+      is_exclusive: body.is_exclusive ?? false,
+      available_from: body.available_from ?? null,
+      available_until: body.available_until ?? null,
+      availability: 'available' as const,
+    };
+    productionRightsWindows.push(window);
+    return HttpResponse.json(window, { status: 201 });
+  }),
+
+  http.patch(`${API}/production/rights-windows/:id/`, async ({ params, request }) => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    const company = user.me.profile?.production_company;
+    if (!company) return HttpResponse.json({ detail: 'Production companies only.' }, { status: 403 });
+
+    const window = productionRightsWindows.find((w) => w.id === Number(params.id));
+    if (!window) return HttpResponse.json({ detail: 'Not found.' }, { status: 404 });
+    const body = (await request.json()) as Partial<{
+      rights_type: ProductionRightsWindow['rights_type'];
+      is_exclusive: boolean;
+      available_from: string | null;
+      available_until: string | null;
+    }>;
+    if (body.rights_type !== undefined) window.rights_type = body.rights_type;
+    if (body.is_exclusive !== undefined) window.is_exclusive = body.is_exclusive;
+    if (body.available_from !== undefined) window.available_from = body.available_from;
+    if (body.available_until !== undefined) window.available_until = body.available_until;
+    return HttpResponse.json(window);
+  }),
+
+  http.delete(`${API}/production/rights-windows/:id/`, ({ params }) => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    const company = user.me.profile?.production_company;
+    if (!company) return HttpResponse.json({ detail: 'Production companies only.' }, { status: 403 });
+
+    const idx = productionRightsWindows.findIndex((w) => w.id === Number(params.id));
+    if (idx === -1) return HttpResponse.json({ detail: 'Not found.' }, { status: 404 });
+    productionRightsWindows.splice(idx, 1);
+    return new HttpResponse(null, { status: 204 });
   }),
 
   // ── Discovery (interests + recommendations) ────────────────────────────────
@@ -649,6 +698,7 @@ export const handlers = [
   // ── Reference data ────────────────────────────────────────────────────────
   http.get(`${API}/languages/`, () => HttpResponse.json(languages)),
   http.get(`${API}/countries/`, () => HttpResponse.json(countries)),
+  http.get(`${API}/territories/`, () => HttpResponse.json(territories)),
   http.get(`${API}/production-companies/`, () => HttpResponse.json(productionCompanies)),
   http.get(`${API}/production-companies/:id/`, ({ params }) => {
     const company = productionCompanies.find((c) => c.id === Number(params.id));

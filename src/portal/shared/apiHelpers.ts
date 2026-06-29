@@ -39,3 +39,9 @@ export async function apiPatch<T>(path: string, body: unknown): Promise<{ data: 
   const data = await res.json() as T;
   return { data, status: res.status };
 }
+
+// DELETE returns 204 No Content (empty body), so we surface only the status.
+export async function apiDelete(path: string): Promise<{ status: number }> {
+  const res = await apiFetch(path, { method: 'DELETE' });
+  return { status: res.status };
+}

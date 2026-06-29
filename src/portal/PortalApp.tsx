@@ -11,12 +11,10 @@ import { BroadcasterDiscoverPage } from './broadcaster/pages/DiscoverPage';
 import { BroadcasterAssetDetailPage } from './broadcaster/pages/AssetDetailPage';
 import { BroadcasterLicensesPage } from './broadcaster/pages/LicensesPage';
 import { BroadcasterOnboardingPage } from './broadcaster/pages/OnboardingPage';
-import { ProductionDashboardPage } from './production/pages/DashboardPage';
 import { ProductionStudioHomePage } from './production/pages/StudioHomePage';
 import { ProductionAssetsPage } from './production/pages/AssetsPage';
 import { ProductionSubmitPage } from './production/pages/SubmitPage';
 import { ProductionAssetDetailPage } from './production/pages/AssetDetailPage';
-import { ProductionEarningsPage } from './production/pages/EarningsPage';
 import { ProductionAnalyticsPage } from './production/pages/AnalyticsPage';
 import { AdminOverviewPage } from './admin/pages/OverviewPage';
 import { AdminScreenerQueuePage } from './admin/pages/ScreenerQueuePage';
@@ -69,14 +67,6 @@ function PortalRoutes() {
           element={
             <ProtectedRoute isAllowed={isPC}>
               <ProductionSubmitPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="production/earnings"
-          element={
-            <ProtectedRoute isAllowed={isPC}>
-              <ProductionEarningsPage />
             </ProtectedRoute>
           }
         />
@@ -153,16 +143,6 @@ function PortalRoutes() {
           element={
             <ProtectedRoute isAllowed={isAdmin}>
               <AdminLibraryPage />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Legacy dashboard placeholder routes */}
-        <Route
-          path="production/dashboard-old"
-          element={
-            <ProtectedRoute isAllowed={isPC}>
-              <ProductionDashboardPage />
             </ProtectedRoute>
           }
         />

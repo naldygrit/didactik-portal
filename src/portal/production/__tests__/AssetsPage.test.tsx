@@ -3,44 +3,65 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ProductionAssetsPage } from '../pages/AssetsPage';
-import type { AssetListItem } from '../../shared/types';
+import type { ProductionTitle } from '../../shared/types';
 
 // Mock the apiGet helper so tests don't hit the network
 vi.mock('../../shared/apiHelpers', () => ({
   apiGet: vi.fn(),
   apiPost: vi.fn(),
+  apiDelete: vi.fn(),
   paginationPath: (url: string) => url,
 }));
 
-const mockAssets: AssetListItem[] = [
-  {
+// Minimal ProductionTitle factory — only the fields the catalogue table reads.
+function makeTitle(over: Partial<ProductionTitle>): ProductionTitle {
+  return {
     id: 1,
-    title: 'Lagos Story',
+    uuid: 'u-1',
+    slug: 'lagos-story',
+    name: 'Lagos Story',
     original_title: '',
-    asset_type: 'feature_film',
-    status: 'uploaded',
+    title_type: 'feature_film',
+    production_company: { id: 1, name: 'TestPC' },
     production_year: 2023,
-    primary_language: null,
-    production_country: null,
-    production_company: { id: 1, name: 'TestPC' },
-    storage_backend: 'b2',
-    created_at: new Date().toISOString(),
-    taxonomy_count: 0,
-  },
-  {
+    country_of_origin: null,
+    co_production_countries: [],
+    original_language: null,
+    dialogue_languages: [],
+    genres: [],
+    cultural_tags: [],
+    maturity_rating: null,
+    logline: '',
+    synopsis: '',
+    runtime_minutes: null,
+    episode_count: null,
+    season_count: null,
+    awards: [],
+    festival_selections: [],
+    resolution: '',
+    aspect_ratio: '',
+    is_featured: false,
+    status: 'active',
+    metadata_score: 90,
+    licensing_intent: 'svod',
+    screener_request_count: 2,
+    created_at: '2026-01-01T00:00:00Z',
+    updated_at: '2026-01-01T00:00:00Z',
+    ...over,
+  };
+}
+
+const mockTitles: ProductionTitle[] = [
+  makeTitle({ id: 1, slug: 'lagos-story', name: 'Lagos Story', status: 'active' }),
+  makeTitle({
     id: 2,
-    title: 'Nairobi Nights',
-    original_title: '',
-    asset_type: 'documentary',
-    status: 'rejected',
-    production_year: 2022,
-    primary_language: null,
-    production_country: null,
-    production_company: { id: 1, name: 'TestPC' },
-    storage_backend: 'b2',
-    created_at: new Date().toISOString(),
-    taxonomy_count: 2,
-  },
+    slug: 'nairobi-nights',
+    name: 'Nairobi Nights',
+    title_type: 'documentary',
+    status: 'submitted',
+    metadata_score: 47,
+    screener_request_count: 0,
+  }),
 ];
 
 function makeClient() {
@@ -60,9 +81,9 @@ describe('ProductionAssetsPage', () => {
     vi.clearAllMocks();
   });
 
-  it('renders asset titles after data loads', async () => {
+  it('renders title names after data loads', async () => {
     const { apiGet } = await import('../../shared/apiHelpers');
-    vi.mocked(apiGet).mockResolvedValue(mockAssets);
+    vi.mocked(apiGet).mockResolvedValue(mockTitles);
 
     render(<ProductionAssetsPage />, { wrapper: Wrapper });
 
@@ -70,9 +91,9 @@ describe('ProductionAssetsPage', () => {
     expect(screen.getByText('Nairobi Nights')).toBeDefined();
   });
 
-  it('filters assets by title input', async () => {
+  it('filters titles by name input', async () => {
     const { apiGet } = await import('../../shared/apiHelpers');
-    vi.mocked(apiGet).mockResolvedValue(mockAssets);
+    vi.mocked(apiGet).mockResolvedValue(mockTitles);
 
     render(<ProductionAssetsPage />, { wrapper: Wrapper });
 
@@ -85,22 +106,22 @@ describe('ProductionAssetsPage', () => {
     expect(screen.getByText('Nairobi Nights')).toBeDefined();
   });
 
-  it('filters assets by status dropdown', async () => {
+  it('filters titles by status dropdown', async () => {
     const { apiGet } = await import('../../shared/apiHelpers');
-    vi.mocked(apiGet).mockResolvedValue(mockAssets);
+    vi.mocked(apiGet).mockResolvedValue(mockTitles);
 
     render(<ProductionAssetsPage />, { wrapper: Wrapper });
 
     await screen.findByText('Lagos Story');
 
     const select = screen.getByRole('combobox');
-    fireEvent.change(select, { target: { value: 'rejected' } });
+    fireEvent.change(select, { target: { value: 'submitted' } });
 
     expect(screen.queryByText('Lagos Story')).toBeNull();
     expect(screen.getByText('Nairobi Nights')).toBeDefined();
   });
 
-  it('shows empty state when no assets exist', async () => {
+  it('shows empty state when no titles exist', async () => {
     const { apiGet } = await import('../../shared/apiHelpers');
     vi.mocked(apiGet).mockResolvedValue([]);
 
@@ -115,6 +136,6 @@ describe('ProductionAssetsPage', () => {
 
     render(<ProductionAssetsPage />, { wrapper: Wrapper });
 
-    expect(await screen.findByText(/Failed to load assets/)).toBeDefined();
+    expect(await screen.findByText(/Failed to load titles/)).toBeDefined();
   });
 });

@@ -126,41 +126,6 @@ export interface MeResponse {
   profile: MeProfile | null;
 }
 
-// The competitive state of one title's bidding, scoped to the current
-// broadcaster (Phase 3).
-export interface BidBoard {
-  license_floor: number;
-  license_ceiling: number;
-  currency: string;
-  bid_count: number;
-  highest_amount: number | null;
-  your_bid: { id: number; amount: number; created_at: string; is_top: boolean } | null;
-}
-
-// A licensed deal struck from a winning bid (Phase 4).
-export type LicenseType = 'exclusive' | 'non_exclusive';
-
-export interface Deal {
-  id: number;
-  asset_id: number;
-  asset_title: string;
-  broadcaster_id: number;
-  broadcaster_name: string;
-  amount: number;
-  currency: string;
-  license_type: LicenseType;
-  created_at: string;
-}
-
-// A production company's payout split account (Phase 5).
-export interface PayoutAccount {
-  id: number;
-  company_id: number;
-  label: string;
-  account_number: string;
-  percentage: number;
-}
-
 // A broadcaster interest chip used to personalise recommendations (Phase 6).
 export interface InterestOption {
   key: string;
@@ -393,13 +358,86 @@ export interface AdminTitle {
   cultural_tags: TitleCulturalTag[];
 }
 
-// Per-title market interest for the production Analytics view.
-export interface ProductionTitleStat {
-  asset_id: number;
+// ── Production (seller studio) screener/Title model ──────────────────────────
+// The production portal manages the company's own catalogue of licensable
+// Titles: catalogue health, metadata completeness, incoming (territory-only)
+// screener interest, and the rights windows the company offers. These types
+// mirror the live /api/v1/production/* contracts and replace the legacy
+// deal/payout/bid model the studio surfaces were built against.
+
+// The production dashboard aggregate — the studio's at-a-glance health.
+export interface ProductionDashboard {
+  catalogue_health: {
+    total_titles: number;
+    by_status: Record<string, number>;
+    needs_attention: number;
+    average_metadata_score: number;
+  };
+  screener_activity: {
+    by_status: Record<string, number>;
+    total: number;
+  };
+  watched_titles: { slug: string; name: string; watchers: number }[];
+}
+
+// The production Title projection — the company's own titles, with the editorial
+// fields (status, metadata_score, screener counts) the public broadcaster Title
+// omits. Extends the shared Title shape; backend scopes to the authed company.
+export interface ProductionTitle extends Title {
+  status: TitleStatus;
+  metadata_score: number;
+  licensing_intent: string;
+  screener_request_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+// One rule in a Title's metadata completeness breakdown.
+export interface CompletenessRule {
+  key: string;
+  label: string;
+  points: number;
+  required: boolean;
+  completed: boolean;
+}
+
+// A Title's metadata completeness — the score, whether it can be activated, the
+// outstanding required fields, and the full checklist.
+export interface Completeness {
+  score: number;
+  can_activate: boolean;
+  missing_required: string[];
+  breakdown: CompletenessRule[];
+}
+
+// A screener request as the producer sees it. Deliberately TERRITORY-ONLY: the
+// requesting broadcaster's identity is withheld until a deal is negotiated.
+export interface ProductionScreenerRequest {
+  uuid: string;
+  purpose: string;
+  territory_interest: string[];
+  status: ScreenerStatus;
+  requested_at: string;
+}
+
+// A rights window the production company offers on one of its Titles. The
+// producer manages these (create/edit/delete); broadcasters see the read-only
+// RightsRow projection.
+export interface ProductionRightsWindow {
+  id: number;
   title: string;
-  status: AssetStatus;
-  bid_count: number;
-  top_amount: number | null;
-  licensed_amount: number | null;
-  currency: string;
+  territory: string;
+  rights_type: RightsType;
+  is_exclusive: boolean;
+  available_from: string | null;
+  available_until: string | null;
+  availability: 'available' | 'licensed';
+}
+
+// A territory option for the rights-window territory dropdown.
+export interface TerritoryOption {
+  id: number;
+  name: string;
+  slug: string;
+  territory_type: string;
 }

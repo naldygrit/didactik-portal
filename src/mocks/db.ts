@@ -1,7 +1,8 @@
 // In-memory mock database for the portal. Seeded with continental African
 // audiovisual content (Nollywood, Riverwood, Francophone, etc.) so every portal
 // has real-feeling data to render. Mutations (new submissions, withdrawals,
-// bids, deals) happen against these arrays at runtime and persist until reload.
+// screener requests, rights windows) happen against these arrays at runtime and
+// persist until reload.
 import type {
   AdminScreenerRequest,
   AdminTitle,
@@ -314,100 +315,6 @@ export const session: { current: MockUser | null } = { current: null };
 let nextAssetId = 200;
 export function allocateAssetId(): number {
   return nextAssetId++;
-}
-
-// ── Bidding (Phase 3) ───────────────────────────────────────────────────────
-// The producer's licensing range per title (what they have pre-authorised
-// Didactik to accept), plus a seeded bid book so the competitive signal shows
-// real rivalry from the first view.
-export const LICENSE_CURRENCY = 'USD';
-
-export const licenseRanges: Record<number, { floor: number; ceiling: number }> = {
-  101: { floor: 8000, ceiling: 25000 }, // Lagos After Dark
-  102: { floor: 3000, ceiling: 9000 }, // The Salt Harvesters
-  103: { floor: 10000, ceiling: 30000 }, // Harmattan Letters
-  104: { floor: 2000, ceiling: 7000 }, // Riverwood Nights
-  105: { floor: 4000, ceiling: 12000 }, // The Griot of Saint-Louis
-};
-
-export interface Bid {
-  id: number;
-  asset_id: number;
-  broadcaster_id: number;
-  broadcaster_name: string;
-  amount: number;
-  created_at: string;
-}
-
-export const bids: Bid[] = [
-  { id: 1, asset_id: 101, broadcaster_id: 2, broadcaster_name: 'Showmax', amount: 12000, created_at: '2026-06-20T10:00:00Z' },
-  { id: 2, asset_id: 101, broadcaster_id: 3, broadcaster_name: 'StarTimes Media', amount: 14500, created_at: '2026-06-24T09:00:00Z' },
-  { id: 3, asset_id: 102, broadcaster_id: 2, broadcaster_name: 'Showmax', amount: 5000, created_at: '2026-06-22T11:00:00Z' },
-];
-
-let nextBidId = 100;
-export function allocateBidId(): number {
-  return nextBidId++;
-}
-
-// ── Deals (Phase 4) ─────────────────────────────────────────────────────────
-// A licensed deal: the admin accepts the top bid on the producer's behalf
-// (pre-authorised) and records the licence terms.
-export type LicenseType = 'exclusive' | 'non_exclusive';
-
-export interface Deal {
-  id: number;
-  asset_id: number;
-  asset_title: string;
-  broadcaster_id: number;
-  broadcaster_name: string;
-  amount: number;
-  currency: string;
-  license_type: LicenseType;
-  created_at: string;
-}
-
-// One deal seeded so the producer's earnings and the broadcaster's licences are
-// populated on first view; Lagos After Dark is left open for the live
-// bid-and-accept demo.
-export const deals: Deal[] = [
-  {
-    id: 490,
-    asset_id: 103, // Harmattan Letters (EbonyLife Studios)
-    asset_title: 'Harmattan Letters',
-    broadcaster_id: 1,
-    broadcaster_name: 'Canal+ International',
-    amount: 18000,
-    currency: LICENSE_CURRENCY,
-    license_type: 'non_exclusive',
-    created_at: '2026-06-15T10:00:00Z',
-  },
-];
-
-let nextDealId = 500;
-export function allocateDealId(): number {
-  return nextDealId++;
-}
-
-// ── Payouts (Phase 5) ───────────────────────────────────────────────────────
-// A production company's payout split: where licence revenue is sent and in
-// what proportion.
-export interface PayoutAccount {
-  id: number;
-  company_id: number;
-  label: string;
-  account_number: string;
-  percentage: number;
-}
-
-export const payoutAccounts: PayoutAccount[] = [
-  { id: 1, company_id: 1, label: 'EbonyLife Studios — GTBank', account_number: '0123456789', percentage: 80 },
-  { id: 2, company_id: 1, label: 'Director escrow — Access Bank', account_number: '0987654321', percentage: 20 },
-];
-
-let nextPayoutAccountId = 10;
-export function allocatePayoutAccountId(): number {
-  return nextPayoutAccountId++;
 }
 
 // ── Discovery (Phase 6) ─────────────────────────────────────────────────────
@@ -798,4 +705,171 @@ export const adminScreenerRequests: AdminScreenerRequest[] = [
 
 export function findAdminScreener(uuid: string): AdminScreenerRequest | undefined {
   return adminScreenerRequests.find((r) => r.uuid === uuid);
+}
+
+// ── Production (seller studio) screener/Title model ──────────────────────────
+// The production portal manages the company's own catalogue: catalogue health,
+// per-title metadata completeness, incoming (territory-only) screener interest,
+// and the rights windows the company offers. These seeds mirror the live
+// /api/v1/production/* contracts and replace the legacy deal/payout/bid model.
+
+// Territories used to populate the rights-window dropdown and stored on windows.
+export interface MockTerritory {
+  id: number;
+  name: string;
+  slug: string;
+  territory_type: string;
+}
+
+export const territories: MockTerritory[] = [
+  { id: 1, name: 'Nigeria', slug: 'nigeria', territory_type: 'country' },
+  { id: 2, name: 'Kenya', slug: 'kenya', territory_type: 'country' },
+  { id: 3, name: 'Ghana', slug: 'ghana', territory_type: 'country' },
+  { id: 4, name: 'Senegal', slug: 'senegal', territory_type: 'country' },
+  { id: 5, name: 'France', slug: 'france', territory_type: 'country' },
+  { id: 6, name: 'Pan-Africa', slug: 'pan-africa', territory_type: 'region' },
+  { id: 7, name: 'East Africa', slug: 'east-africa', territory_type: 'region' },
+  { id: 8, name: 'Francophone Africa', slug: 'francophone-africa', territory_type: 'region' },
+  { id: 9, name: 'Worldwide', slug: 'worldwide', territory_type: 'global' },
+];
+
+export function findTerritory(id: number): MockTerritory | undefined {
+  return territories.find((t) => t.id === id);
+}
+
+// Editorial metadata layered onto a public Title for the production projection,
+// keyed by slug. Mirrors the ProductionTitle extra fields.
+export const productionEditorial: Record<
+  string,
+  { status: TitleStatus; metadata_score: number; licensing_intent: string; screener_request_count: number }
+> = {
+  'lagos-after-dark': { status: 'active', metadata_score: 92, licensing_intent: 'broadcast_and_svod', screener_request_count: 1 },
+  'harmattan-letters': { status: 'approved', metadata_score: 81, licensing_intent: 'svod', screener_request_count: 1 },
+  // EbonyLife's in-pipeline submission (not yet a public Title), so the producer
+  // sees a low-completeness title that needs attention.
+  'aso-rock': { status: 'submitted', metadata_score: 38, licensing_intent: 'broadcast', screener_request_count: 0 },
+};
+
+// Production Titles belong to the authed company (EbonyLife / company id 1 for
+// the demo producer). The shared `titles` cover the public catalogue; we add the
+// in-pipeline "Aso Rock" so the producer's catalogue has a needs-attention row.
+const asoRockTitle: Title = {
+  id: 106,
+  uuid: '00000000-0000-0000-0000-000000000106',
+  slug: 'aso-rock',
+  name: 'Aso Rock',
+  original_title: 'Aso Rock',
+  title_type: 'feature_film',
+  production_company: { id: 1, name: 'EbonyLife Studios' },
+  production_year: 2026,
+  country_of_origin: { id: 1, code: 'NG', name: 'Nigeria' },
+  co_production_countries: [],
+  original_language: { id: 4, code: 'pcm', english_name: 'Nigerian Pidgin' },
+  dialogue_languages: [{ id: 4, code: 'pcm', english_name: 'Nigerian Pidgin' }],
+  genres: [],
+  cultural_tags: [],
+  maturity_rating: null,
+  logline: 'A political thriller in the corridors of power in Abuja.',
+  synopsis: 'A political thriller set in the corridors of power in Abuja.',
+  runtime_minutes: null,
+  episode_count: null,
+  season_count: null,
+  awards: [],
+  festival_selections: [],
+  resolution: '',
+  aspect_ratio: '',
+  is_featured: false,
+};
+
+// The pool of source Titles a production company can own (public catalogue plus
+// in-pipeline submissions). Scoped to a company at request time.
+export const productionTitlePool: Title[] = [...titles, asoRockTitle];
+
+// Per-title metadata completeness breakdowns, keyed by slug.
+export interface CompletenessRuleSeed {
+  key: string;
+  label: string;
+  points: number;
+  required: boolean;
+  completed: boolean;
+}
+
+export const completenessBreakdowns: Record<string, CompletenessRuleSeed[]> = {
+  'lagos-after-dark': [
+    { key: 'synopsis', label: 'Synopsis', points: 20, required: true, completed: true },
+    { key: 'logline', label: 'Logline', points: 10, required: true, completed: true },
+    { key: 'genres', label: 'Genres', points: 15, required: true, completed: true },
+    { key: 'maturity_rating', label: 'Maturity rating', points: 10, required: false, completed: true },
+    { key: 'key_art', label: 'Key art', points: 15, required: false, completed: true },
+  ],
+  'harmattan-letters': [
+    { key: 'synopsis', label: 'Synopsis', points: 20, required: true, completed: true },
+    { key: 'logline', label: 'Logline', points: 10, required: true, completed: true },
+    { key: 'genres', label: 'Genres', points: 15, required: true, completed: true },
+    { key: 'maturity_rating', label: 'Maturity rating', points: 10, required: false, completed: true },
+    { key: 'key_art', label: 'Key art', points: 15, required: false, completed: false },
+  ],
+  'aso-rock': [
+    { key: 'synopsis', label: 'Synopsis', points: 20, required: true, completed: true },
+    { key: 'logline', label: 'Logline', points: 10, required: true, completed: true },
+    { key: 'genres', label: 'Genres', points: 15, required: true, completed: false },
+    { key: 'maturity_rating', label: 'Maturity rating', points: 10, required: true, completed: false },
+    { key: 'key_art', label: 'Key art', points: 15, required: false, completed: false },
+  ],
+};
+
+// Incoming screener requests per title, TERRITORY-ONLY (no broadcaster identity),
+// as the producer sees them. Keyed by slug.
+export interface ProductionScreenerSeed {
+  uuid: string;
+  purpose: string;
+  territory_interest: string[];
+  status: ScreenerSummary['status'];
+  requested_at: string;
+}
+
+export const productionScreenerRequests: Record<string, ProductionScreenerSeed[]> = {
+  'lagos-after-dark': [
+    {
+      uuid: '00000000-0000-0000-0000-0000000000b1',
+      purpose: 'programming_review',
+      territory_interest: ['Pan-Africa'],
+      status: 'pending',
+      requested_at: '2026-06-26T08:30:00Z',
+    },
+  ],
+  'harmattan-letters': [
+    {
+      uuid: '00000000-0000-0000-0000-0000000000b2',
+      purpose: 'acquisition_evaluation',
+      territory_interest: ['Francophone Africa', 'France'],
+      status: 'pending',
+      requested_at: '2026-06-24T11:00:00Z',
+    },
+  ],
+};
+
+// Mutable rights windows owned by the production company, scoped to a title slug.
+export interface MockRightsWindow {
+  id: number;
+  title_slug: string;
+  title: string;
+  territory: string;
+  rights_type: RightsRow['rights_type'];
+  is_exclusive: boolean;
+  available_from: string | null;
+  available_until: string | null;
+  availability: 'available' | 'licensed';
+}
+
+export const productionRightsWindows: MockRightsWindow[] = [
+  { id: 1, title_slug: 'lagos-after-dark', title: 'lagos-after-dark', territory: 'Nigeria', rights_type: 'broadcast', is_exclusive: true, available_from: null, available_until: null, availability: 'available' },
+  { id: 2, title_slug: 'lagos-after-dark', title: 'lagos-after-dark', territory: 'Pan-Africa', rights_type: 'svod', is_exclusive: false, available_from: '2026-07-29', available_until: null, availability: 'available' },
+  { id: 3, title_slug: 'lagos-after-dark', title: 'lagos-after-dark', territory: 'France', rights_type: 'all', is_exclusive: true, available_from: null, available_until: null, availability: 'licensed' },
+  { id: 4, title_slug: 'harmattan-letters', title: 'harmattan-letters', territory: 'Worldwide', rights_type: 'svod', is_exclusive: false, available_from: '2026-09-01', available_until: null, availability: 'available' },
+];
+
+let nextRightsWindowId = 100;
+export function allocateRightsWindowId(): number {
+  return nextRightsWindowId++;
 }

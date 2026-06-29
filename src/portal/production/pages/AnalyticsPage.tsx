@@ -1,20 +1,26 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiGet } from '../../shared/apiHelpers';
-import { money } from '../../shared/format';
 import { thumbUrl } from '../../shared/media';
-import { StatusBadge } from '../components/StatusBadge';
-import type { ProductionTitleStat } from '../../shared/types';
+import { TitleStatusBadge } from '../components/TitleStatusBadge';
+import type { ProductionDashboard, ProductionTitle } from '../../shared/types';
 
 export function ProductionAnalyticsPage() {
-  const { data, isLoading } = useQuery<ProductionTitleStat[]>({
-    queryKey: ['title-stats'],
-    queryFn: () => apiGet<ProductionTitleStat[]>('/api/v1/production/title-stats/'),
+  const { data: titles, isLoading } = useQuery<ProductionTitle[]>({
+    queryKey: ['production-titles'],
+    queryFn: () => apiGet<ProductionTitle[]>('/api/v1/production/titles/'),
+  });
+  const { data: dashboard } = useQuery<ProductionDashboard>({
+    queryKey: ['production-dashboard'],
+    queryFn: () => apiGet<ProductionDashboard>('/api/v1/production/dashboard/'),
   });
 
-  const stats = data ?? [];
-  const totalBids = stats.reduce((s, t) => s + t.bid_count, 0);
-  const withInterest = stats.filter((t) => t.bid_count > 0).length;
-  const licensed = stats.filter((t) => t.licensed_amount !== null).length;
+  const rows = titles ?? [];
+  // Watcher counts come from the dashboard's watched_titles, keyed by slug.
+  const watchersBySlug = new Map((dashboard?.watched_titles ?? []).map((w) => [w.slug, w.watchers]));
+
+  const totalScreeners = dashboard?.screener_activity.total ?? 0;
+  const titlesWithInterest = rows.filter((t) => t.screener_request_count > 0).length;
+  const totalWatchers = (dashboard?.watched_titles ?? []).reduce((s, w) => s + w.watchers, 0);
 
   return (
     <div className="mx-auto max-w-4xl space-y-8">
@@ -24,49 +30,45 @@ export function ProductionAnalyticsPage() {
       </header>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Stat label="Bids received" value={String(totalBids)} />
-        <Stat label="Titles attracting bids" value={String(withInterest)} />
-        <Stat label="Licensed" value={String(licensed)} />
+        <Stat label="Screener requests" value={String(totalScreeners)} />
+        <Stat label="Titles with interest" value={String(titlesWithInterest)} />
+        <Stat label="Broadcasters watching" value={String(totalWatchers)} />
       </div>
 
       <section>
         <h2 className="mb-3 text-lg font-semibold text-gray-900">By title</h2>
         {isLoading && <p className="text-sm text-gray-500">Loading…</p>}
-        {data && stats.length === 0 && <p className="text-sm text-gray-500">No titles yet.</p>}
-        {stats.length > 0 && (
+        {titles && rows.length === 0 && <p className="text-sm text-gray-500">No titles yet.</p>}
+        {rows.length > 0 && (
           <div className="overflow-hidden rounded-xl border border-gray-200">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
                 <tr>
                   <th className="px-4 py-3 font-medium">Title</th>
                   <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 text-right font-medium">Bids</th>
-                  <th className="px-4 py-3 text-right font-medium">Top bid</th>
-                  <th className="px-4 py-3 text-right font-medium">Licensed</th>
+                  <th className="px-4 py-3 text-right font-medium">Screeners</th>
+                  <th className="px-4 py-3 text-right font-medium">Watching</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {stats.map((t) => (
-                  <tr key={t.asset_id} className="text-gray-800">
+                {rows.map((t) => (
+                  <tr key={t.slug} className="text-gray-800">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <img
-                          src={thumbUrl({ id: t.asset_id, title: t.title })}
+                          src={thumbUrl({ id: t.id, title: t.name })}
                           alt=""
                           className="h-9 w-16 shrink-0 rounded object-cover"
                         />
-                        <span className="font-medium text-gray-900">{t.title}</span>
+                        <span className="font-medium text-gray-900">{t.name}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <StatusBadge status={t.status} />
+                      <TitleStatusBadge status={t.status} />
                     </td>
-                    <td className="px-4 py-3 text-right tabular-nums">{t.bid_count}</td>
+                    <td className="px-4 py-3 text-right tabular-nums">{t.screener_request_count}</td>
                     <td className="px-4 py-3 text-right tabular-nums text-gray-600">
-                      {t.top_amount !== null ? money(t.top_amount, t.currency) : '—'}
-                    </td>
-                    <td className="px-4 py-3 text-right font-medium tabular-nums text-gray-900">
-                      {t.licensed_amount !== null ? money(t.licensed_amount, t.currency) : '—'}
+                      {watchersBySlug.get(t.slug) ?? 0}
                     </td>
                   </tr>
                 ))}

@@ -3,9 +3,7 @@ import { setupServer } from 'msw/node';
 import { handlers } from '../handlers';
 import {
   adminScreenerRequests,
-  bids,
-  deals,
-  payoutAccounts,
+  productionRightsWindows,
   session,
   userInterests,
   users,
@@ -15,11 +13,12 @@ import type {
   AdminScreenerRequest,
   AdminTitle,
   AssetListItem,
-  BidBoard,
-  Deal,
+  Completeness,
   MeResponse,
-  PayoutAccount,
-  ProductionTitleStat,
+  ProductionDashboard,
+  ProductionRightsWindow,
+  ProductionScreenerRequest,
+  ProductionTitle,
   SearchAsset,
 } from '../../portal/shared/types';
 
@@ -115,106 +114,113 @@ describe('search + suggest', () => {
   });
 });
 
-describe('bidding', () => {
-  beforeEach(() => {
-    session.current = users.find((u) => u.username === 'broadcaster') ?? null;
-    // Drop any bids placed by the logged-in broadcaster (id 1) in a prior test.
-    for (let i = bids.length - 1; i >= 0; i--) {
-      if (bids[i].broadcaster_id === 1) bids.splice(i, 1);
-    }
-  });
-
-  async function board(): Promise<BidBoard> {
-    return (await fetch(`${BASE}/api/v1/assets/101/bids/`)).json() as Promise<BidBoard>;
-  }
-
-  it('returns the competitive board scoped to the broadcaster', async () => {
-    const b = await board();
-    expect(b.license_floor).toBe(8000);
-    expect(b.license_ceiling).toBe(25000);
-    expect(b.bid_count).toBe(2);
-    expect(b.highest_amount).toBe(14500);
-    expect(b.your_bid).toBeNull();
-  });
-
-  it('places a leading bid within range', async () => {
-    const res = await fetch(`${BASE}/api/v1/assets/101/bids/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: 15000 }),
-    });
-    expect(res.status).toBe(200);
-    const b = (await res.json()) as BidBoard;
-    expect(b.bid_count).toBe(3);
-    expect(b.your_bid?.amount).toBe(15000);
-    expect(b.your_bid?.is_top).toBe(true);
-  });
-
-  it('rejects a bid outside the licensing range', async () => {
-    const res = await fetch(`${BASE}/api/v1/assets/101/bids/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: 100 }),
-    });
-    expect(res.status).toBe(400);
-  });
-});
-
-describe('deals', () => {
+describe('production (seller studio)', () => {
   function setUser(username: string) {
     session.current = users.find((u) => u.username === username) ?? null;
   }
 
+  // Restore the rights-window seed list between tests (CRUD mutates it).
+  const seededWindowIds = productionRightsWindows.map((w) => w.id);
   beforeEach(() => {
-    deals.length = 0;
-    for (let i = bids.length - 1; i >= 0; i--) {
-      if (bids[i].broadcaster_id === 1) bids.splice(i, 1);
+    for (let i = productionRightsWindows.length - 1; i >= 0; i--) {
+      if (!seededWindowIds.includes(productionRightsWindows[i].id)) {
+        productionRightsWindows.splice(i, 1);
+      }
     }
   });
 
-  async function acceptTopBid(license_type: string) {
-    return fetch(`${BASE}/api/v1/assets/101/accept-bid/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ license_type }),
-    });
-  }
-
-  it('lets the admin accept the top bid into a licensed deal', async () => {
-    // Canal+ outbids the seeded rivals, then admin accepts on the producer's behalf.
-    setUser('broadcaster');
-    await fetch(`${BASE}/api/v1/assets/101/bids/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: 20000 }),
-    });
-    setUser('admin');
-    const res = await acceptTopBid('exclusive');
-    expect(res.status).toBe(200);
-    const deal = (await res.json()) as Deal;
-    expect(deal.broadcaster_name).toBe('Canal+ International');
-    expect(deal.amount).toBe(20000);
-    expect(deal.license_type).toBe('exclusive');
+  it('returns the dashboard aggregate to the producer', async () => {
+    setUser('producer');
+    const dash = (await (await fetch(`${BASE}/api/v1/production/dashboard/`)).json()) as ProductionDashboard;
+    expect(dash.catalogue_health.total_titles).toBeGreaterThan(0);
+    expect(typeof dash.catalogue_health.average_metadata_score).toBe('number');
+    expect(typeof dash.screener_activity.total).toBe('number');
+    expect(Array.isArray(dash.watched_titles)).toBe(true);
   });
 
-  it('shows the won deal to the broadcaster who licensed it', async () => {
+  it('forbids a broadcaster from the production dashboard', async () => {
     setUser('broadcaster');
-    await fetch(`${BASE}/api/v1/assets/101/bids/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: 20000 }),
-    });
-    setUser('admin');
-    await acceptTopBid('non_exclusive');
-    setUser('broadcaster');
-    const mine = (await (await fetch(`${BASE}/api/v1/deals/`)).json()) as Deal[];
-    expect(mine).toHaveLength(1);
-    expect(mine[0].asset_title).toBe('Lagos After Dark');
+    const res = await fetch(`${BASE}/api/v1/production/dashboard/`);
+    expect(res.status).toBe(403);
   });
 
-  it('forbids a non-admin from accepting bids', async () => {
+  it('lists only the company\'s own titles with editorial fields', async () => {
+    setUser('producer');
+    const list = (await (await fetch(`${BASE}/api/v1/production/titles/`)).json()) as ProductionTitle[];
+    expect(list.length).toBeGreaterThan(0);
+    expect(list.every((t) => t.production_company.id === 1)).toBe(true);
+    expect(list.every((t) => typeof t.metadata_score === 'number')).toBe(true);
+    expect(list.every((t) => typeof t.screener_request_count === 'number')).toBe(true);
+  });
+
+  it('returns a metadata completeness breakdown', async () => {
+    setUser('producer');
+    const c = (await (
+      await fetch(`${BASE}/api/v1/production/titles/lagos-after-dark/completeness/`)
+    ).json()) as Completeness;
+    expect(c.score).toBeGreaterThan(0);
+    expect(typeof c.can_activate).toBe('boolean');
+    expect(Array.isArray(c.breakdown)).toBe(true);
+  });
+
+  it('returns territory-only screener requests (no broadcaster identity)', async () => {
+    setUser('producer');
+    const reqs = (await (
+      await fetch(`${BASE}/api/v1/production/titles/harmattan-letters/screener-requests/`)
+    ).json()) as ProductionScreenerRequest[];
+    expect(reqs.length).toBeGreaterThan(0);
+    expect(Array.isArray(reqs[0].territory_interest)).toBe(true);
+    // Confidentiality: the producer projection must NOT leak broadcaster identity.
+    expect('broadcaster' in reqs[0]).toBe(false);
+  });
+
+  it('creates a rights window via the territory dropdown', async () => {
+    setUser('producer');
+    const before = (await (
+      await fetch(`${BASE}/api/v1/production/rights-windows/?title=lagos-after-dark`)
+    ).json()) as ProductionRightsWindow[];
+
+    const res = await fetch(`${BASE}/api/v1/production/rights-windows/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title_slug: 'lagos-after-dark',
+        territory: 2, // Kenya
+        rights_type: 'svod',
+        is_exclusive: true,
+      }),
+    });
+    expect(res.status).toBe(201);
+    const created = (await res.json()) as ProductionRightsWindow;
+    expect(created.territory).toBe('Kenya');
+    expect(created.rights_type).toBe('svod');
+    expect(created.is_exclusive).toBe(true);
+
+    const after = (await (
+      await fetch(`${BASE}/api/v1/production/rights-windows/?title=lagos-after-dark`)
+    ).json()) as ProductionRightsWindow[];
+    expect(after.length).toBe(before.length + 1);
+  });
+
+  it('deletes a rights window', async () => {
+    setUser('producer');
+    const created = (await (
+      await fetch(`${BASE}/api/v1/production/rights-windows/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title_slug: 'lagos-after-dark', territory: 3, rights_type: 'broadcast' }),
+      })
+    ).json()) as ProductionRightsWindow;
+
+    const del = await fetch(`${BASE}/api/v1/production/rights-windows/${created.id}/`, {
+      method: 'DELETE',
+    });
+    expect(del.status).toBe(204);
+  });
+
+  it('forbids a broadcaster from the production titles', async () => {
     setUser('broadcaster');
-    const res = await acceptTopBid('exclusive');
+    const res = await fetch(`${BASE}/api/v1/production/titles/`);
     expect(res.status).toBe(403);
   });
 });
@@ -318,39 +324,6 @@ describe('admin moderation', () => {
   });
 });
 
-describe('payouts', () => {
-  beforeEach(() => {
-    session.current = users.find((u) => u.username === 'producer') ?? null;
-    // Remove accounts added by earlier tests (seeded ids are 1 and 2).
-    for (let i = payoutAccounts.length - 1; i >= 0; i--) {
-      if (payoutAccounts[i].id >= 10) payoutAccounts.splice(i, 1);
-    }
-  });
-
-  it('returns the producer split accounts totalling 100%', async () => {
-    const accts = (await (await fetch(`${BASE}/api/v1/payout-accounts/`)).json()) as PayoutAccount[];
-    expect(accts).toHaveLength(2);
-    expect(accts.reduce((s, a) => s + a.percentage, 0)).toBe(100);
-  });
-
-  it('adds a payout account', async () => {
-    const res = await fetch(`${BASE}/api/v1/payout-accounts/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ label: 'Composer royalty', account_number: '5550001111', percentage: 10 }),
-    });
-    expect(res.status).toBe(200);
-    const accts = (await (await fetch(`${BASE}/api/v1/payout-accounts/`)).json()) as PayoutAccount[];
-    expect(accts).toHaveLength(3);
-  });
-
-  it('forbids a broadcaster from accessing payout accounts', async () => {
-    session.current = users.find((u) => u.username === 'broadcaster') ?? null;
-    const res = await fetch(`${BASE}/api/v1/payout-accounts/`);
-    expect(res.status).toBe(403);
-  });
-});
-
 describe('discovery', () => {
   beforeEach(() => {
     session.current = users.find((u) => u.username === 'broadcaster') ?? null;
@@ -380,24 +353,5 @@ describe('discovery', () => {
     await setInterests(['type:documentary']);
     const recs = (await (await fetch(`${BASE}/api/v1/recommendations/`)).json()) as AssetListItem[];
     expect(recs[0].asset_type).toBe('documentary');
-  });
-});
-
-describe('production analytics', () => {
-  it('returns per-title bid stats for the producer', async () => {
-    session.current = users.find((u) => u.username === 'producer') ?? null;
-    const stats = (await (
-      await fetch(`${BASE}/api/v1/production/title-stats/`)
-    ).json()) as ProductionTitleStat[];
-    // EbonyLife owns Lagos After Dark (101), which carries seeded rival bids.
-    const lagos = stats.find((s) => s.asset_id === 101);
-    expect(lagos).toBeDefined();
-    expect(lagos!.bid_count).toBeGreaterThanOrEqual(2);
-  });
-
-  it('forbids a broadcaster from the production stats', async () => {
-    session.current = users.find((u) => u.username === 'broadcaster') ?? null;
-    const res = await fetch(`${BASE}/api/v1/production/title-stats/`);
-    expect(res.status).toBe(403);
   });
 });

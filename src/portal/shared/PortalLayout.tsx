@@ -6,7 +6,6 @@ import {
   FiHome,
   FiFilm,
   FiBarChart2,
-  FiDollarSign,
   FiPlus,
 } from 'react-icons/fi';
 import { useAuth } from './AuthContext';
@@ -20,9 +19,8 @@ const ADMIN_NAV = [
 
 const PRODUCTION_NAV = [
   { to: '/portal/production/dashboard', label: 'Dashboard', Icon: FiHome },
-  { to: '/portal/production/assets', label: 'Content', Icon: FiFilm },
+  { to: '/portal/production/assets', label: 'Catalogue', Icon: FiFilm },
   { to: '/portal/production/analytics', label: 'Analytics', Icon: FiBarChart2 },
-  { to: '/portal/production/earnings', label: 'Earnings', Icon: FiDollarSign },
 ];
 
 export function PortalLayout() {
