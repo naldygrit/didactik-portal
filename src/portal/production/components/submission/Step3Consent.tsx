@@ -34,7 +34,7 @@ export function Step3Consent() {
   // When the filmmaker chose international licensing, the consent they read (and
   // the backend snapshots) gains the international-licensee clause.
   const licensing = watch('licensing_preference');
-  const showInternational = licensing === 'international' || licensing === 'both';
+  const showInternational = licensing === 'international_streaming' || licensing === 'both';
   const consentText = showInternational
     ? `${consent.text}\n\n${INTERNATIONAL_LICENSEE_ADDENDUM}`
     : consent.text;

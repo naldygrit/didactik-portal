@@ -4,18 +4,18 @@ import type { WizardFormData } from '../../pages/SubmitPage';
 const BRAND = '#5343fd';
 
 const OPTIONS: {
-  value: 'nigerian' | 'international' | 'both';
+  value: 'nigerian_broadcasters' | 'international_streaming' | 'both';
   label: string;
   hint: string;
   recommended?: boolean;
 }[] = [
   {
-    value: 'nigerian',
+    value: 'nigerian_broadcasters',
     label: 'Nigerian broadcasters',
     hint: 'Offer this title to Nigerian TV and broadcast networks.',
   },
   {
-    value: 'international',
+    value: 'international_streaming',
     label: 'International streaming services',
     hint: 'Offer it to streamers and broadcasters outside Nigeria.',
   },

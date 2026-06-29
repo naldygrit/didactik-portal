@@ -41,6 +41,7 @@ export function ProductionEarningsPage() {
   });
 
   const all = deals ?? [];
+  const gross = all.reduce((s, d) => s + Number(d.amount), 0);
   const net = all.reduce((s, d) => s + Number(d.net_to_producer), 0);
   const allocated = (accounts ?? []).reduce((s, a) => s + a.percentage, 0);
   const canAdd =
@@ -55,9 +56,10 @@ export function ProductionEarningsPage() {
         </p>
       </header>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         <Stat label="Deals" value={String(all.length)} />
-        <Stat label="Total earnings" value={money(net)} accent />
+        <Stat label="Gross earnings" value={money(gross)} />
+        <Stat label="Net earnings" value={money(net)} accent />
       </div>
 
       <section>
@@ -77,7 +79,8 @@ export function ProductionEarningsPage() {
                   <th className="px-4 py-3">Title</th>
                   <th className="px-4 py-3">Broadcaster</th>
                   <th className="px-4 py-3">Territory</th>
-                  <th className="px-4 py-3 text-right">Your earnings</th>
+                  <th className="px-4 py-3 text-right">Gross</th>
+                  <th className="px-4 py-3 text-right">Net</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -86,6 +89,9 @@ export function ProductionEarningsPage() {
                     <td className="px-4 py-3 font-medium text-gray-900">{d.title_name}</td>
                     <td className="px-4 py-3 text-gray-600">{d.broadcaster_name}</td>
                     <td className="px-4 py-3 text-gray-600">{d.territory}</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-gray-700">
+                      {money(d.amount, d.currency)}
+                    </td>
                     <td className="px-4 py-3 text-right font-semibold tabular-nums text-gray-900">
                       {money(d.net_to_producer, d.currency)}
                     </td>

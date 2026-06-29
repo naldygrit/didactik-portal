@@ -45,7 +45,9 @@ const wizardSchema = z.object({
   submitter_name: z.string().min(1, 'Your name is required').max(300),
   submitter_contact: z.string().min(1, 'Contact info is required').max(300),
   // Step 2 — Licensing destination (drives the international-licensee consent clause)
-  licensing_preference: z.enum(['nigerian', 'international', 'both']).default('both'),
+  licensing_preference: z
+    .enum(['nigerian_broadcasters', 'international_streaming', 'both'])
+    .default('both'),
   // Step 3 — Consent
   consented: z.boolean().refine((v) => v === true, {
     message: 'You must accept the consent terms to proceed',
@@ -132,9 +134,15 @@ export function ProductionSubmitPage() {
   }
 
   const current = STEPS[step - 1];
-  // The Rights & consent step cannot be left until the consent box is ticked.
-  const consented = methods.watch('consented');
-  const nextBlocked = step === 2 && !consented;
+  // The Rights & consent step cannot be left until every field on it is filled
+  // and the data-transfer consent box is ticked.
+  const [submitterName, submitterContact, consented] = methods.watch([
+    'submitter_name',
+    'submitter_contact',
+    'consented',
+  ]);
+  const nextBlocked =
+    step === 2 && (!consented || !submitterName?.trim() || !submitterContact?.trim());
 
   return (
     <div className="mx-auto max-w-4xl">

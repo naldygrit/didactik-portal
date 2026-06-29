@@ -130,6 +130,10 @@ all scoped under `.portal-control`. `PortalLayout` picks theme by path PREFIX
   (the established sidebar query-sync pattern; eslint still exits 0).
 
 ## Recent commits (newest first)
+- `feat(broadcaster|production)` DetailModal (card click) now shows Express interest
+  + Make offer alongside the screener; production Earnings shows Gross + Net columns;
+  "Continue to upload" disabled until all step-2 fields AND consent are complete;
+  de-em-dashed the other consent texts + aligned licensing_preference values.
 - `feat(production)` "Continue to upload" is disabled until the consent box is
   ticked. Removed em dashes from the NDPA consent text mirror (copy bench).
 - `feat(production)` licensing-destination on the filmmaker upload: a "Where would

@@ -117,34 +117,25 @@ describe('SubmitPage wizard', () => {
     await screen.findByPlaceholderText('As it appears on official documents');
   });
 
-  it('keeps Continue to upload disabled until consent is ticked', async () => {
+  it('keeps Continue to upload disabled until the step is complete', async () => {
     render(<ProductionSubmitPage />, { wrapper: Wrapper });
     await fillStep1Valid();
     fireEvent.click(screen.getByText('Save and continue'));
     await screen.findByPlaceholderText('As it appears on official documents');
 
     const continueBtn = screen.getByText('Continue to upload').closest('button') as HTMLButtonElement;
+    // Submitter name empty and consent unticked.
     expect(continueBtn.disabled).toBe(true);
-    fireEvent.click(await screen.findByRole('checkbox'));
-    expect(continueBtn.disabled).toBe(false);
-  });
 
-  it('blocks advance from the consent step when submitter name is empty', async () => {
-    render(<ProductionSubmitPage />, { wrapper: Wrapper });
-    await fillStep1Valid();
-    fireEvent.click(screen.getByText('Save and continue'));
-    await screen.findByPlaceholderText('As it appears on official documents');
-
-    // Consent must be ticked before the step can be left.
-    fireEvent.click(await screen.findByRole('checkbox'));
     fireEvent.change(screen.getByPlaceholderText('As it appears on official documents'), {
-      target: { value: '' },
+      target: { value: 'Tobi O.' },
     });
-    fireEvent.click(screen.getByText('Continue to upload'));
+    // Name filled, but consent still unticked.
+    expect(continueBtn.disabled).toBe(true);
 
-    await waitFor(() => {
-      expect(screen.getByText('Your name is required')).toBeDefined();
-    });
+    fireEvent.click(await screen.findByRole('checkbox'));
+    // Name filled and consent ticked.
+    expect(continueBtn.disabled).toBe(false);
   });
 
   it('offers the licensing destination on step 2 with Both recommended', async () => {

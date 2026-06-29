@@ -36,11 +36,11 @@ By checking the box below, you explicitly and freely consent to the transfer of 
   },
 
   popia_section_72: {
-    version: 'data_transfer_popia_v1_2026_05',
+    version: 'data_transfer_popia_v2_2026_06',
     text: `DATA TRANSFER CONSENT NOTICE
-Protection of Personal Information Act 4 of 2013 (POPIA) — Section 72(1)(b)
+Protection of Personal Information Act 4 of 2013 (POPIA), Section 72(1)(b)
 
-Didactik Media Limited ("Didactik") processes your personal information as a responsible party under the Protection of Personal Information Act 4 of 2013 (POPIA). When you submit content through this platform, personal information — including your name, contact details, and submission metadata — will be transferred to and stored on servers operated by Backblaze, Inc., a company incorporated in the United States of America.
+Didactik Media Limited ("Didactik") processes your personal information as a responsible party under the Protection of Personal Information Act 4 of 2013 (POPIA). When you submit content through this platform, personal information, including your name, contact details, and submission metadata, will be transferred to and stored on servers operated by Backblaze, Inc., a company incorporated in the United States of America.
 
 Section 72(1) of POPIA prohibits transfer of personal information to a third party in a foreign country unless one of the specified conditions is met. The Information Regulator of South Africa has not issued an adequacy determination for the United States. This transfer therefore relies on your explicit consent under Section 72(1)(b) of POPIA, which permits transfer where the data subject consents to the transfer.
 
@@ -57,11 +57,11 @@ By checking the box below, you explicitly consent to the transfer of your person
   },
 
   kenya_dpa: {
-    version: 'data_transfer_kenya_dpa_v1_2026_05',
+    version: 'data_transfer_kenya_dpa_v2_2026_06',
     text: `DATA TRANSFER CONSENT NOTICE
-Kenya Data Protection Act 2019 — Section 48 Safeguards and Supplementary Consent
+Kenya Data Protection Act 2019, Section 48 Safeguards and Supplementary Consent
 
-Didactik Media Limited ("Didactik") processes your personal data as a data controller. When you submit content through this platform, personal data — including your name, contact details, and submission metadata — will be transferred to and stored on servers operated by Backblaze, Inc., a company incorporated in the United States of America.
+Didactik Media Limited ("Didactik") processes your personal data as a data controller. When you submit content through this platform, personal data, including your name, contact details, and submission metadata, will be transferred to and stored on servers operated by Backblaze, Inc., a company incorporated in the United States of America.
 
 Section 48 of the Kenya Data Protection Act 2019 (DPA) governs the transfer of personal data outside Kenya. Didactik is implementing appropriate safeguards for this transfer as required by Section 48. As a supplementary measure, and in the interest of full transparency, we are also requesting your explicit consent to this transfer.
 
@@ -78,12 +78,12 @@ By checking the box below, you acknowledge this disclosure and consent to the tr
   },
 
   gdpr_article_49: {
-    version: 'data_transfer_gdpr_art49_v2_2026_06',
+    version: 'data_transfer_gdpr_art49_v3_2026_06',
     text: `DATA TRANSFER CONSENT NOTICE
-General Data Protection Regulation — Data Transfer Notice
+General Data Protection Regulation, Data Transfer Notice
 (Applies to submitters in the EU, EEA, and United Kingdom)
 
-Didactik Media Limited ("Didactik") is the controller of your personal data for the purposes of this submission. When you submit content through this platform, personal data — including your name, contact details, and submission metadata — will be transferred to and stored on servers operated by Backblaze, Inc., a company incorporated in the United States of America.
+Didactik Media Limited ("Didactik") is the controller of your personal data for the purposes of this submission. When you submit content through this platform, personal data, including your name, contact details, and submission metadata, will be transferred to and stored on servers operated by Backblaze, Inc., a company incorporated in the United States of America.
 
 Backblaze, Inc. has self-certified under the EU-U.S. Data Privacy Framework (EU-U.S. DPF) with the US Department of Commerce. Transfers to Backblaze therefore have the benefit of the European Commission's adequacy decision for the EU-U.S. DPF under GDPR Article 45. For UK submitters, Backblaze is certified under the UK Extension to the EU-U.S. DPF (UK-US DataBridge), providing the transfer mechanism under UK GDPR. However, the EU-U.S. DPF is currently subject to a legal challenge before the Court of Justice of the EU (Case C-703/25 P) and PCLOB oversight is suspended. Didactik therefore also collects your explicit consent under Article 49(1)(a) GDPR (or UK GDPR as applicable) as a supplementary measure, and intends to execute Standard Contractual Clauses with Backblaze as the primary transfer mechanism when EU operations scale beyond the pilot phase.
 
@@ -99,15 +99,15 @@ Your rights: you have the right of access, rectification, erasure, restriction o
 Retention: until you request deletion or your submission is removed from the archive.
 Full privacy policy: didactikmedia.com/privacy
 
-By checking the box below, you explicitly and freely consent to the transfer of your personal data to the United States of America. This consent is a supplementary measure alongside the EU-U.S. Data Privacy Framework adequacy decision (or UK Extension for UK submitters) and is voluntary. You may withdraw it at any time by contacting privacy@didactikmedia.com — withdrawal does not affect the lawfulness of any prior transfer, but you will no longer be able to submit content through this platform.`,
+By checking the box below, you explicitly and freely consent to the transfer of your personal data to the United States of America. This consent is a supplementary measure alongside the EU-U.S. Data Privacy Framework adequacy decision (or UK Extension for UK submitters) and is voluntary. You may withdraw it at any time by contacting privacy@didactikmedia.com, withdrawal does not affect the lawfulness of any prior transfer, but you will no longer be able to submit content through this platform.`,
   },
 
   other: {
-    version: 'data_transfer_other_v1_2026_05',
+    version: 'data_transfer_other_v2_2026_06',
     text: `DATA TRANSFER CONSENT NOTICE
 Provisional Cross-Border Data Transfer Disclosure
 
-Didactik Media Limited ("Didactik") is the controller of your personal data. When you submit content through this platform, personal data — including your name, contact details, and submission metadata — will be transferred to and stored on servers operated by Backblaze, Inc., a company incorporated in the United States of America.
+Didactik Media Limited ("Didactik") is the controller of your personal data. When you submit content through this platform, personal data, including your name, contact details, and submission metadata, will be transferred to and stored on servers operated by Backblaze, Inc., a company incorporated in the United States of America.
 
 Didactik has identified that the data protection framework applicable to submitters in your country or jurisdiction requires individual review. An admin staff member will contact you within seven business days at the details you provide to confirm the applicable legal framework and any additional safeguards or documentation required for your jurisdiction. Your content will not be made available on the platform until that review is complete. For enquiries, contact onboarding@didactikmedia.com.
 
