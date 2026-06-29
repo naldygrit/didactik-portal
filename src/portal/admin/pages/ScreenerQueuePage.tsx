@@ -25,7 +25,8 @@ const PILL_CLASS: Record<string, string> = {
 
 export function AdminScreenerQueuePage() {
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<Tab>('all');
+  // Default to the actionable queue — clearing pending requests is the job.
+  const [tab, setTab] = useState<Tab>('pending');
   // Per-request approve duration (hours) and decline reason, kept local until acted on.
   const [hours, setHours] = useState<Record<string, number>>({});
   const [reasons, setReasons] = useState<Record<string, string>>({});
@@ -72,9 +73,6 @@ export function AdminScreenerQueuePage() {
       </div>
 
       <div className="tab-bar">
-        <button type="button" className={`tab ${tab === 'all' ? 'active' : ''}`} onClick={() => setTab('all')}>
-          All ({counts.all})
-        </button>
         <button type="button" className={`tab ${tab === 'pending' ? 'active' : ''}`} onClick={() => setTab('pending')}>
           Pending ({counts.pending})
         </button>
@@ -83,6 +81,9 @@ export function AdminScreenerQueuePage() {
         </button>
         <button type="button" className={`tab ${tab === 'declined' ? 'active' : ''}`} onClick={() => setTab('declined')}>
           Declined ({counts.declined})
+        </button>
+        <button type="button" className={`tab ${tab === 'all' ? 'active' : ''}`} onClick={() => setTab('all')}>
+          All ({counts.all})
         </button>
       </div>
 
