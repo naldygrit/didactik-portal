@@ -45,6 +45,10 @@ export function BroadcasterAssetDetailPage() {
     queryFn: () => apiGet<Title>(`/api/v1/broadcaster/titles/${slug}/`),
     enabled: !!slug,
   });
+  const { data: allTitles } = useQuery<Title[]>({
+    queryKey: ['broadcaster-titles'],
+    queryFn: () => apiGet<Title[]>('/api/v1/broadcaster/titles/'),
+  });
 
   if (isLoading) return <p className="px-8 py-10 text-sm text-[var(--muted)]">Loading…</p>;
   if (isError || !title) {
@@ -60,6 +64,10 @@ export function BroadcasterAssetDetailPage() {
 
   const credits = title.credits ?? [];
   const awards = awardNames(title);
+  const genreIds = new Set(title.genres.map((g) => g.id));
+  const similar = (allTitles ?? [])
+    .filter((t) => t.slug !== title.slug && t.genres.some((g) => genreIds.has(g.id)))
+    .slice(0, 6);
   const meta = [
     title.production_company?.name,
     title.country_of_origin?.name,
@@ -189,6 +197,31 @@ export function BroadcasterAssetDetailPage() {
           </div>
         )}
       </div>
+
+      {similar.length > 0 && (
+        <div className="px-6 pb-10 md:px-10">
+          <h2 className="mb-3 text-base font-bold text-white">More like this</h2>
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {similar.map((t) => (
+              <Link
+                key={t.slug}
+                to={`/portal/broadcaster/discover/${t.slug}`}
+                className="group min-w-[160px] max-w-[160px]"
+              >
+                <div
+                  className="aspect-video w-full rounded-lg bg-cover bg-center ring-1 ring-white/10 transition-transform group-hover:scale-[1.03]"
+                  style={{ backgroundImage: `url(${titleBackdropUrl(t)})` }}
+                />
+                <div className="mt-1.5 truncate text-sm font-medium text-white/90">{t.name}</div>
+                <div className="truncate text-xs text-[var(--muted)]">
+                  {titleTypeLabel(t.title_type)}
+                  {t.production_year ? ` · ${t.production_year}` : ''}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

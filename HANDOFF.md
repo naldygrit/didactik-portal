@@ -79,12 +79,15 @@ all scoped under `.portal-control`. `PortalLayout` picks theme by path PREFIX
   tabs Overview / Credits / Rights & screener. Overview shows synopsis + fields
   incl. real Subtitles/Dubs; Credits renders real `title.credits`; the Rights tab
   reuses the working ScreenerPanel (rights availability + request + watchlist).
-- **Broadcaster home/other surfaces STILL pending** (reference Portal/didactik-broadcaster.jsx):
-  the home activity strip (New in territories / Watchlist updates / Screener
-  updates / Expiring access), the first-party in-territory discovery panel that
-  REPLACES the reference's YouTube/audience signal (no audience data), a
-  similar-titles rail on detail, and watchlist/screener page polish. Browse
-  (Billboard/rails) already approved.
+- **Broadcaster home surfaces DONE**: activity strip (New in your territories /
+  On your watchlist / Pending screeners / Active screeners) + "Opening soon in
+  your territories" panel — the first-party in-territory signal that REPLACES the
+  reference's YouTube/audience panel (uses /broadcaster/dashboard/
+  rights_opening_soon + watchlist/screener counts, no audience data). Detail has a
+  "More like this" similar-titles rail. Mock /broadcaster/dashboard/ added.
+  LicensesPage ("My activity") already covers watchlist + screeners with status;
+  optional follow-up = split into the reference's separate Watchlist + Screener
+  pages grouped by status (not a gap).
 - **Credits/Subtitles WIRED** (production detail): CreditsPanel renders real
   `title.credits` grouped by craft (Direction/Cast/Producing/Crew) with Primary
   badges; Metadata panel shows Subtitles/Dubs from `title.language_tracks`. Title

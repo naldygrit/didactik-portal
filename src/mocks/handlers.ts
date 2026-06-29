@@ -526,6 +526,40 @@ export const handlers = [
     return HttpResponse.json(titleRights[title.slug] ?? []);
   }),
 
+  // ── Broadcaster: home dashboard ─────────────────────────────────────────────
+  // First-party only: the broadcaster's own watchlist + screener state, and
+  // rights opening in their territories. No audience/viewership data.
+  http.get(`${API}/broadcaster/dashboard/`, () => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    const reqs = screenerRequests[user.user_id] ?? [];
+    const byStatus: Record<string, number> = {};
+    for (const r of reqs) byStatus[r.status] = (byStatus[r.status] ?? 0) + 1;
+    return HttpResponse.json({
+      activity: {
+        watchlist_count: (watchlist[user.user_id] ?? []).length,
+        screener_requests_by_status: byStatus,
+      },
+      browsable_titles: titles.length,
+      rights_opening_soon: [
+        {
+          title_slug: 'harmattan-letters',
+          title_name: 'Harmattan Letters',
+          territory: 'Francophone Africa',
+          rights_type: 'svod',
+          available_from: '2026-08-01',
+        },
+        {
+          title_slug: 'riverwood-nights',
+          title_name: 'Riverwood Nights',
+          territory: 'East Africa',
+          rights_type: 'broadcast',
+          available_from: '2026-09-15',
+        },
+      ],
+    });
+  }),
+
   // ── Broadcaster: Watchlist ──────────────────────────────────────────────────
   http.get(`${API}/broadcaster/watchlist/`, () => {
     const user = session.current;

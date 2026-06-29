@@ -231,6 +231,24 @@ export interface LanguageTrack {
   track_type: 'subtitle' | 'dub';
 }
 
+// Broadcaster home aggregates. Every number is first-party (the broadcaster's
+// own watchlist / screener state and rights opening in their territories) —
+// never an audience or viewership metric.
+export interface BroadcasterDashboard {
+  activity: {
+    watchlist_count: number;
+    screener_requests_by_status: Record<string, number>;
+  };
+  browsable_titles: number;
+  rights_opening_soon: {
+    title_slug: string;
+    title_name: string;
+    territory: string;
+    rights_type: string;
+    available_from: string | null;
+  }[];
+}
+
 export type RightsType = 'broadcast' | 'svod' | 'avod' | 'tvod' | 'theatrical' | 'all';
 
 // One territory's rights window for a Title, from the broadcaster's perspective.
