@@ -91,7 +91,7 @@ describe('ProductionAssetsPage', () => {
     expect(screen.getByText('Nairobi Nights')).toBeDefined();
   });
 
-  it('filters titles by name input', async () => {
+  it('filters titles by status pill', async () => {
     const { apiGet } = await import('../../shared/apiHelpers');
     vi.mocked(apiGet).mockResolvedValue(mockTitles);
 
@@ -99,23 +99,8 @@ describe('ProductionAssetsPage', () => {
 
     await screen.findByText('Lagos Story');
 
-    const input = screen.getByPlaceholderText('Filter by title…');
-    fireEvent.change(input, { target: { value: 'nairobi' } });
-
-    expect(screen.queryByText('Lagos Story')).toBeNull();
-    expect(screen.getByText('Nairobi Nights')).toBeDefined();
-  });
-
-  it('filters titles by status dropdown', async () => {
-    const { apiGet } = await import('../../shared/apiHelpers');
-    vi.mocked(apiGet).mockResolvedValue(mockTitles);
-
-    render(<ProductionAssetsPage />, { wrapper: Wrapper });
-
-    await screen.findByText('Lagos Story');
-
-    const select = screen.getByRole('combobox');
-    fireEvent.change(select, { target: { value: 'submitted' } });
+    // The catalogue filters by status pills (TuneCore register), not a select.
+    fireEvent.click(screen.getByRole('button', { name: /Submitted/ }));
 
     expect(screen.queryByText('Lagos Story')).toBeNull();
     expect(screen.getByText('Nairobi Nights')).toBeDefined();

@@ -528,6 +528,45 @@ export const watchlist: Record<number, WatchlistEntry[]> = {
       priority: 'high',
       added_at: '2026-06-22T09:00:00Z',
     },
+    {
+      id: 2,
+      title_slug: 'lagos-after-dark',
+      title_name: 'Lagos After Dark',
+      internal_note: '',
+      priority: 'medium',
+      added_at: '2026-06-25T09:00:00Z',
+    },
+  ],
+  // Synthetic broadcaster users whose watchlists feed the seller-studio demand
+  // signal (watched_titles + the Territory interest panel). These exist only to
+  // give the production dashboard realistic watcher counts in mock mode.
+  4: [
+    {
+      id: 3,
+      title_slug: 'lagos-after-dark',
+      title_name: 'Lagos After Dark',
+      internal_note: '',
+      priority: 'high',
+      added_at: '2026-06-26T09:00:00Z',
+    },
+    {
+      id: 4,
+      title_slug: 'harmattan-letters',
+      title_name: 'Harmattan Letters',
+      internal_note: '',
+      priority: 'medium',
+      added_at: '2026-06-27T09:00:00Z',
+    },
+  ],
+  5: [
+    {
+      id: 5,
+      title_slug: 'lagos-after-dark',
+      title_name: 'Lagos After Dark',
+      internal_note: '',
+      priority: 'low',
+      added_at: '2026-06-28T09:00:00Z',
+    },
   ],
 };
 
@@ -818,6 +857,11 @@ export const productionEditorial: Record<
   // EbonyLife's in-pipeline submission (not yet a public Title), so the producer
   // sees a low-completeness title that needs attention.
   'aso-rock': { status: 'submitted', metadata_score: 38, licensing_intent: 'broadcast', screener_request_count: 0 },
+  // A title the Didactik team kicked back for changes — drives the changes_requested
+  // banner and the Needs Attention surface on the dashboard.
+  'eko-rising': { status: 'changes_requested', metadata_score: 54, licensing_intent: 'svod', screener_request_count: 0 },
+  // A brand-new draft the producer has only just started — low score, no rights.
+  'silent-quarter': { status: 'draft', metadata_score: 22, licensing_intent: '', screener_request_count: 0 },
 };
 
 // Production Titles belong to the authed company (EbonyLife / company id 1 for
@@ -851,9 +895,73 @@ const asoRockTitle: Title = {
   is_featured: false,
 };
 
+// Two more in-pipeline EbonyLife titles so the seller studio surfaces (Needs
+// Attention, the changes_requested banner, the draft pipeline state) all have
+// real rows to render.
+const ekoRisingTitle: Title = {
+  id: 107,
+  uuid: '00000000-0000-0000-0000-000000000107',
+  slug: 'eko-rising',
+  name: 'Èkó Rising',
+  original_title: 'Èkó Rising',
+  title_type: 'feature_film',
+  production_company: { id: 1, name: 'EbonyLife Studios' },
+  production_year: 2026,
+  country_of_origin: { id: 1, code: 'NG', name: 'Nigeria' },
+  co_production_countries: [],
+  original_language: { id: 1, code: 'yor', english_name: 'Yoruba' },
+  dialogue_languages: [{ id: 1, code: 'yor', english_name: 'Yoruba' }],
+  genres: [{ id: 3, name: 'Drama', slug: 'drama' }],
+  cultural_tags: [{ id: 1, name: 'Lagos', slug: 'lagos' }],
+  maturity_rating: null,
+  logline: 'A young architect fights to save a Lagos neighbourhood from demolition.',
+  synopsis: '',
+  runtime_minutes: 109,
+  episode_count: null,
+  season_count: null,
+  awards: [],
+  festival_selections: [],
+  resolution: 'HD',
+  aspect_ratio: '1.85:1',
+  is_featured: false,
+};
+
+const silentQuarterTitle: Title = {
+  id: 108,
+  uuid: '00000000-0000-0000-0000-000000000108',
+  slug: 'silent-quarter',
+  name: 'The Silent Quarter',
+  original_title: 'The Silent Quarter',
+  title_type: 'short_film',
+  production_company: { id: 1, name: 'EbonyLife Studios' },
+  production_year: 2026,
+  country_of_origin: { id: 1, code: 'NG', name: 'Nigeria' },
+  co_production_countries: [],
+  original_language: { id: 10, code: 'eng', english_name: 'English' },
+  dialogue_languages: [{ id: 10, code: 'eng', english_name: 'English' }],
+  genres: [],
+  cultural_tags: [],
+  maturity_rating: null,
+  logline: 'A wordless short set across one curfew night in Surulere.',
+  synopsis: '',
+  runtime_minutes: null,
+  episode_count: null,
+  season_count: null,
+  awards: [],
+  festival_selections: [],
+  resolution: '',
+  aspect_ratio: '',
+  is_featured: false,
+};
+
 // The pool of source Titles a production company can own (public catalogue plus
 // in-pipeline submissions). Scoped to a company at request time.
-export const productionTitlePool: Title[] = [...titles, asoRockTitle];
+export const productionTitlePool: Title[] = [
+  ...titles,
+  asoRockTitle,
+  ekoRisingTitle,
+  silentQuarterTitle,
+];
 
 // Per-title metadata completeness breakdowns, keyed by slug.
 export interface CompletenessRuleSeed {
@@ -881,6 +989,20 @@ export const completenessBreakdowns: Record<string, CompletenessRuleSeed[]> = {
   ],
   'aso-rock': [
     { key: 'synopsis', label: 'Synopsis', points: 20, required: true, completed: true },
+    { key: 'logline', label: 'Logline', points: 10, required: true, completed: true },
+    { key: 'genres', label: 'Genres', points: 15, required: true, completed: false },
+    { key: 'maturity_rating', label: 'Maturity rating', points: 10, required: true, completed: false },
+    { key: 'key_art', label: 'Key art', points: 15, required: false, completed: false },
+  ],
+  'eko-rising': [
+    { key: 'synopsis', label: 'Synopsis', points: 20, required: true, completed: false },
+    { key: 'logline', label: 'Logline', points: 10, required: true, completed: true },
+    { key: 'genres', label: 'Genres', points: 15, required: true, completed: true },
+    { key: 'maturity_rating', label: 'Maturity rating', points: 10, required: true, completed: false },
+    { key: 'key_art', label: 'Key art', points: 15, required: false, completed: true },
+  ],
+  'silent-quarter': [
+    { key: 'synopsis', label: 'Synopsis', points: 20, required: true, completed: false },
     { key: 'logline', label: 'Logline', points: 10, required: true, completed: true },
     { key: 'genres', label: 'Genres', points: 15, required: true, completed: false },
     { key: 'maturity_rating', label: 'Maturity rating', points: 10, required: true, completed: false },

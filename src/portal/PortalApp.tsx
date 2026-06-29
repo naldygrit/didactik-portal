@@ -11,8 +11,9 @@ import { BroadcasterDiscoverPage } from './broadcaster/pages/DiscoverPage';
 import { BroadcasterAssetDetailPage } from './broadcaster/pages/AssetDetailPage';
 import { BroadcasterLicensesPage } from './broadcaster/pages/LicensesPage';
 import { BroadcasterOnboardingPage } from './broadcaster/pages/OnboardingPage';
-import { ProductionStudioHomePage } from './production/pages/StudioHomePage';
+import { ProductionDashboardPage } from './production/pages/DashboardPage';
 import { ProductionAssetsPage } from './production/pages/AssetsPage';
+import { ProductionScreenerRequestsPage } from './production/pages/ScreenerRequestsPage';
 import { ProductionSubmitPage } from './production/pages/SubmitPage';
 import { ProductionAssetDetailPage } from './production/pages/AssetDetailPage';
 import { ProductionAnalyticsPage } from './production/pages/AnalyticsPage';
@@ -44,7 +45,7 @@ function PortalRoutes() {
           path="production/dashboard"
           element={
             <ProtectedRoute isAllowed={isPC}>
-              <ProductionStudioHomePage />
+              <ProductionDashboardPage />
             </ProtectedRoute>
           }
         />
@@ -61,6 +62,14 @@ function PortalRoutes() {
           element={
             <ProtectedRoute isAllowed={isPC}>
               <ProductionAssetDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="production/screeners"
+          element={
+            <ProtectedRoute isAllowed={isPC}>
+              <ProductionScreenerRequestsPage />
             </ProtectedRoute>
           }
         />

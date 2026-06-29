@@ -37,14 +37,24 @@ authenticated portal app.
   default Pending), Library (data table + status PATCH), Production-companies +
   Broadcasters tables, grouped sidebar with badges. Bench-polished (filter chip,
   KPI hierarchy, empty states, copy, subtle shadow + hover lift).
-- **Production** (TuneCore reskin IN PROGRESS): layering = TuneCore primary
-  (catalogue/dashboard home), Frame.io per-title pipeline/assets, StudioBinder
-  credits/bible, YouTube Studio analytics — all inside a title. Feel: managing a
-  catalogue, not editing a project. DONE: StudioHomePage reskinned to the
-  TuneCore release dashboard (health strip + release list centerpiece with
-  completeness bars + screener/watch context). NEXT: AssetsPage (catalogue table)
-  to TuneCore release rows; AssetDetailPage to Frame.io/StudioBinder/YouTube
-  layers. Upload wizard untouched (legacy Asset intake).
+- **Production** (TuneCore reskin DONE; ported from reference Portal/didactik-production.jsx):
+  DashboardPage (TuneCore: 6-up KPI strip, Needs attention, Recent screener
+  requests, Broadcaster watchlists, and a first-party "Territory interest" panel
+  that REPLACES the reference's YouTube signal — no audience data, by decision).
+  AssetsPage (TuneCore cards + status filter pills + ScoreRing). AssetDetailPage
+  (Frame.io: PipelineTracker + tabs Metadata/Credits/Assets/Rights/Activity, NO
+  YouTube tab; rights CRUD is real; Credits/Assets/change-note banner are honest
+  "not captured yet" stubs). ScreenerRequestsPage. New components PipelineTracker,
+  ScoreRing. StudioHomePage deleted. AnalyticsPage route kept but unlinked from
+  nav (orphan — candidate to remove). Submit wizard untouched (legacy).
+  DECISIONS: YouTube/audience signal = omitted, replaced by first-party demand
+  (watchlist x rights). Unmodeled data (Credits/Awards/Subtitles-Dubs/
+  asset-validation/change-notes) = stubbed honestly; backend models PROPOSED
+  (see below), awaiting go.
+- **Backend follow-up PROPOSED (awaiting go):** Credit (PBCore contributorRole),
+  Award, TitleLanguageTrack (subtitle/dub/original via Language FK); then
+  per-asset validation_status + a ChangeRequest model. Lights up the stubbed
+  production (and broadcaster) detail panels.
 
 ## Theme architecture
 `src/index.css`: `.portal-cinema` (broadcaster dark), `.portal-control` (admin

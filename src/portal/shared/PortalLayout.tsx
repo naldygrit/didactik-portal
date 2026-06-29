@@ -4,7 +4,6 @@ import type { ReactNode } from 'react';
 import {
   FiHome,
   FiFilm,
-  FiBarChart2,
   FiPlus,
   FiGrid,
   FiBook,
@@ -21,8 +20,9 @@ import type { AdminDashboard, AdminOrganisations } from './types';
 
 const PRODUCTION_NAV = [
   { to: '/portal/production/dashboard', label: 'Dashboard', Icon: FiHome },
-  { to: '/portal/production/assets', label: 'Catalogue', Icon: FiFilm },
-  { to: '/portal/production/analytics', label: 'Analytics', Icon: FiBarChart2 },
+  { to: '/portal/production/assets', label: 'My Catalogue', Icon: FiFilm },
+  { to: '/portal/production/screeners', label: 'Screener Requests', Icon: FiEye },
+  { to: '/portal/production/submit', label: 'Submit New Title', Icon: FiPlus },
 ];
 
 export function PortalLayout() {
