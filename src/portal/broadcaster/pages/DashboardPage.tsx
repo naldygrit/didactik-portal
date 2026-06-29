@@ -6,6 +6,8 @@ import type { BroadcasterDashboard, Title } from '../../shared/types';
 import { Billboard } from '../components/Billboard';
 import { ContentRail } from '../components/ContentRail';
 import { DetailModal } from '../components/DetailModal';
+import { useRecentlyViewed } from '../RecentlyViewedContext';
+import { titleBackdropUrl, titleTypeLabel } from '../posters';
 
 export function BroadcasterDashboardPage() {
   const [selected, setSelected] = useState<Title | null>(null);
@@ -22,6 +24,7 @@ export function BroadcasterDashboardPage() {
     queryKey: ['broadcaster-dashboard'],
     queryFn: () => apiGet<BroadcasterDashboard>('/api/v1/broadcaster/dashboard/'),
   });
+  const { recentlyViewed } = useRecentlyViewed();
   const personalized = (interests?.length ?? 0) > 0;
 
   if (isLoading) return <BrowseSkeleton />;
@@ -66,6 +69,31 @@ export function BroadcasterDashboardPage() {
             {personalized ? 'Tune picks' : 'Personalise'}
           </span>
         </Link>
+
+        {recentlyViewed.length > 0 && (
+          <section className="mx-4 md:mx-8">
+            <h2 className="mb-3 text-base font-bold text-white">Recently viewed</h2>
+            <div className="flex gap-3 overflow-x-auto pb-2">
+              {recentlyViewed.map((t) => (
+                <Link
+                  key={t.slug}
+                  to={`/portal/broadcaster/discover/${t.slug}`}
+                  className="group min-w-[150px] max-w-[150px] md:min-w-[180px] md:max-w-[180px]"
+                >
+                  <div
+                    className="aspect-video w-full rounded-lg bg-cover bg-center ring-1 ring-white/10 transition-transform group-hover:scale-[1.03]"
+                    style={{ backgroundImage: `url(${titleBackdropUrl(t)})` }}
+                  />
+                  <div className="mt-1.5 truncate text-sm font-medium text-white/90">{t.name}</div>
+                  <div className="truncate text-xs text-[var(--muted)]">
+                    {titleTypeLabel(t.title_type)}
+                    {t.production_year ? ` · ${t.production_year}` : ''}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
         {rails.map((rail) => (
           <ContentRail

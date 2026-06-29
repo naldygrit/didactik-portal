@@ -3,6 +3,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './shared/AuthContext';
 import { ProtectedRoute } from './shared/ProtectedRoute';
 import { DashboardRedirect } from './shared/DashboardRedirect';
+import { RecentlyViewedProvider } from './broadcaster/RecentlyViewedContext';
 import { LoginPage } from './shared/LoginPage';
 import { ApplyPage } from './onboarding/ApplyPage';
 import { PortalLayout } from './shared/PortalLayout';
@@ -243,7 +244,9 @@ export default function PortalApp() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <PortalRoutes />
+        <RecentlyViewedProvider>
+          <PortalRoutes />
+        </RecentlyViewedProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

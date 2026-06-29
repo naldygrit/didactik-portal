@@ -6,6 +6,7 @@ import { setupServer } from 'msw/node';
 import { handlers } from '../../../mocks/handlers';
 import { session, users } from '../../../mocks/db';
 import { BroadcasterDashboardPage } from '../pages/DashboardPage';
+import { RecentlyViewedProvider } from '../RecentlyViewedContext';
 
 // Renders the broadcaster browse surface against the mock API to prove the
 // billboard, rails and detail modal actually mount with catalogue data.
@@ -23,9 +24,11 @@ function renderDashboard() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={['/portal/broadcaster/dashboard']}>
-        <BroadcasterDashboardPage />
-      </MemoryRouter>
+      <RecentlyViewedProvider>
+        <MemoryRouter initialEntries={['/portal/broadcaster/dashboard']}>
+          <BroadcasterDashboardPage />
+        </MemoryRouter>
+      </RecentlyViewedProvider>
     </QueryClientProvider>,
   );
 }

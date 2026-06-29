@@ -63,6 +63,11 @@ all scoped under `.portal-control`. `PortalLayout` picks theme by path PREFIX
 (`/portal/admin` vs `/portal/broadcaster`) — do NOT use bare substring match
 (`/portal/admin/broadcasters` contains "broadcaster").
 
+## Recently viewed (DONE)
+- RecentlyViewedContext (adapted from Samuel's didactik-media, Title-based +
+  localStorage persistence). Provider wraps PortalApp; broadcaster detail calls
+  registerView; a "Recently viewed" rail renders on the broadcaster browse home.
+
 ## Onboarding (DONE)
 - Pre-auth "Apply for access" at `/portal/apply` (src/portal/onboarding/):
   unified entry → choose broadcaster/production → minimal org+contact form →

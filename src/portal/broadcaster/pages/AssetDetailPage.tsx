@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useRecentlyViewed } from '../RecentlyViewedContext';
 import { apiGet } from '../../shared/apiHelpers';
 import type { Title } from '../../shared/types';
 import { titleTypeLabel, titleBackdropUrl } from '../posters';
@@ -50,6 +51,13 @@ export function BroadcasterAssetDetailPage() {
     queryKey: ['broadcaster-titles'],
     queryFn: () => apiGet<Title[]>('/api/v1/broadcaster/titles/'),
   });
+
+  const { registerView } = useRecentlyViewed();
+  useEffect(() => {
+    if (title) registerView(title);
+    // registerView is stable for our purposes; re-record only when the title changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [title?.slug]);
 
   if (isLoading) return <p className="px-8 py-10 text-sm text-[var(--muted)]">Loading…</p>;
   if (isError || !title) {
