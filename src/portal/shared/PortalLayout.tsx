@@ -106,18 +106,35 @@ export function PortalLayout() {
           className="sticky top-0 hidden h-screen w-[200px] shrink-0 flex-col border-r py-3 md:flex"
           style={{ borderColor: 'var(--hairline)', background: 'var(--surface-raised)' }}
         >
-          <div className="px-4 pb-3">{Brand}</div>
+          <div className="mb-2 border-b px-4 pb-3" style={{ borderColor: 'var(--hairline)' }}>
+            {Brand}
+          </div>
           <div className="flex-grow overflow-y-auto">
             <AdminSidebarNav />
           </div>
-          <div className="border-t px-4 py-3" style={{ borderColor: 'var(--hairline)' }}>
-            {user && <p className="truncate text-xs text-[var(--muted)]">{user.email}</p>}
-            <button
-              onClick={handleLogout}
-              className="mt-1 text-xs text-[var(--muted)] transition-colors hover:text-[var(--ink)]"
-            >
-              Sign out
-            </button>
+          <div className="mt-auto border-t px-3 py-3" style={{ borderColor: 'var(--hairline)' }}>
+            <div className="flex items-center gap-2">
+              <div
+                aria-hidden
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold"
+                style={{ background: 'var(--bg-accent)', color: 'var(--text-accent)' }}
+              >
+                {emailInitials(user?.email)}
+              </div>
+              <div className="min-w-0 flex-grow">
+                {user && (
+                  <p className="truncate text-xs" style={{ color: 'var(--text-secondary)' }}>
+                    {user.email}
+                  </p>
+                )}
+                <button
+                  onClick={handleLogout}
+                  className="text-[11px] text-[var(--muted)] transition-colors hover:text-[var(--ink)]"
+                >
+                  Sign out
+                </button>
+              </div>
+            </div>
           </div>
         </aside>
 
@@ -301,6 +318,15 @@ function isNavActive(pathname: string, search: string, to: string): boolean {
   }
   // A base item is active only when no sibling's qualifying filter is present.
   return !params.has('status') && !params.has('filter');
+}
+
+// Two-letter initials from an email's local part, for the sidebar avatar.
+function emailInitials(email: string | undefined): string {
+  if (!email) return '?';
+  const local = email.split('@')[0];
+  const parts = local.split(/[._-]+/).filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return local.slice(0, 2).toUpperCase();
 }
 
 function NavItem({

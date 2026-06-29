@@ -55,6 +55,9 @@ all scoped under `.portal-control`. `PortalLayout` picks theme by path PREFIX
   (the established sidebar query-sync pattern; eslint still exits 0).
 
 ## Recent commits (newest first)
+- `polish(admin)` sidebar refinement (brand divider, footer avatar, nav rhythm +
+  smoother motion, accent-tinted active badge)
+- `polish(admin)` subtle card shadow + hover lift; added HANDOFF.md
 - `polish(admin)` design+copy bench pass (filter chip, hierarchy, empty states, copy)
 - `fix(admin)` screener tab order (Pending default), sticky-filter clear, nav
   routing + theme-prefix match, labels
