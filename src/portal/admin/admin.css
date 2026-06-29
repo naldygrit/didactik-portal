@@ -112,6 +112,17 @@
   font-weight: 500;
   color: var(--text-primary);
   line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+/* Work-bearing KPIs (Screeners pending, Unvalidated) carry the eye: a heavier,
+   larger value than the neutral context metrics, so hierarchy reads from
+   size/weight, not colour alone. */
+.portal-control .kpi.primary .kpi-val {
+  font-size: 26px;
+  font-weight: 600;
+}
+.portal-control .kpi.primary {
+  border-color: var(--border-strong);
 }
 .portal-control .kpi-delta {
   font-size: 10px;
@@ -497,9 +508,9 @@
 .portal-control .org-table tr:last-child td {
   border-bottom: none;
 }
-.portal-control .lib-table tr:hover td,
-.portal-control .org-table tr:hover td {
-  background: var(--surface-1);
+.portal-control .lib-table tbody tr:hover td,
+.portal-control .org-table tbody tr:hover td {
+  background: var(--surface-2);
 }
 .portal-control .title-type {
   font-size: 10px;
@@ -609,6 +620,78 @@
   background: var(--surface-2);
   color: var(--text-primary);
   font-weight: 500;
+}
+
+/* Active-filter chip — shown when a list is narrowed by a sidebar deep-link or
+   the status/verification select, so the user always sees WHY the list is short
+   and can clear it in one click (Stripe filter-chip pattern). */
+.portal-control .filter-chip-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.portal-control .filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  padding: 3px 6px 3px 10px;
+  border-radius: 12px;
+  background: var(--bg-accent);
+  color: var(--text-accent);
+  border: 0.5px solid var(--border-accent);
+}
+.portal-control .filter-chip .chip-label {
+  font-weight: 500;
+}
+.portal-control .filter-chip button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-accent);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  padding: 0;
+}
+.portal-control .filter-chip button:hover {
+  background: rgba(83, 67, 253, 0.16);
+}
+
+/* Empty state — a heading plus the next action, never a bare sentence. */
+.portal-control .empty-state {
+  border: 0.5px dashed var(--border-strong);
+  border-radius: var(--radius);
+  padding: 28px 20px;
+  text-align: center;
+}
+.portal-control .empty-state-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+.portal-control .empty-state-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.portal-control .empty-state .btn-sm {
+  margin-top: 12px;
+}
+
+/* Numeric table cells: tabular figures + right alignment so columns line up. */
+.portal-control td.num {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.portal-control th.num {
+  text-align: right;
 }
 
 /* One-column fallback below the lg breakpoint (the reference is desktop-first

@@ -27,7 +27,7 @@ export function AdminBroadcastersPage() {
     <div>
       <div className="page-header">
         <div className="page-title">Broadcasters</div>
-        <div className="page-sub">All registered broadcasters on the platform</div>
+        <div className="page-sub">Broadcasters registered on Didactik</div>
       </div>
 
       <div className="filter-bar">
@@ -43,7 +43,31 @@ export function AdminBroadcastersPage() {
       </div>
 
       {isLoading && <div className="page-sub">Loading…</div>}
-      {data && rows.length === 0 && <div className="page-sub">No broadcasters match.</div>}
+      {data && rows.length === 0 && (
+        <div className="empty-state">
+          {category !== 'all' || q ? (
+            <>
+              <div className="empty-state-title">No broadcasters match this filter.</div>
+              <div className="empty-state-hint">Clear the search or type filter to see all broadcasters.</div>
+              <button
+                type="button"
+                className="btn-sm"
+                onClick={() => {
+                  setQ('');
+                  setCategory('all');
+                }}
+              >
+                Clear filter
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="empty-state-title">No broadcasters yet.</div>
+              <div className="empty-state-hint">Registered broadcasters will appear here.</div>
+            </>
+          )}
+        </div>
+      )}
 
       {rows.length > 0 && (
         <table className="org-table">
@@ -53,8 +77,8 @@ export function AdminBroadcastersPage() {
               <th>Type</th>
               <th>Country</th>
               <th>Last active</th>
-              <th>Screener reqs</th>
-              <th>Watchlists</th>
+              <th className="num">Screener reqs</th>
+              <th className="num">Watchlists</th>
               <th>Verified</th>
               <th>Actions</th>
             </tr>
@@ -96,15 +120,17 @@ function Row({ b }: { b: AdminBroadcasterRow }) {
         <span className={`activity-badge ${activeTone}`}>{relativeTime(b.last_activity)}</span>
       </td>
       <td
+        className="num"
         style={{
           fontSize: 12,
-          textAlign: 'center',
           color: b.screener_request_count > 0 ? 'var(--text-accent)' : 'var(--text-muted)',
         }}
       >
         {b.screener_request_count}
       </td>
-      <td style={{ fontSize: 12, textAlign: 'center' }}>{b.watchlist_count}</td>
+      <td className="num" style={{ fontSize: 12 }}>
+        {b.watchlist_count}
+      </td>
       <td>
         <span className={`verified-badge ${verified ? 'verified-yes' : 'verified-no'}`}>
           {verified ? 'Verified' : 'Pending'}
@@ -118,7 +144,7 @@ function Row({ b }: { b: AdminBroadcasterRow }) {
             </button>
           )}
           <button type="button" className="btn-sm">
-            View
+            View broadcaster
           </button>
         </div>
       </td>

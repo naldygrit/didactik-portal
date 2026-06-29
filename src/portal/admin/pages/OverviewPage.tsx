@@ -85,7 +85,7 @@ export function AdminOverviewPage() {
     <div>
       <div className="page-header">
         <div className="page-title">Overview</div>
-        <div className="page-sub">Platform health at a glance — updated now</div>
+        <div className="page-sub">Platform health and the work waiting on you</div>
       </div>
 
       {/* 6-up KPI grid. Deltas are only shown where a real sub-line exists. */}
@@ -98,12 +98,14 @@ export function AdminOverviewPage() {
           value={data?.screeners.pending_queue}
           delta={overdueScreeners > 0 ? `${overdueScreeners} over 48h` : undefined}
           deltaTone="danger"
+          primary
         />
         <Kpi
           label="Unvalidated assets"
           value={data?.assets.unvalidated}
           delta={(data?.assets.unvalidated ?? 0) > 0 ? 'action needed' : undefined}
           deltaTone="warn"
+          primary
         />
         <Kpi
           label="Storage"
@@ -123,7 +125,7 @@ export function AdminOverviewPage() {
               </Link>
             </div>
             {triage.length === 0 ? (
-              <div className="page-sub">Nothing to triage — the queue is clear.</div>
+              <div className="page-sub">Nothing to triage. The queue is clear.</div>
             ) : (
               triage.map((row) => {
                 const tone = ageTone(row.updated_at);
@@ -326,15 +328,17 @@ function Kpi({
   delta,
   deltaTone,
   small,
+  primary,
 }: {
   label: string;
   value: number | string | undefined;
   delta?: string;
   deltaTone?: 'up' | 'warn' | 'danger';
   small?: boolean;
+  primary?: boolean;
 }) {
   return (
-    <div className="kpi">
+    <div className={`kpi${primary ? ' primary' : ''}`}>
       <div className="kpi-label">{label}</div>
       <div className="kpi-val" style={small ? { fontSize: 15 } : undefined}>
         {value ?? '—'}

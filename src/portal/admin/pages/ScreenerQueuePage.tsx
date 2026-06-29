@@ -23,6 +23,15 @@ const PILL_CLASS: Record<string, string> = {
   expired: 'pill-declined',
 };
 
+// Per-tab empty states: a heading plus what it means, so a clear tab never reads
+// as a blank screen.
+const EMPTY_COPY: Record<Tab, { title: string; hint: string }> = {
+  pending: { title: 'No requests waiting.', hint: 'New broadcaster requests land here for review.' },
+  approved: { title: 'No approved requests yet.', hint: 'Requests you approve will show here.' },
+  declined: { title: 'No declined requests.', hint: 'Requests you decline or that expire will show here.' },
+  all: { title: 'No screener requests yet.', hint: 'Broadcaster requests will appear here once they come in.' },
+};
+
 export function AdminScreenerQueuePage() {
   const queryClient = useQueryClient();
   // Default to the actionable queue — clearing pending requests is the job.
@@ -68,7 +77,7 @@ export function AdminScreenerQueuePage() {
       <div className="page-header">
         <div className="page-title">Screeners</div>
         <div className="page-sub">
-          Approve or decline broadcaster screener requests — {counts.pending} pending
+          Approve or decline broadcaster screener requests ({counts.pending} pending)
         </div>
       </div>
 
@@ -88,7 +97,12 @@ export function AdminScreenerQueuePage() {
       </div>
 
       {isLoading && <div className="page-sub">Loading…</div>}
-      {data && rows.length === 0 && <div className="page-sub">No requests in this view.</div>}
+      {data && rows.length === 0 && (
+        <div className="empty-state">
+          <div className="empty-state-title">{EMPTY_COPY[tab].title}</div>
+          <div className="empty-state-hint">{EMPTY_COPY[tab].hint}</div>
+        </div>
+      )}
 
       {rows.map((req) => {
         const isPending = req.status === 'pending';

@@ -21,7 +21,7 @@ const STATUS_OPTIONS: TitleStatus[] = [
 export function AdminLibraryPage() {
   const [q, setQ] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | TitleStatus>('all');
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const highlightSlug = searchParams.get('title');
   const queryClient = useQueryClient();
 
@@ -31,6 +31,17 @@ export function AdminLibraryPage() {
   useEffect(() => {
     setStatusFilter(urlStatus ? (urlStatus as TitleStatus) : 'all');
   }, [urlStatus]);
+
+  // Clear the active status filter from both the local state and the URL, so
+  // the chip always resets the list to "all titles" in one click.
+  function clearStatusFilter() {
+    setStatusFilter('all');
+    if (urlStatus) {
+      const next = new URLSearchParams(searchParams);
+      next.delete('status');
+      setSearchParams(next, { replace: true });
+    }
+  }
 
   const { data, isLoading } = useQuery<AdminTitle[]>({
     queryKey: ['admin-titles'],
@@ -68,7 +79,7 @@ export function AdminLibraryPage() {
     <div>
       <div className="page-header">
         <div className="page-title">Library</div>
-        <div className="page-sub">Every title on the platform</div>
+        <div className="page-sub">Every title submitted to Didactik</div>
       </div>
 
       <div className="filter-bar">
@@ -91,8 +102,45 @@ export function AdminLibraryPage() {
         </select>
       </div>
 
+      {statusFilter !== 'all' && (
+        <div className="filter-chip-row">
+          <span className="filter-chip">
+            <span className="chip-label">Filtered: {humanize(statusFilter)}</span>
+            <button type="button" aria-label="Clear filter" onClick={clearStatusFilter}>
+              ×
+            </button>
+          </span>
+        </div>
+      )}
+
       {isLoading && <div className="page-sub">Loading…</div>}
-      {data && rows.length === 0 && <div className="page-sub">No titles match.</div>}
+      {data && rows.length === 0 && (
+        <div className="empty-state">
+          {statusFilter !== 'all' || q ? (
+            <>
+              <div className="empty-state-title">No titles match this filter.</div>
+              <div className="empty-state-hint">Clear the filter to see all titles.</div>
+              <button
+                type="button"
+                className="btn-sm"
+                onClick={() => {
+                  setQ('');
+                  clearStatusFilter();
+                }}
+              >
+                Clear filter
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="empty-state-title">No titles yet.</div>
+              <div className="empty-state-hint">
+                Submitted titles from production companies will appear here.
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       {rows.length > 0 && (
         <table className="lib-table">
