@@ -41,9 +41,7 @@ export function ProductionEarningsPage() {
   });
 
   const all = deals ?? [];
-  const gross = all.reduce((s, d) => s + Number(d.amount), 0);
   const net = all.reduce((s, d) => s + Number(d.net_to_producer), 0);
-  const commission = gross - net;
   const allocated = (accounts ?? []).reduce((s, a) => s + a.percentage, 0);
   const canAdd =
     form.label.trim() !== '' && form.account_details.trim() !== '' && Number(form.percentage) > 0;
@@ -53,15 +51,13 @@ export function ProductionEarningsPage() {
       <header>
         <h1 className="font-display text-2xl font-bold text-gray-900">Earnings</h1>
         <p className="mt-0.5 text-sm text-gray-500">
-          Licence revenue from your catalogue, net of Didactik's commission, and where it is paid.
+          Licence revenue from your catalogue and where it is paid.
         </p>
       </header>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3">
         <Stat label="Deals" value={String(all.length)} />
-        <Stat label="Gross licence value" value={money(gross)} />
-        <Stat label="Net to you" value={money(net)} accent />
-        <Stat label="Didactik commission" value={money(commission)} />
+        <Stat label="Total earnings" value={money(net)} accent />
       </div>
 
       <section>
@@ -81,9 +77,7 @@ export function ProductionEarningsPage() {
                   <th className="px-4 py-3">Title</th>
                   <th className="px-4 py-3">Broadcaster</th>
                   <th className="px-4 py-3">Territory</th>
-                  <th className="px-4 py-3 text-right">Fee</th>
-                  <th className="px-4 py-3 text-right">Commission</th>
-                  <th className="px-4 py-3 text-right">Net to you</th>
+                  <th className="px-4 py-3 text-right">Your earnings</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -92,12 +86,6 @@ export function ProductionEarningsPage() {
                     <td className="px-4 py-3 font-medium text-gray-900">{d.title_name}</td>
                     <td className="px-4 py-3 text-gray-600">{d.broadcaster_name}</td>
                     <td className="px-4 py-3 text-gray-600">{d.territory}</td>
-                    <td className="px-4 py-3 text-right tabular-nums text-gray-700">
-                      {money(d.amount, d.currency)}
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums text-gray-400">
-                      {money(d.commission_amount, d.currency)}
-                    </td>
                     <td className="px-4 py-3 text-right font-semibold tabular-nums text-gray-900">
                       {money(d.net_to_producer, d.currency)}
                     </td>
