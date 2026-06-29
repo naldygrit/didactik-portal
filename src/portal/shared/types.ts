@@ -531,6 +531,18 @@ export interface ProductionOffer {
   created_at: string;
 }
 
+// Competitive bid stats for the broadcaster bid panel. Bidder identities are
+// never exposed, only counts and amounts.
+export interface BiddingStats {
+  currency: string;
+  fee_min: string | null;
+  fee_max: string | null;
+  bidder_count: number;
+  top_bid: string | null;
+  your_bid: string | null;
+  you_leading: boolean;
+}
+
 export interface Deal {
   uuid: string;
   title_name: string;

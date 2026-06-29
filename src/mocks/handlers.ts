@@ -50,6 +50,27 @@ import type { MockUser } from './db';
 
 const API = '/api/v1';
 
+// Competitive bidding (mock). Each title starts with two baseline broadcaster
+// bids; the signed-in broadcaster's own bid is tracked per user so raising
+// updates in place and the leading state reacts.
+const baselineBids: Record<string, number[]> = {};
+const userBids: Record<string, Record<number, number>> = {};
+function biddingStats(slug: string, userId: number) {
+  const baseline = (baselineBids[slug] ??= [12000, 14500]);
+  const yourBid = userBids[slug]?.[userId];
+  const all = yourBid != null ? [...baseline, yourBid] : [...baseline];
+  const top = all.length ? Math.max(...all) : null;
+  return {
+    currency: 'USD',
+    fee_min: '8000.00',
+    fee_max: '25000.00',
+    bidder_count: baseline.length + (yourBid != null ? 1 : 0),
+    top_bid: top != null ? String(top) : null,
+    your_bid: yourBid != null ? String(yourBid) : null,
+    you_leading: yourBid != null && top != null && yourBid >= top,
+  };
+}
+
 // Rights coverage by territory: for each territory, how many titles offer rights
 // there, as a percentage of the catalogue. Derived from the per-title rights
 // projections so the Overview bars reflect real seeded data (sorted widest first).
@@ -668,6 +689,23 @@ export const handlers = [
     const title = findTitleBySlug(String(params.slug));
     if (!title) return HttpResponse.json({ detail: 'Not found.' }, { status: 404 });
     return HttpResponse.json(titleRights[title.slug] ?? []);
+  }),
+
+  http.get(`${API}/broadcaster/titles/:slug/bidding/`, ({ params }) => {
+    if (!session.current) return unauthorized();
+    return HttpResponse.json(biddingStats(String(params.slug), session.current.user_id));
+  }),
+
+  http.post(`${API}/broadcaster/titles/:slug/bid/`, async ({ params, request }) => {
+    if (!session.current) return unauthorized();
+    const slug = String(params.slug);
+    const body = (await request.json()) as { amount?: number };
+    const amount = Number(body.amount);
+    if (!(amount > 0)) {
+      return HttpResponse.json({ detail: 'Bid must be greater than zero.' }, { status: 400 });
+    }
+    (userBids[slug] ??= {})[session.current.user_id] = amount;
+    return HttpResponse.json(biddingStats(slug, session.current.user_id), { status: 201 });
   }),
 
   // ── Broadcaster: home dashboard ─────────────────────────────────────────────

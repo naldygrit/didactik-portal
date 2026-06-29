@@ -130,6 +130,11 @@ all scoped under `.portal-control`. `PortalLayout` picks theme by path PREFIX
   (the established sidebar query-sync pattern; eslint still exits 0).
 
 ## Recent commits (newest first)
+- `feat(broadcaster)` competitive bid panel (the reference "Place a bid" design):
+  licensing range, "N broadcasters are bidding · top bid $X", your leading state,
+  place/raise bid. Replaces the flat offer form in the card modal (BidPanel, wired
+  to /bidding/ + /bid/, mock-backed). Also fixed dark <select> options that were
+  white-on-white until hover.
 - `feat(broadcaster|production)` DetailModal (card click) now shows Express interest
   + Make offer alongside the screener; production Earnings shows Gross + Net columns;
   "Continue to upload" disabled until all step-2 fields AND consent are complete;

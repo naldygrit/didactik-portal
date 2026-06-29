@@ -5,7 +5,7 @@ import type { Title } from '../../shared/types';
 import { titleTypeLabel, titleBackdropUrl } from '../posters';
 import { ScreenerPanel } from './ScreenerPanel';
 import { ExpressInterestForm } from './ExpressInterestForm';
-import { MakeOfferForm } from './MakeOfferForm';
+import { BidPanel } from './BidPanel';
 
 interface Props {
   title: Title | null;
@@ -143,8 +143,8 @@ export function DetailModal({ title, onClose }: Props) {
               {/* Acquisition: express interest and make a priced offer, shown
                   alongside the screener so a buyer can act on the title here. */}
               <div className="space-y-3 border-t border-white/10 pt-4">
+                <BidPanel slug={title.slug} />
                 <ExpressInterestForm slug={title.slug} />
-                <MakeOfferForm slug={title.slug} />
               </div>
             </div>
           </motion.div>
