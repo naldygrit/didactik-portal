@@ -9,6 +9,7 @@ import type {
   Completeness,
   CompletenessRule,
   Credit,
+  ProductionAsset,
   ProductionRightsWindow,
   ProductionScreenerRequest,
   ProductionTitle,
@@ -161,7 +162,7 @@ export function ProductionAssetDetailPage() {
 
       {panel === 'metadata' && <MetadataPanel title={title} completeness={completeness} />}
       {panel === 'credits' && <CreditsPanel credits={title.credits ?? []} />}
-      {panel === 'assets' && <AssetsPanel />}
+      {panel === 'assets' && <AssetsPanel slug={title.slug} />}
       {panel === 'rights' && <RightsWindowsPanel titleSlug={title.slug} qc={qc} />}
       {panel === 'activity' && <ActivityPanel requests={screenerRequests} status={title.status} />}
     </div>
@@ -361,24 +362,127 @@ function CreditsPanel({ credits }: { credits: Credit[] }) {
   );
 }
 
-// ── Assets panel (honest stub) ───────────────────────────────────────────────
-// Per-asset validation status (master, screener, poster, subtitles) is not on
-// the production projection yet, so we show an honest placeholder rather than
-// invented file rows with fabricated validation states.
-function AssetsPanel() {
+// ── Assets panel ─────────────────────────────────────────────────────────────
+// Wired to the real per-asset validation status. Asset types we expect but don't
+// find are shown as "missing" so the producer sees what's left to upload.
+const REQUIRED_ASSETS: { type: string; label: string }[] = [
+  { type: 'master', label: 'Master file' },
+  { type: 'screener', label: 'Screener' },
+  { type: 'poster', label: 'Poster' },
+  { type: 'trailer', label: 'Trailer' },
+];
+
+const ASSET_STATUS_META: Record<string, { icon: string; color: string; bg: string }> = {
+  validated: { icon: '✓', color: '#15803d', bg: '#f0fdf4' },
+  failed: { icon: '✕', color: '#b91c1c', bg: '#fef2f2' },
+  pending: { icon: '…', color: '#b45309', bg: '#fffbeb' },
+  missing: { icon: '+', color: '#9ca3af', bg: '#f3f4f6' },
+};
+
+function formatBytes(bytes: number | null): string {
+  if (!bytes) return '';
+  const gb = bytes / 1_000_000_000;
+  if (gb >= 1) return `${gb.toFixed(1)} GB`;
+  return `${(bytes / 1_000_000).toFixed(0)} MB`;
+}
+
+function AssetsPanel({ slug }: { slug: string }) {
+  const { data: assets, isLoading } = useQuery<ProductionAsset[]>({
+    queryKey: ['production-title-assets', slug],
+    queryFn: () => apiGet<ProductionAsset[]>(`/api/v1/production/titles/${slug}/assets/`),
+  });
+
+  if (isLoading) return <p className="text-sm text-gray-500">Loading assets…</p>;
+
+  const present = assets ?? [];
+  const presentTypes = new Set(present.map((a) => a.asset_type));
+  // Required types not uploaded yet show as "missing" rows.
+  const missing = REQUIRED_ASSETS.filter((r) => !presentTypes.has(r.type));
+
   return (
     <div className="max-w-2xl">
       <h2 className="mb-1 text-sm font-bold text-gray-900">Assets</h2>
       <p className="mb-4 text-sm text-gray-400">
         Master file and poster are required. Additional assets improve broadcaster appeal.
       </p>
-      <div className="rounded-xl border border-dashed border-gray-200 px-4 py-10 text-center">
-        <p className="text-sm font-medium text-gray-700">Asset details aren't available here yet.</p>
-        <p className="mt-1 text-sm text-gray-500">
-          Per-asset upload and validation status will appear here once the catalogue
-          exposes them. Uploads are handled through the submission flow for now.
-        </p>
+
+      <div className="divide-y divide-gray-100">
+        {present.map((a) => {
+          const meta = ASSET_STATUS_META[a.validation_status] ?? ASSET_STATUS_META.pending;
+          const action = a.validation_status === 'failed' ? 'Re-upload' : 'Replace';
+          return (
+            <AssetRow
+              key={a.id}
+              meta={meta}
+              label={a.asset_type_display}
+              sub={`${a.file_name}${a.file_size_bytes ? ` · ${formatBytes(a.file_size_bytes)}` : ''}`}
+              note={a.validation_status === 'failed' ? a.validation_notes : ''}
+              action={action}
+              danger={a.validation_status === 'failed'}
+            />
+          );
+        })}
+        {missing.map((r) => (
+          <AssetRow
+            key={r.type}
+            meta={ASSET_STATUS_META.missing}
+            label={r.label}
+            sub="Not uploaded"
+            action="Upload"
+            primary
+          />
+        ))}
       </div>
+    </div>
+  );
+}
+
+function AssetRow({
+  meta,
+  label,
+  sub,
+  note,
+  action,
+  danger,
+  primary,
+}: {
+  meta: { icon: string; color: string; bg: string };
+  label: string;
+  sub: string;
+  note?: string;
+  action: string;
+  danger?: boolean;
+  primary?: boolean;
+}) {
+  return (
+    <div className="flex items-center gap-3 py-3">
+      <div
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-base font-bold"
+        style={{ background: meta.bg, color: meta.color }}
+        aria-hidden
+      >
+        {meta.icon}
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="text-sm font-semibold text-gray-900">{label}</div>
+        <div className="truncate text-xs text-gray-400">{sub}</div>
+        {note && <div className="mt-0.5 text-xs text-red-600">{note}</div>}
+      </div>
+      <button
+        type="button"
+        disabled
+        title="Uploads run through the submission flow for now"
+        className={`shrink-0 cursor-not-allowed rounded-md px-3 py-1.5 text-xs ${
+          danger
+            ? 'bg-red-50 text-red-400'
+            : primary
+              ? 'text-white opacity-60'
+              : 'border border-gray-200 text-gray-400'
+        }`}
+        style={primary && !danger ? { backgroundColor: BRAND } : undefined}
+      >
+        {action}
+      </button>
     </div>
   );
 }

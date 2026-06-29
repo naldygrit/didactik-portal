@@ -467,6 +467,21 @@ export interface ProductionTitle extends Title {
   updated_at: string;
 }
 
+// A Title's file (production view), with derived validation status. Never
+// carries the storage key.
+export interface ProductionAsset {
+  id: number;
+  asset_type: string;
+  asset_type_display: string;
+  file_name: string;
+  file_size_bytes: number | null;
+  validation_status: 'validated' | 'failed' | 'pending';
+  validation_notes: string;
+  is_primary: boolean;
+  version_number: number;
+  uploaded_at: string;
+}
+
 // One rule in a Title's metadata completeness breakdown.
 export interface CompletenessRule {
   key: string;

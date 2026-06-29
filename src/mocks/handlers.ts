@@ -331,6 +331,33 @@ export const handlers = [
     return HttpResponse.json(completeness);
   }),
 
+  http.get(`${API}/production/titles/:slug/assets/`, () => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    if (!user.me.profile?.production_company) {
+      return HttpResponse.json({ detail: 'Production companies only.' }, { status: 403 });
+    }
+    // Three validation states for the demo (poster missing → shown by the panel).
+    return HttpResponse.json([
+      {
+        id: 1, asset_type: 'screener', asset_type_display: 'Screener', file_name: 'screener.mp4',
+        file_size_bytes: 2_400_000_000, validation_status: 'validated', validation_notes: '',
+        is_primary: false, version_number: 1, uploaded_at: '2026-01-10T09:00:00Z',
+      },
+      {
+        id: 2, asset_type: 'master', asset_type_display: 'Master', file_name: 'master.mov',
+        file_size_bytes: 48_000_000_000, validation_status: 'pending', validation_notes: '',
+        is_primary: false, version_number: 1, uploaded_at: '2026-01-10T09:00:00Z',
+      },
+      {
+        id: 3, asset_type: 'poster', asset_type_display: 'Poster', file_name: 'poster.jpg',
+        file_size_bytes: 2_100_000, validation_status: 'failed',
+        validation_notes: 'Resolution below the 2000px minimum. Please re-upload.',
+        is_primary: true, version_number: 1, uploaded_at: '2026-01-10T09:00:00Z',
+      },
+    ]);
+  }),
+
   http.get(`${API}/production/titles/:slug/screener-requests/`, ({ params }) => {
     const user = session.current;
     if (!user) return unauthorized();

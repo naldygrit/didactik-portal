@@ -88,6 +88,10 @@ all scoped under `.portal-control`. `PortalLayout` picks theme by path PREFIX
   LicensesPage ("My activity") already covers watchlist + screeners with status;
   optional follow-up = split into the reference's separate Watchlist + Screener
   pages grouped by status (not a gap).
+- **Assets panel WIRED** (production detail): fetches /production/titles/{slug}/assets/
+  and renders each file with its validation status (validated/failed/pending) +
+  failure note; required types not uploaded show as "missing" rows. Upload/Replace
+  actions disabled until a production write endpoint exists.
 - **Credits/Subtitles WIRED** (production detail): CreditsPanel renders real
   `title.credits` grouped by craft (Direction/Cast/Producing/Crew) with Primary
   badges; Metadata panel shows Subtitles/Dubs from `title.language_tracks`. Title
