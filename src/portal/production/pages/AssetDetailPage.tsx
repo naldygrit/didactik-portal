@@ -328,6 +328,16 @@ function OffersPanel({ slug, qc }: { slug: string; qc: QueryClient }) {
                       {o.broadcaster.name} · {o.territory} · {o.rights_type.toUpperCase()} ·{' '}
                       {o.license_type === 'exclusive' ? 'Exclusive' : 'Non-exclusive'}
                     </div>
+                    <span
+                      className="mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-medium"
+                      style={
+                        o.screened
+                          ? { background: '#f0fdf4', color: '#15803d' }
+                          : { background: '#fffbeb', color: '#b45309' }
+                      }
+                    >
+                      {o.screened ? 'Screened' : 'Has not screened'}
+                    </span>
                   </div>
                   {open ? (
                     <div className="flex shrink-0 gap-2">

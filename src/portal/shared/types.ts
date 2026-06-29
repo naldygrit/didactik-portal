@@ -527,6 +527,7 @@ export interface ProductionOffer {
   window_duration: string;
   message: string;
   status: string;
+  screened: boolean;
   created_at: string;
 }
 

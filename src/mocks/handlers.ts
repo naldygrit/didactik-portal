@@ -377,7 +377,8 @@ export const handlers = [
         broadcaster: { id: 2, name: 'Africa Magic', contact_email: 'rights@africamagic.example' },
         territory: 'West Africa', rights_type: 'broadcast', license_type: 'non_exclusive',
         amount: '22000.00', currency: 'USD', window_duration: '1y',
-        message: 'Strong fit for our weekend slate.', status: 'submitted', created_at: '2026-02-03T09:00:00Z',
+        message: 'Strong fit for our weekend slate.', status: 'submitted', screened: true,
+        created_at: '2026-02-03T09:00:00Z',
       },
     ]);
   }),

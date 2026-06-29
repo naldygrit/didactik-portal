@@ -19,7 +19,7 @@ const DURATIONS: [string, string][] = [
   ['perpetual', 'Perpetual'],
 ];
 
-type State = 'idle' | 'submitting' | 'done' | 'gated' | 'error';
+type State = 'idle' | 'submitting' | 'done' | 'error';
 const fieldClass =
   'w-full rounded-lg border border-white/12 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[var(--accent)]';
 
@@ -63,7 +63,6 @@ export function MakeOfferForm({ slug }: { slug: string }) {
       message: form.message.trim() || undefined,
     });
     if (res.status === 201) setState('done');
-    else if (res.status === 403) setState('gated');
     else setState('error');
   }
 
@@ -161,11 +160,6 @@ export function MakeOfferForm({ slug }: { slug: string }) {
             </label>
           </div>
 
-          {state === 'gated' && (
-            <p className="text-xs text-amber-400">
-              Access a screener for this title before making an offer.
-            </p>
-          )}
           {state === 'error' && <p className="text-xs text-red-400">Something went wrong. Please try again.</p>}
 
           <div className="flex items-center gap-3">
