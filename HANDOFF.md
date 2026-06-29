@@ -88,6 +88,12 @@ all scoped under `.portal-control`. `PortalLayout` picks theme by path PREFIX
   LicensesPage ("My activity") already covers watchlist + screeners with status;
   optional follow-up = split into the reference's separate Watchlist + Screener
   pages grouped by status (not a gap).
+- **Expression of Interest WIRED** (both portals): broadcaster detail Rights tab
+  has an ExpressInterestForm (territory/rights/window/exclusivity/message, no
+  price) → POST /broadcaster/expressions-of-interest/ (server-gated on screener
+  access; 403 → friendly prompt). Production detail has an "Interest" tab showing
+  EOIs with broadcaster identity + a "Competitive interest" banner from
+  /production/titles/{slug}/interest/. Mocks added for both.
 - **Assets panel WIRED** (production detail): fetches /production/titles/{slug}/assets/
   and renders each file with its validation status (validated/failed/pending) +
   failure note; required types not uploaded show as "missing" rows. Upload/Replace

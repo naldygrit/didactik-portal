@@ -358,6 +358,33 @@ export const handlers = [
     ]);
   }),
 
+  http.get(`${API}/production/titles/:slug/interest/`, () => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    if (!user.me.profile?.production_company) {
+      return HttpResponse.json({ detail: 'Production companies only.' }, { status: 403 });
+    }
+    return HttpResponse.json({
+      interests: [
+        {
+          uuid: 'eoi-1',
+          broadcaster: { id: 1, name: 'Showmax', category: 'svod', contact_name: 'Lindiwe M.', contact_email: 'acq@showmax.example' },
+          territory: 'West Africa', rights_type: 'svod', rights_type_display: 'SVOD',
+          window_duration: '2y', window_duration_display: '2 years', exclusivity: 'exclusive',
+          message: 'Keen to anchor our autumn slate.', status: 'submitted', created_at: '2026-02-01T09:00:00Z',
+        },
+        {
+          uuid: 'eoi-2',
+          broadcaster: { id: 2, name: 'Africa Magic', category: 'pay-tv', contact_name: 'Tunde A.', contact_email: 'rights@africamagic.example' },
+          territory: 'West Africa', rights_type: 'broadcast', rights_type_display: 'Broadcast',
+          window_duration: '1y', window_duration_display: '1 year', exclusivity: 'non_exclusive',
+          message: '', status: 'submitted', created_at: '2026-02-03T09:00:00Z',
+        },
+      ],
+      competitive_territories: ['West Africa'],
+    });
+  }),
+
   http.get(`${API}/production/titles/:slug/screener-requests/`, ({ params }) => {
     const user = session.current;
     if (!user) return unauthorized();
@@ -585,6 +612,14 @@ export const handlers = [
         },
       ],
     });
+  }),
+
+  // ── Broadcaster: Expression of Interest ─────────────────────────────────────
+  http.post(`${API}/broadcaster/expressions-of-interest/`, async ({ request }) => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({ uuid: 'eoi-new', ...body, status: 'submitted' }, { status: 201 });
   }),
 
   // ── Broadcaster: Watchlist ──────────────────────────────────────────────────

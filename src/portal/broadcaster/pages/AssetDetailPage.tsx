@@ -5,6 +5,7 @@ import { apiGet } from '../../shared/apiHelpers';
 import type { Title } from '../../shared/types';
 import { titleTypeLabel, titleBackdropUrl } from '../posters';
 import { ScreenerPanel } from '../components/ScreenerPanel';
+import { ExpressInterestForm } from '../components/ExpressInterestForm';
 
 type Tab = 'overview' | 'credits' | 'rights';
 const TABS: { key: Tab; label: string }[] = [
@@ -192,8 +193,9 @@ export function BroadcasterAssetDetailPage() {
         )}
 
         {tab === 'rights' && (
-          <div className="max-w-2xl">
+          <div className="max-w-2xl space-y-5">
             <ScreenerPanel slug={title.slug} />
+            <ExpressInterestForm slug={title.slug} />
           </div>
         )}
       </div>

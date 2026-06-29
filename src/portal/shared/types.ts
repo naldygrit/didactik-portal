@@ -482,6 +482,36 @@ export interface ProductionAsset {
   uploaded_at: string;
 }
 
+// Expression of Interest — the negotiation-initiation signal (no price).
+export type WindowDuration = '1y' | '2y' | '3y' | '5y' | 'perpetual';
+export type Exclusivity = 'exclusive' | 'non_exclusive';
+
+// The production company's view of an EOI — broadcaster identity revealed.
+export interface ProductionInterest {
+  uuid: string;
+  broadcaster: {
+    id: number;
+    name: string;
+    category: string;
+    contact_name: string;
+    contact_email: string;
+  };
+  territory: string;
+  rights_type: string;
+  rights_type_display: string;
+  window_duration: string;
+  window_duration_display: string;
+  exclusivity: Exclusivity;
+  message: string;
+  status: string;
+  created_at: string;
+}
+
+export interface ProductionInterestResponse {
+  interests: ProductionInterest[];
+  competitive_territories: string[];
+}
+
 // One rule in a Title's metadata completeness breakdown.
 export interface CompletenessRule {
   key: string;
