@@ -37,10 +37,14 @@ authenticated portal app.
   default Pending), Library (data table + status PATCH), Production-companies +
   Broadcasters tables, grouped sidebar with badges. Bench-polished (filter chip,
   KPI hierarchy, empty states, copy, subtle shadow + hover lift).
-- **Production** (YouTube-Studio light, TuneCore reskin still PENDING): migrated to
-  the Title/screener/rights model — dashboard, catalogue, title detail
-  (completeness + screener interest + rights CRUD). Upload wizard untouched
-  (legacy Asset intake).
+- **Production** (TuneCore reskin IN PROGRESS): layering = TuneCore primary
+  (catalogue/dashboard home), Frame.io per-title pipeline/assets, StudioBinder
+  credits/bible, YouTube Studio analytics — all inside a title. Feel: managing a
+  catalogue, not editing a project. DONE: StudioHomePage reskinned to the
+  TuneCore release dashboard (health strip + release list centerpiece with
+  completeness bars + screener/watch context). NEXT: AssetsPage (catalogue table)
+  to TuneCore release rows; AssetDetailPage to Frame.io/StudioBinder/YouTube
+  layers. Upload wizard untouched (legacy Asset intake).
 
 ## Theme architecture
 `src/index.css`: `.portal-cinema` (broadcaster dark), `.portal-control` (admin
