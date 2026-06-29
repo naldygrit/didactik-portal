@@ -14,10 +14,11 @@ export function AdminProductionCompaniesPage() {
   const [filter, setFilter] = useState<Filter>('all');
   const [searchParams] = useSearchParams();
 
-  // The sidebar "Verifications" item routes here with ?filter=unverified.
+  // Follow the sidebar's ?filter (Verifications -> unverified), and reset to
+  // "all" when navigating to plain Production companies — no sticky filter.
   const urlFilter = searchParams.get('filter');
   useEffect(() => {
-    if (urlFilter === 'unverified' || urlFilter === 'verified') setFilter(urlFilter);
+    setFilter(urlFilter === 'unverified' || urlFilter === 'verified' ? urlFilter : 'all');
   }, [urlFilter]);
 
   const { data, isLoading } = useQuery<AdminOrganisations>({

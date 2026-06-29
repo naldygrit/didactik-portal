@@ -25,11 +25,11 @@ export function AdminLibraryPage() {
   const highlightSlug = searchParams.get('title');
   const queryClient = useQueryClient();
 
-  // Honour ?status=<x> from the sidebar (e.g. "Under review"), letting the user
-  // change the select afterwards.
+  // Follow ?status=<x> from the sidebar ("Under review"), and reset to "all"
+  // when navigating to plain Library — otherwise the filter stays sticky.
   const urlStatus = searchParams.get('status');
   useEffect(() => {
-    if (urlStatus) setStatusFilter(urlStatus as TitleStatus);
+    setStatusFilter(urlStatus ? (urlStatus as TitleStatus) : 'all');
   }, [urlStatus]);
 
   const { data, isLoading } = useQuery<AdminTitle[]>({
