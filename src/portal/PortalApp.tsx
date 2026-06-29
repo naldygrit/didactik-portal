@@ -19,7 +19,7 @@ import { ProductionAssetDetailPage } from './production/pages/AssetDetailPage';
 import { ProductionEarningsPage } from './production/pages/EarningsPage';
 import { ProductionAnalyticsPage } from './production/pages/AnalyticsPage';
 import { AdminOverviewPage } from './admin/pages/OverviewPage';
-import { AdminDealsPage } from './admin/pages/DealsPage';
+import { AdminScreenerQueuePage } from './admin/pages/ScreenerQueuePage';
 import { AdminLibraryPage } from './admin/pages/LibraryPage';
 
 function PortalRoutes() {
@@ -141,10 +141,10 @@ function PortalRoutes() {
           }
         />
         <Route
-          path="admin/deals"
+          path="admin/screeners"
           element={
             <ProtectedRoute isAllowed={isAdmin}>
-              <AdminDealsPage />
+              <AdminScreenerQueuePage />
             </ProtectedRoute>
           }
         />

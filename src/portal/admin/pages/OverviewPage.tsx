@@ -1,28 +1,30 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { apiGet } from '../../shared/apiHelpers';
-import { money, licenseTypeLabel } from '../../shared/format';
-import type { AssetListItem, Deal, DealDeskItem } from '../../shared/types';
+import type { AdminDashboard } from '../../shared/types';
 
 const hairline = { borderColor: 'var(--hairline)' };
 
+// Compact bytes -> GB/TB. Storage on the platform is reported in raw bytes.
+function formatBytes(bytes: number): string {
+  const tb = bytes / 1_000_000_000_000;
+  if (tb >= 1) return `${tb.toFixed(1)} TB`;
+  const gb = bytes / 1_000_000_000;
+  return `${gb.toFixed(0)} GB`;
+}
+
+function titleCase(s: string): string {
+  return s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 export function AdminOverviewPage() {
-  const { data: assets } = useQuery<AssetListItem[]>({
-    queryKey: ['assets'],
-    queryFn: () => apiGet<AssetListItem[]>('/api/v1/assets/'),
-  });
-  const { data: desk } = useQuery<DealDeskItem[]>({
-    queryKey: ['deals-desk'],
-    queryFn: () => apiGet<DealDeskItem[]>('/api/v1/admin/deals-desk/'),
-  });
-  const { data: deals } = useQuery<Deal[]>({
-    queryKey: ['deals'],
-    queryFn: () => apiGet<Deal[]>('/api/v1/deals/'),
+  const { data } = useQuery<AdminDashboard>({
+    queryKey: ['admin-dashboard'],
+    queryFn: () => apiGet<AdminDashboard>('/api/v1/admin/dashboard/'),
   });
 
-  const listed = (assets ?? []).filter((a) => a.status === 'ready_to_list').length;
-  const awaiting = (desk ?? []).filter((d) => !d.deal);
-  const gmv = (deals ?? []).reduce((s, d) => s + d.amount, 0);
+  const triage = data?.triage_queue ?? [];
+  const orgs = data?.organisations;
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
@@ -30,64 +32,86 @@ export function AdminOverviewPage() {
 
       {/* Metric tiles */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Metric label="Listed" value={listed} />
-        <Metric label="Awaiting acceptance" value={awaiting.length} highlight={awaiting.length > 0} />
-        <Metric label="Deals closed" value={deals?.length ?? 0} />
-        <Metric label="GMV" value={money(gmv, 'USD')} mono />
+        <Metric label="Titles" value={data?.content.total_titles ?? '—'} />
+        <Metric label="Active" value={data?.content.active ?? '—'} />
+        <Metric
+          label="Screeners pending"
+          value={data?.screeners.pending_queue ?? '—'}
+          highlight={(data?.screeners.pending_queue ?? 0) > 0}
+        />
+        <Metric label="Unvalidated assets" value={data?.assets.unvalidated ?? '—'} />
       </div>
 
-      {/* Acceptance queue */}
+      {/* Title status breakdown */}
       <section>
-        <div className="mb-3 flex items-baseline justify-between">
-          <h2 className="text-sm font-medium text-[var(--ink)]">Awaiting your acceptance</h2>
-          <Link to="/portal/admin/deals" className="text-xs text-[var(--accent)] hover:underline">
-            Deals desk
-          </Link>
-        </div>
-        {awaiting.length > 0 ? (
-          <ul className="overflow-hidden rounded-lg border" style={hairline}>
-            {awaiting.map((row, i) => (
-              <li
-                key={row.asset_id}
-                className="flex items-center justify-between gap-4 px-4 py-2.5 text-sm"
-                style={i === 0 ? undefined : { borderTop: '1px solid var(--hairline)' }}
+        <h2 className="mb-3 text-sm font-medium text-[var(--ink)]">Catalogue by status</h2>
+        {data ? (
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(data.content.by_status).map(([status, count]) => (
+              <span
+                key={status}
+                className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs text-[var(--muted)]"
+                style={hairline}
               >
-                <span className="text-[var(--ink)]">{row.title}</span>
-                <span className="font-mono tabular-nums text-[var(--muted)]">
-                  {row.top_broadcaster} · {row.top_amount !== null ? money(row.top_amount, row.currency) : '—'}
-                </span>
-              </li>
+                {titleCase(status)}
+                <span className="font-mono tabular-nums text-[var(--ink)]">{count}</span>
+              </span>
             ))}
-          </ul>
+          </div>
         ) : (
-          <p className="text-sm text-[var(--muted)]">Nothing awaiting. The desk is clear.</p>
+          <p className="text-sm text-[var(--muted)]">Loading…</p>
         )}
       </section>
 
-      {/* Recent deals */}
+      {/* Triage queue — the admin's primary work surface */}
       <section>
-        <h2 className="mb-3 text-sm font-medium text-[var(--ink)]">Recent deals</h2>
-        {deals && deals.length > 0 ? (
+        <div className="mb-3 flex items-baseline justify-between">
+          <h2 className="text-sm font-medium text-[var(--ink)]">Triage queue</h2>
+          <Link to="/portal/admin/library" className="text-xs text-[var(--accent)] hover:underline">
+            Library
+          </Link>
+        </div>
+        {triage.length > 0 ? (
           <ul className="overflow-hidden rounded-lg border" style={hairline}>
-            {deals.map((deal, i) => (
+            {triage.map((row, i) => (
               <li
-                key={deal.id}
-                className="flex items-center justify-between gap-4 px-4 py-2.5 text-sm"
+                key={row.slug}
                 style={i === 0 ? undefined : { borderTop: '1px solid var(--hairline)' }}
               >
-                <span className="text-[var(--ink)]">{deal.asset_title}</span>
-                <span className="text-[var(--muted)]">
-                  {licenseTypeLabel(deal.license_type)} · {deal.broadcaster_name} ·{' '}
-                  <span className="font-mono tabular-nums text-[var(--ink)]">
-                    {money(deal.amount, deal.currency)}
+                <Link
+                  to={`/portal/admin/library?title=${encodeURIComponent(row.slug)}`}
+                  className="flex items-center justify-between gap-4 px-4 py-2.5 text-sm transition-colors hover:bg-[var(--surface-hover)]"
+                >
+                  <span className="min-w-0 truncate">
+                    <span className="text-[var(--ink)]">{row.name}</span>
+                    <span className="text-[var(--muted)]"> · {row.production_company}</span>
                   </span>
-                </span>
+                  <span className="flex shrink-0 items-center gap-3">
+                    <span className="text-xs capitalize text-[var(--muted)]">
+                      {titleCase(row.status)}
+                    </span>
+                    <span className="font-mono tabular-nums text-[var(--muted)]">
+                      {row.metadata_score}
+                    </span>
+                  </span>
+                </Link>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-[var(--muted)]">No deals closed yet.</p>
+          <p className="text-sm text-[var(--muted)]">Nothing to triage. The queue is clear.</p>
         )}
+      </section>
+
+      {/* Organisations + storage */}
+      <section className="grid gap-3 sm:grid-cols-3">
+        <Metric label="Production companies" value={orgs?.production_companies ?? '—'} />
+        <Metric label="Broadcasters" value={orgs?.broadcasters ?? '—'} />
+        <Metric
+          label="Storage"
+          value={data ? formatBytes(data.storage.total_bytes) : '—'}
+          mono
+        />
       </section>
     </div>
   );

@@ -1,12 +1,22 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { setupServer } from 'msw/node';
 import { handlers } from '../handlers';
-import { bids, deals, payoutAccounts, session, userInterests, users } from '../db';
+import {
+  adminScreenerRequests,
+  bids,
+  deals,
+  payoutAccounts,
+  session,
+  userInterests,
+  users,
+} from '../db';
 import type {
+  AdminDashboard,
+  AdminScreenerRequest,
+  AdminTitle,
   AssetListItem,
   BidBoard,
   Deal,
-  DealDeskItem,
   MeResponse,
   PayoutAccount,
   ProductionTitleStat,
@@ -207,13 +217,104 @@ describe('deals', () => {
     const res = await acceptTopBid('exclusive');
     expect(res.status).toBe(403);
   });
+});
 
-  it('lists biddable titles on the admin deals desk', async () => {
+describe('admin moderation', () => {
+  function setUser(username: string) {
+    session.current = users.find((u) => u.username === username) ?? null;
+  }
+
+  beforeEach(() => {
+    // Reset moderation state mutated by approve/decline/status tests.
+    for (const r of adminScreenerRequests) {
+      if (r.uuid === '00000000-0000-0000-0000-0000000000a1') {
+        r.status = 'pending';
+        r.reviewed_at = null;
+        r.access_expires_at = null;
+      }
+    }
+  });
+
+  it('returns the dashboard aggregate to the admin', async () => {
     setUser('admin');
-    const desk = (await (await fetch(`${BASE}/api/v1/admin/deals-desk/`)).json()) as DealDeskItem[];
-    const lagos = desk.find((d) => d.asset_id === 101);
-    expect(lagos?.top_amount).toBe(14500);
-    expect(lagos?.deal).toBeNull();
+    const dash = (await (await fetch(`${BASE}/api/v1/admin/dashboard/`)).json()) as AdminDashboard;
+    expect(dash.content.total_titles).toBeGreaterThan(0);
+    expect(dash.screeners.pending_queue).toBeGreaterThanOrEqual(1);
+    expect(dash.triage_queue.length).toBeGreaterThan(0);
+    expect(dash.organisations.broadcasters).toBe(3);
+  });
+
+  it('forbids a broadcaster from the admin dashboard', async () => {
+    setUser('broadcaster');
+    const res = await fetch(`${BASE}/api/v1/admin/dashboard/`);
+    expect(res.status).toBe(403);
+  });
+
+  it('lists screener requests with broadcaster identity', async () => {
+    setUser('admin');
+    const reqs = (await (
+      await fetch(`${BASE}/api/v1/admin/screener-requests/`)
+    ).json()) as AdminScreenerRequest[];
+    expect(reqs.length).toBeGreaterThan(0);
+    expect(reqs[0].broadcaster.name).toBeTruthy();
+  });
+
+  it('approves a screener request with an access window', async () => {
+    setUser('admin');
+    const res = await fetch(
+      `${BASE}/api/v1/admin/screener-requests/00000000-0000-0000-0000-0000000000a1/approve/`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ access_duration_hours: 72 }),
+      },
+    );
+    expect(res.status).toBe(200);
+    const req = (await res.json()) as AdminScreenerRequest;
+    expect(req.status).toBe('approved');
+    expect(req.access_expires_at).not.toBeNull();
+  });
+
+  it('declines a screener request', async () => {
+    setUser('admin');
+    const res = await fetch(
+      `${BASE}/api/v1/admin/screener-requests/00000000-0000-0000-0000-0000000000a1/decline/`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: 'Out of scope' }),
+      },
+    );
+    expect(res.status).toBe(200);
+    const req = (await res.json()) as AdminScreenerRequest;
+    expect(req.status).toBe('declined');
+  });
+
+  it('lists admin titles and changes a title status', async () => {
+    setUser('admin');
+    const titlesList = (await (await fetch(`${BASE}/api/v1/admin/titles/`)).json()) as AdminTitle[];
+    expect(Array.isArray(titlesList)).toBe(true);
+    const target = titlesList[0];
+    const res = await fetch(`${BASE}/api/v1/admin/titles/${target.slug}/status/`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'suspended' }),
+    });
+    expect(res.status).toBe(200);
+    const updated = (await res.json()) as AdminTitle;
+    expect(updated.status).toBe('suspended');
+    // Restore so other tests/ordering aren't affected.
+    await fetch(`${BASE}/api/v1/admin/titles/${target.slug}/status/`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: target.status }),
+    });
+  });
+
+  it('forbids a broadcaster from listing admin titles', async () => {
+    setUser('broadcaster');
+    const res = await fetch(`${BASE}/api/v1/admin/titles/`);
+    expect(res.status).toBe(403);
   });
 });
 

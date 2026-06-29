@@ -14,7 +14,7 @@ import { postLogout } from './auth';
 
 const ADMIN_NAV = [
   { to: '/portal/admin/overview', label: 'Overview', Icon: FiGrid },
-  { to: '/portal/admin/deals', label: 'Deals desk', Icon: FiCheckSquare },
+  { to: '/portal/admin/screeners', label: 'Screeners', Icon: FiCheckSquare },
   { to: '/portal/admin/library', label: 'Library', Icon: FiLayers },
 ];
 

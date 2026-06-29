@@ -29,3 +29,13 @@ export async function apiPost<T>(path: string, body: unknown): Promise<{ data: T
   const data = await res.json() as T;
   return { data, status: res.status };
 }
+
+export async function apiPatch<T>(path: string, body: unknown): Promise<{ data: T; status: number }> {
+  const res = await apiFetch(path, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json() as T;
+  return { data, status: res.status };
+}

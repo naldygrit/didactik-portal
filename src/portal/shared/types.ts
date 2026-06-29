@@ -152,19 +152,6 @@ export interface Deal {
   created_at: string;
 }
 
-// One row of the admin deals desk: a title with bidding activity awaiting
-// acceptance, plus its deal once struck.
-export interface DealDeskItem {
-  asset_id: number;
-  title: string;
-  production_company: string | null;
-  bid_count: number;
-  top_amount: number | null;
-  top_broadcaster: string | null;
-  currency: string;
-  deal: Deal | null;
-}
-
 // A production company's payout split account (Phase 5).
 export interface PayoutAccount {
   id: number;
@@ -295,6 +282,115 @@ export interface ScreenerSummary {
   status: ScreenerStatus;
   requested_at: string;
   access_expires_at: string | null;
+}
+
+// ── Admin screener/Title moderation model ────────────────────────────────────
+// The admin portal moderates the catalogue: it triages Title submissions through
+// the editorial lifecycle and approves/declines broadcaster screener requests.
+// These types mirror the live /api/v1/admin/* contracts and replace the legacy
+// deals-desk / GMV / bid model the admin console was built against.
+
+// The eight editorial states a Title moves through. `changes_requested` creates
+// an AdminNote whose text is shown to the producer; everything else is internal.
+export type TitleStatus =
+  | 'draft'
+  | 'submitted'
+  | 'under_review'
+  | 'changes_requested'
+  | 'approved'
+  | 'active'
+  | 'suspended'
+  | 'archived';
+
+// The admin dashboard aggregate. The admin's primary work surface is the
+// triage_queue — submissions awaiting an editorial decision.
+export interface AdminDashboard {
+  content: {
+    total_titles: number;
+    by_status: Record<string, number>;
+    active: number;
+  };
+  screeners: {
+    by_status: Record<string, number>;
+    pending_queue: number;
+  };
+  triage_queue: {
+    slug: string;
+    name: string;
+    status: string;
+    production_company: string;
+    metadata_score: number;
+    updated_at: string;
+  }[];
+  organisations: {
+    production_companies: number;
+    broadcasters: number;
+    users_by_role: Record<string, number>;
+  };
+  assets: {
+    total: number;
+    unvalidated: number;
+  };
+  storage: {
+    total_bytes: number;
+  };
+  featured_slots: number;
+}
+
+// A screener request as the admin sees it — unlike the broadcaster/production
+// projections, the admin sees the requesting broadcaster's identity.
+export interface AdminScreenerRequest {
+  uuid: string;
+  title_name: string;
+  broadcaster: { id: number; name: string };
+  purpose: string;
+  territory_interest: string[];
+  message_to_producer: string;
+  status: ScreenerStatus;
+  requested_at: string;
+  reviewed_at: string | null;
+  access_expires_at: string | null;
+  access_count: number;
+}
+
+// The full admin Title projection — the moderation surface, with the editorial
+// fields (status, metadata_score, internal notes, licensing intent) the public
+// broadcaster Title omits.
+export interface AdminTitle {
+  id: number;
+  uuid: string;
+  slug: string;
+  name: string;
+  original_title: string;
+  title_type: string;
+  production_year: number | null;
+  logline: string;
+  synopsis: string;
+  runtime_minutes: number | null;
+  episode_count: number | null;
+  season_count: number | null;
+  awards: unknown[];
+  festival_selections: unknown[];
+  resolution: string;
+  aspect_ratio: string;
+  licensing_intent: string;
+  is_featured: boolean;
+  status: TitleStatus;
+  metadata_score: number;
+  status_changed_at: string | null;
+  admin_notes_internal: string;
+  created_at: string;
+  updated_at: string;
+  production_company: TitleBrief | null;
+  country_of_origin: TitleCountry | null;
+  original_language: TitleLanguage | null;
+  maturity_rating: TitleMaturityRating | null;
+  submitted_by: string | null;
+  status_changed_by: string | null;
+  co_production_countries: TitleCountry[];
+  dialogue_languages: TitleLanguage[];
+  genres: TitleGenre[];
+  cultural_tags: TitleCulturalTag[];
 }
 
 // Per-title market interest for the production Analytics view.

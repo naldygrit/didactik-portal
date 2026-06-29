@@ -1,17 +1,20 @@
 import { http, HttpResponse } from 'msw';
 import type {
+  AdminDashboard,
   AssetDetail,
   AssetListItem,
   BidBoard,
-  DealDeskItem,
   ProductionTitleStat,
   ScreenerPurpose,
   ScreenerSummary,
   SearchAsset,
+  TitleStatus,
   WatchlistEntry,
 } from '../portal/shared/types';
 import { encodeMockJwt } from './jwt';
 import {
+  adminScreenerRequests,
+  adminTitles,
   allocateAssetId,
   allocateBidId,
   allocateDealId,
@@ -22,6 +25,8 @@ import {
   broadcasters,
   countries,
   deals,
+  findAdminScreener,
+  findAdminTitleBySlug,
   findTitleBySlug,
   interestOptions,
   languages,
@@ -280,31 +285,6 @@ export const handlers = [
     return HttpResponse.json([]);
   }),
 
-  // Admin deals desk: every title with bidding activity, plus its deal if struck.
-  http.get(`${API}/admin/deals-desk/`, () => {
-    const user = session.current;
-    if (!user) return unauthorized();
-    if (!isAdmin(user)) return HttpResponse.json({ detail: 'Admin only.' }, { status: 403 });
-
-    const assetIds = [...new Set(bids.map((b) => b.asset_id))];
-    const desk: DealDeskItem[] = assetIds.map((id) => {
-      const asset = assets.find((a) => a.id === id);
-      const assetBids = bids.filter((b) => b.asset_id === id);
-      const top = assetBids.reduce((m, b) => (b.amount > m.amount ? b : m), assetBids[0]);
-      return {
-        asset_id: id,
-        title: asset?.title ?? `#${id}`,
-        production_company: asset?.production_company?.name ?? null,
-        bid_count: assetBids.length,
-        top_amount: top?.amount ?? null,
-        top_broadcaster: top?.broadcaster_name ?? null,
-        currency: LICENSE_CURRENCY,
-        deal: deals.find((d) => d.asset_id === id) ?? null,
-      };
-    });
-    return HttpResponse.json(desk);
-  }),
-
   // Admin accepts the top bid on the producer's behalf and records licence terms.
   http.post(`${API}/assets/:id/accept-bid/`, async ({ params, request }) => {
     const user = session.current;
@@ -532,6 +512,138 @@ export const handlers = [
     };
     (screenerRequests[user.user_id] ??= []).push(summary);
     return HttpResponse.json(summary, { status: 201 });
+  }),
+
+  // ── Admin: moderation model (dashboard / screeners / titles) ────────────────
+  // The admin moderates the full catalogue. Dashboard is an aggregate over the
+  // admin title roster + screener queue + org/asset/storage counts.
+  http.get(`${API}/admin/dashboard/`, () => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    if (!isAdmin(user)) return HttpResponse.json({ detail: 'Admin only.' }, { status: 403 });
+
+    const byStatus: Record<string, number> = {};
+    for (const t of adminTitles) byStatus[t.status] = (byStatus[t.status] ?? 0) + 1;
+
+    const screenersByStatus: Record<string, number> = {};
+    for (const r of adminScreenerRequests) {
+      screenersByStatus[r.status] = (screenersByStatus[r.status] ?? 0) + 1;
+    }
+
+    // Triage queue: submissions awaiting an editorial decision, lowest metadata
+    // score first (the ones that most need an archivist's attention).
+    const triage = adminTitles
+      .filter((t) => t.status === 'submitted' || t.status === 'under_review')
+      .sort((a, b) => a.metadata_score - b.metadata_score)
+      .map((t) => ({
+        slug: t.slug,
+        name: t.name,
+        status: t.status,
+        production_company: t.production_company?.name ?? '—',
+        metadata_score: t.metadata_score,
+        updated_at: t.updated_at,
+      }));
+
+    const usersByRole: Record<string, number> = {};
+    for (const u of users) {
+      const role = u.me.profile?.role ?? 'unknown';
+      usersByRole[role] = (usersByRole[role] ?? 0) + 1;
+    }
+
+    const dashboard: AdminDashboard = {
+      content: {
+        total_titles: adminTitles.length,
+        by_status: byStatus,
+        active: adminTitles.filter((t) => t.status === 'active').length,
+      },
+      screeners: {
+        by_status: screenersByStatus,
+        pending_queue: adminScreenerRequests.filter((r) => r.status === 'pending').length,
+      },
+      triage_queue: triage,
+      organisations: {
+        production_companies: productionCompanies.length,
+        broadcasters: broadcasters.length,
+        users_by_role: usersByRole,
+      },
+      assets: {
+        total: assets.length,
+        unvalidated: assets.filter((a) => a.taxonomy_count === 0).length,
+      },
+      storage: {
+        total_bytes: 4_812_375_982_106,
+      },
+      featured_slots: adminTitles.filter((t) => t.is_featured).length,
+    };
+    return HttpResponse.json(dashboard);
+  }),
+
+  // Screener moderation queue — every broadcaster's request, with identity visible.
+  http.get(`${API}/admin/screener-requests/`, () => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    if (!isAdmin(user)) return HttpResponse.json({ detail: 'Admin only.' }, { status: 403 });
+    return HttpResponse.json(adminScreenerRequests);
+  }),
+
+  http.post(`${API}/admin/screener-requests/:uuid/approve/`, async ({ params, request }) => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    if (!isAdmin(user)) return HttpResponse.json({ detail: 'Admin only.' }, { status: 403 });
+    const req = findAdminScreener(String(params.uuid));
+    if (!req) return HttpResponse.json({ detail: 'Not found.' }, { status: 404 });
+
+    const body = (await request.json().catch(() => ({}))) as { access_duration_hours?: number };
+    const hours = typeof body.access_duration_hours === 'number' ? body.access_duration_hours : 48;
+    const now = new Date();
+    req.status = 'approved';
+    req.reviewed_at = now.toISOString();
+    req.access_expires_at = new Date(now.getTime() + hours * 3600 * 1000).toISOString();
+    return HttpResponse.json(req);
+  }),
+
+  http.post(`${API}/admin/screener-requests/:uuid/decline/`, async ({ params, request }) => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    if (!isAdmin(user)) return HttpResponse.json({ detail: 'Admin only.' }, { status: 403 });
+    const req = findAdminScreener(String(params.uuid));
+    if (!req) return HttpResponse.json({ detail: 'Not found.' }, { status: 404 });
+
+    // reason is captured by the backend (surfaced to the broadcaster); the
+    // request transitions to declined regardless of whether a reason was given.
+    await request.json().catch(() => ({}));
+    req.status = 'declined';
+    req.reviewed_at = new Date().toISOString();
+    return HttpResponse.json(req);
+  }),
+
+  // Full admin Title roster (bare array), and the editorial status transition.
+  http.get(`${API}/admin/titles/`, () => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    if (!isAdmin(user)) return HttpResponse.json({ detail: 'Admin only.' }, { status: 403 });
+    return HttpResponse.json(adminTitles);
+  }),
+
+  http.patch(`${API}/admin/titles/:slug/status/`, async ({ params, request }) => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    if (!isAdmin(user)) return HttpResponse.json({ detail: 'Admin only.' }, { status: 403 });
+    const title = findAdminTitleBySlug(String(params.slug));
+    if (!title) return HttpResponse.json({ detail: 'Not found.' }, { status: 404 });
+
+    const body = (await request.json()) as { status?: TitleStatus; note?: string };
+    if (!body.status) return HttpResponse.json({ detail: 'status is required.' }, { status: 400 });
+    title.status = body.status;
+    title.status_changed_at = new Date().toISOString();
+    title.status_changed_by = user.me.email;
+    title.updated_at = title.status_changed_at;
+    // changes_requested surfaces the note to the producer; we mirror it onto the
+    // internal notes so the demo shows the captured text.
+    if (body.status === 'changes_requested' && body.note) {
+      title.admin_notes_internal = body.note;
+    }
+    return HttpResponse.json(title);
   }),
 
   // ── Reference data ────────────────────────────────────────────────────────

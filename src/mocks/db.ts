@@ -3,6 +3,8 @@
 // has real-feeling data to render. Mutations (new submissions, withdrawals,
 // bids, deals) happen against these arrays at runtime and persist until reload.
 import type {
+  AdminScreenerRequest,
+  AdminTitle,
   AssetDetail,
   Country,
   Language,
@@ -11,6 +13,7 @@ import type {
   ScreenerSummary,
   TaxonomyTag,
   Title,
+  TitleStatus,
   WatchlistEntry,
 } from '../portal/shared/types';
 
@@ -642,4 +645,157 @@ export const screenerRequests: Record<number, ScreenerSummary[]> = {
 
 export function findTitleBySlug(slug: string): Title | undefined {
   return titles.find((t) => t.slug === slug);
+}
+
+// ── Admin moderation model (admin portal) ────────────────────────────────────
+// The admin portal moderates the full catalogue: the editorial Title lifecycle
+// (status + metadata_score + internal notes) and broadcaster screener requests
+// (with the requesting broadcaster's identity visible — unlike the broadcaster
+// and production projections). These seeds mirror the live /api/v1/admin/*
+// contracts. Admin titles derive from the public `titles` above plus a couple of
+// in-pipeline submissions so the triage queue has real work to show.
+
+// Lift the shared fields off a public Title and layer on the admin-only editorial
+// fields, so the admin and broadcaster projections stay consistent by construction.
+function adminTitleFrom(
+  t: Title,
+  editorial: {
+    status: TitleStatus;
+    metadata_score: number;
+    licensing_intent: string;
+    admin_notes_internal?: string;
+    status_changed_at?: string | null;
+    submitted_by?: string | null;
+    status_changed_by?: string | null;
+  },
+): AdminTitle {
+  return {
+    id: t.id,
+    uuid: t.uuid,
+    slug: t.slug,
+    name: t.name,
+    original_title: t.original_title,
+    title_type: t.title_type,
+    production_year: t.production_year,
+    logline: t.logline,
+    synopsis: t.synopsis,
+    runtime_minutes: t.runtime_minutes,
+    episode_count: t.episode_count,
+    season_count: t.season_count,
+    awards: t.awards,
+    festival_selections: t.festival_selections,
+    resolution: t.resolution,
+    aspect_ratio: t.aspect_ratio,
+    licensing_intent: editorial.licensing_intent,
+    is_featured: t.is_featured,
+    status: editorial.status,
+    metadata_score: editorial.metadata_score,
+    status_changed_at: editorial.status_changed_at ?? null,
+    admin_notes_internal: editorial.admin_notes_internal ?? '',
+    created_at: '2026-04-01T09:00:00Z',
+    updated_at: '2026-06-20T09:00:00Z',
+    production_company: t.production_company,
+    country_of_origin: t.country_of_origin,
+    original_language: t.original_language,
+    maturity_rating: t.maturity_rating,
+    submitted_by: editorial.submitted_by ?? null,
+    status_changed_by: editorial.status_changed_by ?? null,
+    co_production_countries: t.co_production_countries,
+    dialogue_languages: t.dialogue_languages,
+    genres: t.genres,
+    cultural_tags: t.cultural_tags,
+  };
+}
+
+export const adminTitles: AdminTitle[] = [
+  adminTitleFrom(titles[0], {
+    status: 'active',
+    metadata_score: 92,
+    licensing_intent: 'broadcast_and_svod',
+    status_changed_at: '2026-04-10T12:00:00Z',
+    submitted_by: 'studio@ebonylife.example',
+    status_changed_by: 'curator@didactikmedia.com',
+  }),
+  adminTitleFrom(titles[1], {
+    status: 'active',
+    metadata_score: 88,
+    licensing_intent: 'avod',
+    status_changed_at: '2026-03-25T09:00:00Z',
+    submitted_by: 'studio@riverwood.example',
+    status_changed_by: 'curator@didactikmedia.com',
+  }),
+  adminTitleFrom(titles[2], {
+    status: 'approved',
+    metadata_score: 81,
+    licensing_intent: 'svod',
+    status_changed_at: '2026-05-08T10:00:00Z',
+    submitted_by: 'studio@ebonylife.example',
+    status_changed_by: 'curator@didactikmedia.com',
+  }),
+  adminTitleFrom(titles[3], {
+    status: 'submitted',
+    metadata_score: 47,
+    licensing_intent: 'broadcast',
+    submitted_by: 'studio@riverwood.example',
+  }),
+  adminTitleFrom(titles[4], {
+    status: 'under_review',
+    metadata_score: 63,
+    licensing_intent: 'all_rights',
+    submitted_by: 'studio@celluloide.example',
+    status_changed_by: 'curator@didactikmedia.com',
+    status_changed_at: '2026-05-02T09:00:00Z',
+  }),
+];
+
+export function findAdminTitleBySlug(slug: string): AdminTitle | undefined {
+  return adminTitles.find((t) => t.slug === slug);
+}
+
+// Screener requests across all broadcasters, as the admin moderation queue sees
+// them. Two pending (the live approve/decline demo), one already approved.
+export const adminScreenerRequests: AdminScreenerRequest[] = [
+  {
+    uuid: '00000000-0000-0000-0000-0000000000a1',
+    title_name: 'Harmattan Letters',
+    broadcaster: { id: 1, name: 'Canal+ International' },
+    purpose: 'acquisition_evaluation',
+    territory_interest: ['Francophone Africa', 'France'],
+    message_to_producer: 'Keen to evaluate for the autumn acquisition slate.',
+    status: 'pending',
+    requested_at: '2026-06-24T11:00:00Z',
+    reviewed_at: null,
+    access_expires_at: null,
+    access_count: 0,
+  },
+  {
+    uuid: '00000000-0000-0000-0000-0000000000a2',
+    title_name: 'Lagos After Dark',
+    broadcaster: { id: 2, name: 'Showmax' },
+    purpose: 'programming_review',
+    territory_interest: ['Pan-Africa'],
+    message_to_producer: '',
+    status: 'pending',
+    requested_at: '2026-06-26T08:30:00Z',
+    reviewed_at: null,
+    access_expires_at: null,
+    access_count: 0,
+  },
+  {
+    uuid: '00000000-0000-0000-0000-0000000000a3',
+    title_name: 'The Salt Harvesters',
+    broadcaster: { id: 3, name: 'StarTimes Media' },
+    purpose: 'co_production_interest',
+    territory_interest: ['East Africa'],
+    message_to_producer: 'Exploring a co-production follow-up.',
+    status: 'approved',
+    requested_at: '2026-06-18T14:00:00Z',
+    reviewed_at: '2026-06-19T10:00:00Z',
+    access_expires_at: '2026-06-21T10:00:00Z',
+    access_count: 2,
+  },
+];
+
+export function findAdminScreener(uuid: string): AdminScreenerRequest | undefined {
+  return adminScreenerRequests.find((r) => r.uuid === uuid);
 }
