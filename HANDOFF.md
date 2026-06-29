@@ -74,11 +74,17 @@ all scoped under `.portal-control`. `PortalLayout` picks theme by path PREFIX
   CTA added in didactik-media (Samuel's) Home -> /portal/apply.
 
 ## Known gaps / next
-- **Broadcaster port NOT done**: a background agent died mid-run leaving only a
-  broken types.ts edit, which was reverted. The broadcaster IMDb-Pro title
-  detail + activity strip still need building (reference: Portal/didactik-broadcaster.jsx;
-  same rules — replace YouTube/audience panel with first-party in-territory
-  discovery; stub credits/awards/subtitles, now backed by Credit/TitleLanguageTrack).
+- **Broadcaster IMDb-Pro title detail DONE**: BroadcasterAssetDetailPage rebuilt
+  dark (cinema tokens) — backdrop hero + genres/awards tags + meta line, sticky
+  tabs Overview / Credits / Rights & screener. Overview shows synopsis + fields
+  incl. real Subtitles/Dubs; Credits renders real `title.credits`; the Rights tab
+  reuses the working ScreenerPanel (rights availability + request + watchlist).
+- **Broadcaster home/other surfaces STILL pending** (reference Portal/didactik-broadcaster.jsx):
+  the home activity strip (New in territories / Watchlist updates / Screener
+  updates / Expiring access), the first-party in-territory discovery panel that
+  REPLACES the reference's YouTube/audience signal (no audience data), a
+  similar-titles rail on detail, and watchlist/screener page polish. Browse
+  (Billboard/rails) already approved.
 - **Credits/Subtitles WIRED** (production detail): CreditsPanel renders real
   `title.credits` grouped by craft (Direction/Cast/Producing/Crew) with Primary
   badges; Metadata panel shows Subtitles/Dubs from `title.language_tracks`. Title
