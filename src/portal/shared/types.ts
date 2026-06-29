@@ -112,6 +112,23 @@ export interface ConfirmUploadResponse {
   message: string;
 }
 
+// Canonical Title intake (replaces the legacy Asset upload response).
+export interface TitleUploadInitiatedResponse {
+  title_slug: string;
+  title_uuid: string;
+  upload_url: string | null;
+  expires_in_seconds: number | null;
+  file_key: string | null;
+  status: string;
+  message: string;
+}
+
+export interface TitleConfirmUploadResponse {
+  title_slug: string;
+  status: string;
+  message: string;
+}
+
 export interface MeProfile {
   role: string;
   production_company: ProductionCompanyBrief | null;

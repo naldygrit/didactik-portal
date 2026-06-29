@@ -130,6 +130,13 @@ all scoped under `.portal-control`. `PortalLayout` picks theme by path PREFIX
   (the established sidebar query-sync pattern; eslint still exits 0).
 
 ## Recent commits (newest first)
+- `feat(production)` LOOP A frontend: the submit wizard now creates a canonical
+  Title (not a legacy Asset). Step 1 is Title-grade: name, type (film/series/
+  documentary/short/animation), year, runtime, logline, synopsis, original
+  language + other-languages pills, country of origin + co-production pills.
+  Upload posts to production/titles/initiate-upload/ then confirm-upload. Genres
+  picker deferred (no genres endpoint yet); the legacy /assets/initiate-upload
+  path is now unused and can be retired.
 - `feat(broadcaster)` competitive bid panel (the reference "Place a bid" design):
   licensing range, "N broadcasters are bidding · top bid $X", your leading state,
   place/raise bid. Replaces the flat offer form in the card modal (BidPanel, wired

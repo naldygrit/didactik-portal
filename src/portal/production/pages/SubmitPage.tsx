@@ -16,31 +16,37 @@ import { useState } from 'react';
 // Zod schema — validated step-by-step using trigger()
 // ---------------------------------------------------------------------------
 
+// Coerce a select/number value to a number, or undefined when empty.
+const toNum = (v: unknown) =>
+  v === '' || v === undefined || v === null || Number.isNaN(Number(v)) ? undefined : Number(v);
+
 const wizardSchema = z.object({
-  // Step 1 — Asset metadata
-  title: z.string().min(5, 'Title must be at least 5 characters').max(500),
-  original_title: z.string().max(500).optional(),
-  asset_type: z.enum(
-    ['feature_film', 'short_film', 'documentary', 'tv_episode', 'music_video', 'broadcast_recording', 'interview', 'other'],
-    { error: 'Select an asset type' },
-  ),
-  // A licensing catalogue listing needs year, synopsis, language and country of
-  // origin to be discoverable and saleable (Filmhub, Apple TV and the MovieLabs
-  // MEC spec all require these), so they are not optional. Only the
-  // original-language title is genuinely optional.
+  // Step 1 — Title details (aligned with the canonical Title model: a title has
+  // an original language plus other dialogue languages, a country of origin plus
+  // co-production countries, a type, logline, synopsis, runtime and genres).
+  name: z.string().min(2, 'Title must be at least 2 characters').max(300),
+  original_title: z.string().max(300).optional(),
+  title_type: z.enum(['film', 'series', 'documentary', 'short', 'animation'], {
+    error: 'Select a type',
+  }),
   production_year: z.preprocess(
-    (v) => (v === '' || v === undefined || v === null || Number.isNaN(v) ? undefined : Number(v)),
+    toNum,
     z.number({ error: 'Production year is required' }).int().min(1900).max(2030),
   ),
-  description: z.string().min(20, 'Write a short synopsis (at least 20 characters)').max(5000),
-  primary_language: z.preprocess(
-    (v) => (v === '' || v === undefined || v === null || Number.isNaN(Number(v)) ? undefined : Number(v)),
-    z.number({ error: 'Select the primary language' }).int().positive(),
+  runtime_minutes: z.preprocess(toNum, z.number().int().positive().optional()),
+  logline: z.string().max(200).optional(),
+  synopsis: z.string().min(20, 'Write a short synopsis (at least 20 characters)').max(5000),
+  original_language: z.preprocess(
+    toNum,
+    z.number({ error: 'Select the original language' }).int().positive(),
   ),
-  production_country: z.preprocess(
-    (v) => (v === '' || v === undefined || v === null || Number.isNaN(Number(v)) ? undefined : Number(v)),
-    z.number({ error: 'Select the country of production' }).int().positive(),
+  dialogue_languages: z.array(z.number()).default([]),
+  country_of_origin: z.preprocess(
+    toNum,
+    z.number({ error: 'Select the country of origin' }).int().positive(),
   ),
+  co_production_countries: z.array(z.number()).default([]),
+  genres: z.array(z.number()).default([]),
   // Step 2 — Submitter attestation
   submitter_name: z.string().min(1, 'Your name is required').max(300),
   submitter_contact: z.string().min(1, 'Contact info is required').max(300),
@@ -56,11 +62,11 @@ const wizardSchema = z.object({
 
 export type WizardFormData = z.infer<typeof wizardSchema>;
 
-// Fields validated before leaving each step. The submitter attestation folds
-// into "Rights & consent" (it was a redundant standalone step); the sensitive
-// legal confirmation sits last, before upload, per submission-flow research.
+// Required fields validated before leaving each step. Multi-value fields
+// (dialogue languages, co-production countries, genres) and logline/runtime are
+// optional, so they are not gated.
 const STEP_FIELDS: Record<1 | 2, (keyof WizardFormData)[]> = {
-  1: ['title', 'asset_type', 'production_year', 'description', 'primary_language', 'production_country'],
+  1: ['name', 'title_type', 'production_year', 'synopsis', 'original_language', 'country_of_origin'],
   2: ['submitter_name', 'submitter_contact', 'licensing_preference', 'consented'],
 };
 
@@ -100,13 +106,18 @@ export function ProductionSubmitPage() {
     // reconciles the two; runtime validation is unaffected.
     resolver: zodResolver(wizardSchema) as Resolver<WizardFormData>,
     defaultValues: {
-      title: '',
+      name: '',
       original_title: '',
-      asset_type: undefined,
+      title_type: undefined,
       production_year: undefined,
-      description: '',
-      primary_language: undefined,
-      production_country: undefined,
+      runtime_minutes: undefined,
+      logline: '',
+      synopsis: '',
+      original_language: undefined,
+      dialogue_languages: [],
+      country_of_origin: undefined,
+      co_production_countries: [],
+      genres: [],
       submitter_name: '',
       submitter_contact: user?.email ?? '',
       licensing_preference: 'both',

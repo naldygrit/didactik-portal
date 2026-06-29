@@ -308,6 +308,38 @@ export const handlers = [
     return HttpResponse.json(dashboard);
   }),
 
+  // Canonical Title intake. In mock mode there is no B2, so initiate returns 202
+  // (awaiting review) and the wizard shows the "submission received" success.
+  http.post(`${API}/production/titles/initiate-upload/`, async ({ request }) => {
+    if (!session.current) return unauthorized();
+    const body = (await request.json()) as { name?: string };
+    const base = String(body.name ?? 'untitled')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    return HttpResponse.json(
+      {
+        title_slug: base || 'untitled',
+        title_uuid: 'mock-uuid',
+        upload_url: null,
+        expires_in_seconds: null,
+        file_key: null,
+        status: 'draft',
+        message: 'Submission received. Your title is now in review.',
+      },
+      { status: 202 },
+    );
+  }),
+
+  http.post(`${API}/production/titles/:slug/confirm-upload/`, ({ params }) => {
+    if (!session.current) return unauthorized();
+    return HttpResponse.json({
+      title_slug: String(params.slug),
+      status: 'submitted',
+      message: 'Submission received. Your title is now in review.',
+    });
+  }),
+
   http.get(`${API}/production/titles/`, () => {
     const user = session.current;
     if (!user) return unauthorized();

@@ -1,7 +1,10 @@
 import { useRef, useState } from 'react';
 import { apiPost } from '../../../shared/apiHelpers';
 import { apiFetch } from '../../../shared/api';
-import type { UploadInitiatedResponse, ConfirmUploadResponse } from '../../../shared/types';
+import type {
+  TitleUploadInitiatedResponse,
+  TitleConfirmUploadResponse,
+} from '../../../shared/types';
 import type { WizardFormData } from '../../pages/SubmitPage';
 
 type UploadPhase =
@@ -9,7 +12,7 @@ type UploadPhase =
   | { kind: 'submitting' }
   | { kind: 'uploading'; percent: number }
   | { kind: 'confirming' }
-  | { kind: 'success'; assetId: number; message: string; needsReview: boolean }
+  | { kind: 'success'; titleSlug: string; message: string; needsReview: boolean }
   | { kind: 'error'; message: string };
 
 interface Props {
@@ -33,36 +36,42 @@ export function Step4Upload({ formData, onBack }: Props) {
 
     setPhase({ kind: 'submitting' });
 
-    // Step 1: POST to initiate-upload with all wizard data + file info
+    // Step 1: POST to the Title intake with all wizard data + file info. This
+    // creates a canonical Title (DRAFT) plus its consent; confirm-upload submits.
     const payload = {
       filename: file.name,
       content_type: file.type || 'application/octet-stream',
-      title: formData.title,
+      name: formData.name,
       original_title: formData.original_title ?? '',
-      asset_type: formData.asset_type,
-      production_year: Number.isNaN(formData.production_year)
+      title_type: formData.title_type,
+      production_year: formData.production_year,
+      runtime_minutes: Number.isNaN(formData.runtime_minutes)
         ? undefined
-        : formData.production_year ?? undefined,
-      description: formData.description ?? '',
-      licensing_preference: formData.licensing_preference,
+        : formData.runtime_minutes ?? undefined,
+      logline: formData.logline ?? '',
+      synopsis: formData.synopsis,
+      original_language: formData.original_language,
+      dialogue_languages: formData.dialogue_languages ?? [],
+      country_of_origin: formData.country_of_origin,
+      co_production_countries: formData.co_production_countries ?? [],
+      genres: formData.genres ?? [],
+      licensing_intent: formData.licensing_preference,
       submitter_name: formData.submitter_name,
       submitter_contact: formData.submitter_contact,
       consented: true,
-      primary_language: formData.primary_language ?? undefined,
-      production_country: formData.production_country ?? undefined,
     };
 
-    let initiated: UploadInitiatedResponse;
+    let initiated: TitleUploadInitiatedResponse;
     try {
-      const { data, status } = await apiPost<UploadInitiatedResponse>(
-        '/api/v1/assets/initiate-upload/',
+      const { data, status } = await apiPost<TitleUploadInitiatedResponse>(
+        '/api/v1/production/titles/initiate-upload/',
         payload,
       );
       initiated = data;
 
       // 202 = PILOT/LIMITED jurisdiction — no upload URL, awaiting admin review
       if (status === 202) {
-        setPhase({ kind: 'success', assetId: initiated.asset_id, message: initiated.message, needsReview: true });
+        setPhase({ kind: 'success', titleSlug: initiated.title_slug, message: initiated.message, needsReview: true });
         return;
       }
     } catch (err) {
@@ -110,16 +119,17 @@ export function Step4Upload({ formData, onBack }: Props) {
     // Step 3: POST confirm-upload to transition asset to UPLOADED
     setPhase({ kind: 'confirming' });
     try {
-      const res = await apiFetch(`/api/v1/assets/${initiated.asset_id}/confirm-upload/`, {
-        method: 'POST',
-      });
-      const confirm = await res.json() as ConfirmUploadResponse;
+      const res = await apiFetch(
+        `/api/v1/production/titles/${initiated.title_slug}/confirm-upload/`,
+        { method: 'POST' },
+      );
+      const confirm = await res.json() as TitleConfirmUploadResponse;
       if (!res.ok) {
         throw new Error((confirm as { detail?: string }).detail ?? `Confirm failed (${res.status})`);
       }
       setPhase({
         kind: 'success',
-        assetId: initiated.asset_id,
+        titleSlug: initiated.title_slug,
         message: confirm.message,
         needsReview: false,
       });
@@ -137,13 +147,12 @@ export function Step4Upload({ formData, onBack }: Props) {
           {phase.needsReview ? 'Submission received' : 'Upload complete'}
         </h3>
         <p className="text-sm text-gray-600 max-w-sm mx-auto">{phase.message}</p>
-        <p className="text-xs text-gray-400">Asset ID: {phase.assetId}</p>
         <a
           href="/portal/production/assets"
           className="inline-block mt-2 px-5 py-2 rounded-md text-sm font-medium text-white"
           style={{ backgroundColor: '#5343fd' }}
         >
-          View your assets
+          View your catalogue
         </a>
       </div>
     );

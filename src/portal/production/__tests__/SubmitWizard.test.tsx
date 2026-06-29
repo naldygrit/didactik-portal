@@ -70,17 +70,17 @@ describe('SubmitPage wizard', () => {
     render(<ProductionSubmitPage />, { wrapper: Wrapper });
 
     const titleInput = screen.getByPlaceholderText('Working or anglicised title');
-    fireEvent.change(titleInput, { target: { value: 'Hi' } });
+    fireEvent.change(titleInput, { target: { value: 'H' } });
 
     fireEvent.click(screen.getByText('Save and continue'));
 
     await waitFor(() => {
-      expect(screen.getByText('Title must be at least 5 characters')).toBeDefined();
+      expect(screen.getByText('Title must be at least 2 characters')).toBeDefined();
     });
     expect(screen.getByPlaceholderText('Working or anglicised title')).toBeDefined();
   });
 
-  it('blocks advance from Step 1 when asset type is missing', async () => {
+  it('blocks advance from Step 1 when the type is missing', async () => {
     render(<ProductionSubmitPage />, { wrapper: Wrapper });
 
     const titleInput = screen.getByPlaceholderText('Working or anglicised title');
@@ -89,7 +89,7 @@ describe('SubmitPage wizard', () => {
     fireEvent.click(screen.getByText('Save and continue'));
 
     await waitFor(() => {
-      expect(screen.getByText('Select an asset type')).toBeDefined();
+      expect(screen.getByText('Select a type')).toBeDefined();
     });
   });
 
