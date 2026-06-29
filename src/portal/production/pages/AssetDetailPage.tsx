@@ -8,6 +8,7 @@ import { PipelineTracker } from '../components/PipelineTracker';
 import type {
   Completeness,
   CompletenessRule,
+  Credit,
   ProductionRightsWindow,
   ProductionScreenerRequest,
   ProductionTitle,
@@ -159,12 +160,20 @@ export function ProductionAssetDetailPage() {
       </div>
 
       {panel === 'metadata' && <MetadataPanel title={title} completeness={completeness} />}
-      {panel === 'credits' && <CreditsPanel />}
+      {panel === 'credits' && <CreditsPanel credits={title.credits ?? []} />}
       {panel === 'assets' && <AssetsPanel />}
       {panel === 'rights' && <RightsWindowsPanel titleSlug={title.slug} qc={qc} />}
       {panel === 'activity' && <ActivityPanel requests={screenerRequests} status={title.status} />}
     </div>
   );
+}
+
+// Comma-joined subtitle or dub languages from the Title's language tracks.
+function languageList(title: ProductionTitle, type: 'subtitle' | 'dub'): string | null {
+  const names = (title.language_tracks ?? [])
+    .filter((t) => t.track_type === type)
+    .map((t) => t.language.english_name);
+  return names.length > 0 ? names.join(', ') : null;
 }
 
 // ── Metadata panel ───────────────────────────────────────────────────────────
@@ -183,6 +192,8 @@ function MetadataPanel({
     { label: 'Production year', value: title.production_year ? String(title.production_year) : null },
     { label: 'Country of origin', value: title.country_of_origin?.name ?? null },
     { label: 'Original language', value: title.original_language?.english_name ?? null },
+    { label: 'Subtitles', value: languageList(title, 'subtitle') },
+    { label: 'Dubs', value: languageList(title, 'dub') },
     { label: 'Runtime', value: title.runtime_minutes ? `${title.runtime_minutes} mins` : null },
     { label: 'Genres', value: title.genres.map((g) => g.name).join(', ') || null },
     { label: 'Cultural tags', value: title.cultural_tags.map((c) => c.name).join(', ') || null },
@@ -259,11 +270,37 @@ function CompletenessChecklist({ rules }: { rules: CompletenessRule[] }) {
   );
 }
 
-// ── Credits panel (honest stub) ──────────────────────────────────────────────
-// The production API does not yet expose structured credits (cast, direction,
-// producing). We render an honest empty state with a disabled action rather than
-// invented people, so nothing on screen reads as real data we do not hold.
-function CreditsPanel() {
+// ── Credits panel ────────────────────────────────────────────────────────────
+// Wired to the real Credit records (PBCore contributorRole), grouped by craft.
+// "Add credit" stays disabled until a production write endpoint exists.
+const CREDIT_GROUP_ORDER = ['Direction', 'Cast', 'Producing', 'Crew'];
+
+function creditGroup(role: string): string {
+  if (role === 'director') return 'Direction';
+  if (role.includes('cast')) return 'Cast';
+  if (role === 'producer') return 'Producing';
+  return 'Crew';
+}
+
+function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? '')
+    .join('');
+}
+
+function CreditsPanel({ credits }: { credits: Credit[] }) {
+  const grouped = new Map<string, Credit[]>();
+  for (const c of [...credits].sort((a, b) => a.order - b.order)) {
+    const g = creditGroup(c.role);
+    grouped.set(g, [...(grouped.get(g) ?? []), c]);
+  }
+  const groups = CREDIT_GROUP_ORDER.filter((g) => grouped.has(g)).map(
+    (g) => [g, grouped.get(g)!] as const,
+  );
+
   return (
     <div className="max-w-2xl">
       <div className="mb-4 flex items-center justify-between">
@@ -271,18 +308,55 @@ function CreditsPanel() {
         <button
           type="button"
           disabled
+          title="Editing credits is coming soon"
           className="cursor-not-allowed rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-400"
         >
           Add credit
         </button>
       </div>
-      <div className="rounded-xl border border-dashed border-gray-200 px-4 py-10 text-center">
-        <p className="text-sm font-medium text-gray-700">Credits aren't captured yet.</p>
-        <p className="mt-1 text-sm text-gray-500">
-          Cast, direction, and producing credits will appear here once the catalogue
-          captures them.
-        </p>
-      </div>
+
+      {credits.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-gray-200 px-4 py-10 text-center">
+          <p className="text-sm font-medium text-gray-700">No credits yet.</p>
+          <p className="mt-1 text-sm text-gray-500">
+            Cast, direction, and producing credits will appear here as they are added.
+          </p>
+        </div>
+      ) : (
+        groups.map(([group, list]) => (
+          <div key={group} className="mb-5">
+            <div className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-400">
+              {group}
+            </div>
+            <div className="divide-y divide-gray-100">
+              {list.map((c) => (
+                <div key={c.id} className="flex items-center gap-3 py-2.5">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-500">
+                    {initials(c.name)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="truncate text-sm font-semibold text-gray-900">{c.name}</span>
+                      {c.is_primary && (
+                        <span
+                          className="rounded-full px-2 py-0.5 text-[10px] font-medium"
+                          style={{ background: '#ede9fe', color: BRAND }}
+                        >
+                          Primary
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {c.role_display}
+                      {c.character ? `, ${c.character}` : ''}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))
+      )}
     </div>
   );
 }

@@ -79,8 +79,12 @@ all scoped under `.portal-control`. `PortalLayout` picks theme by path PREFIX
   detail + activity strip still need building (reference: Portal/didactik-broadcaster.jsx;
   same rules — replace YouTube/audience panel with first-party in-territory
   discovery; stub credits/awards/subtitles, now backed by Credit/TitleLanguageTrack).
-- **Wire Credits/Subtitles to real data**: backend now serves `credits` +
-  `language_tracks`; the production detail Credits panel still honest-stubs — wire it.
+- **Credits/Subtitles WIRED** (production detail): CreditsPanel renders real
+  `title.credits` grouped by craft (Direction/Cast/Producing/Crew) with Primary
+  badges; Metadata panel shows Subtitles/Dubs from `title.language_tracks`. Title
+  type gained optional `credits`/`language_tracks`. "Add credit" stays disabled
+  (no production write endpoint yet). Broadcaster detail still needs the same
+  wiring as part of the broadcaster port.
 - **Library "Screeners" column** shows `—` — needs `screener_request_count` on the
   backend admin titles serializer. Frontend column ready.
 - **Verify button** (org tables) disabled — needs a backend verification endpoint

@@ -380,6 +380,17 @@ export const titles: Title[] = [
     resolution: '4K',
     aspect_ratio: '2.39:1',
     is_featured: true,
+    credits: [
+      { id: 1, name: 'Kemi Adetiba', role: 'director', role_display: 'Director', character: '', is_primary: true, order: 0 },
+      { id: 2, name: 'Funke Akindele', role: 'lead_cast', role_display: 'Lead Cast', character: 'Det. Amara Osei', is_primary: true, order: 1 },
+      { id: 3, name: 'Ramsey Nouah', role: 'supporting_cast', role_display: 'Supporting Cast', character: 'Chief Balogun', is_primary: false, order: 2 },
+      { id: 4, name: 'Jade Osiberu', role: 'producer', role_display: 'Producer', character: '', is_primary: true, order: 3 },
+    ],
+    language_tracks: [
+      { id: 1, language: tLang('eng', 'English', 2), track_type: 'subtitle' },
+      { id: 2, language: tLang('fra', 'French', 5), track_type: 'subtitle' },
+      { id: 3, language: tLang('fra', 'French', 5), track_type: 'dub' },
+    ],
   },
   {
     id: 102,

@@ -206,6 +206,29 @@ export interface Title {
   resolution: string;
   aspect_ratio: string;
   is_featured: boolean;
+  // The real API always returns these arrays; optional only so mock/test
+  // fixtures need not enumerate them. Consumers default with `?? []`.
+  credits?: Credit[];
+  language_tracks?: LanguageTrack[];
+}
+
+// A person/org credited on a Title (PBCore contributorRole). role is the enum
+// value; role_display is the human label.
+export interface Credit {
+  id: number;
+  name: string;
+  role: string;
+  role_display: string;
+  character: string;
+  is_primary: boolean;
+  order: number;
+}
+
+// A subtitle or dub language available for a Title.
+export interface LanguageTrack {
+  id: number;
+  language: TitleLanguage;
+  track_type: 'subtitle' | 'dub';
 }
 
 export type RightsType = 'broadcast' | 'svod' | 'avod' | 'tvod' | 'theatrical' | 'all';
