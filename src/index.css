@@ -98,6 +98,14 @@
     color: var(--ink);
   }
 
+  /* Native <select> options inherit the white system background, so on the dark
+     cinema surface the white option text was invisible until hover. Force the
+     dark surface and light text on the option popup. */
+  .portal-cinema select option {
+    background-color: var(--surface-raised);
+    color: var(--ink);
+  }
+
   /* Brand gradient pill — the signature CTA from the marketing site. */
   .btn-gradient {
     background: linear-gradient(135deg, #5343fd 0%, #3fd7ff 100%);
