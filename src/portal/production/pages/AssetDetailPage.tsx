@@ -11,6 +11,7 @@ import type {
   Credit,
   ProductionAsset,
   ProductionInterestResponse,
+  ProductionOffer,
   ProductionRightsWindow,
   ProductionScreenerRequest,
   ProductionTitle,
@@ -34,13 +35,14 @@ function titleCase(s: string): string {
   return s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-type PanelKey = 'metadata' | 'credits' | 'assets' | 'rights' | 'interest' | 'activity';
+type PanelKey = 'metadata' | 'credits' | 'assets' | 'rights' | 'interest' | 'offers' | 'activity';
 const PANELS: { key: PanelKey; label: string }[] = [
   { key: 'metadata', label: 'Metadata' },
   { key: 'credits', label: 'Credits' },
   { key: 'assets', label: 'Assets' },
   { key: 'rights', label: 'Rights' },
   { key: 'interest', label: 'Interest' },
+  { key: 'offers', label: 'Offers' },
   { key: 'activity', label: 'Activity' },
 ];
 
@@ -167,6 +169,7 @@ export function ProductionAssetDetailPage() {
       {panel === 'assets' && <AssetsPanel slug={title.slug} />}
       {panel === 'rights' && <RightsWindowsPanel titleSlug={title.slug} qc={qc} />}
       {panel === 'interest' && <InterestPanel slug={title.slug} />}
+      {panel === 'offers' && <OffersPanel slug={title.slug} qc={qc} />}
       {panel === 'activity' && <ActivityPanel requests={screenerRequests} status={title.status} />}
     </div>
   );
@@ -270,6 +273,98 @@ function CompletenessChecklist({ rules }: { rules: CompletenessRule[] }) {
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+// ── Offers panel (the bid board) ─────────────────────────────────────────────
+// Priced offers from broadcasters. Accepting one creates a Deal on which
+// Didactik takes its commission; the licence then shows in Earnings.
+function offerMoney(amount: string, currency: string): string {
+  return `${currency} ${Number(amount).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+}
+
+function OffersPanel({ slug, qc }: { slug: string; qc: QueryClient }) {
+  const { data: offers, isLoading } = useQuery<ProductionOffer[]>({
+    queryKey: ['production-title-offers', slug],
+    queryFn: () => apiGet<ProductionOffer[]>(`/api/v1/production/titles/${slug}/offers/`),
+  });
+  const act = useMutation({
+    mutationFn: ({ uuid, action }: { uuid: string; action: 'accept' | 'decline' }) =>
+      apiPost(`/api/v1/production/titles/offers/${uuid}/${action}/`, {}),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['production-title-offers', slug] });
+      qc.invalidateQueries({ queryKey: ['production-deals'] });
+    },
+  });
+
+  if (isLoading) return <p className="text-sm text-gray-500">Loading offers…</p>;
+  const rows = offers ?? [];
+
+  return (
+    <div className="max-w-2xl">
+      <h2 className="mb-1 text-sm font-bold text-gray-900">Offers</h2>
+      <p className="mb-4 text-sm text-gray-400">
+        Priced offers from broadcasters. Accepting one closes the licence on Didactik.
+      </p>
+
+      {rows.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-gray-200 px-4 py-10 text-center">
+          <p className="text-sm font-medium text-gray-700">No offers yet.</p>
+          <p className="mt-1 text-sm text-gray-500">Offers appear here once broadcasters bid.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {rows.map((o) => {
+            const open = o.status === 'submitted';
+            return (
+              <div key={o.uuid} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-base font-bold text-gray-900">
+                      {offerMoney(o.amount, o.currency)}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {o.broadcaster.name} · {o.territory} · {o.rights_type.toUpperCase()} ·{' '}
+                      {o.license_type === 'exclusive' ? 'Exclusive' : 'Non-exclusive'}
+                    </div>
+                  </div>
+                  {open ? (
+                    <div className="flex shrink-0 gap-2">
+                      <button
+                        type="button"
+                        disabled={act.isPending}
+                        onClick={() => act.mutate({ uuid: o.uuid, action: 'accept' })}
+                        className="rounded-md px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
+                        style={{ backgroundColor: BRAND }}
+                      >
+                        Accept
+                      </button>
+                      <button
+                        type="button"
+                        disabled={act.isPending}
+                        onClick={() => act.mutate({ uuid: o.uuid, action: 'decline' })}
+                        className="rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50"
+                      >
+                        Decline
+                      </button>
+                    </div>
+                  ) : (
+                    <span className="shrink-0 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs capitalize text-gray-600">
+                      {o.status}
+                    </span>
+                  )}
+                </div>
+                {o.message && (
+                  <div className="mt-2 rounded-lg bg-gray-50 px-3 py-2 text-xs italic text-gray-600">
+                    “{o.message}”
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

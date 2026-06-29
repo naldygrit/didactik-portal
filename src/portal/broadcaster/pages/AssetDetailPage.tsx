@@ -7,6 +7,7 @@ import type { Title } from '../../shared/types';
 import { titleTypeLabel, titleBackdropUrl } from '../posters';
 import { ScreenerPanel } from '../components/ScreenerPanel';
 import { ExpressInterestForm } from '../components/ExpressInterestForm';
+import { MakeOfferForm } from '../components/MakeOfferForm';
 
 type Tab = 'overview' | 'credits' | 'rights';
 const TABS: { key: Tab; label: string }[] = [
@@ -204,6 +205,7 @@ export function BroadcasterAssetDetailPage() {
           <div className="max-w-2xl space-y-5">
             <ScreenerPanel slug={title.slug} />
             <ExpressInterestForm slug={title.slug} />
+            <MakeOfferForm slug={title.slug} />
           </div>
         )}
       </div>

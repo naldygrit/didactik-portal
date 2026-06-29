@@ -20,12 +20,14 @@ import { ProductionScreenerRequestsPage } from './production/pages/ScreenerReque
 import { ProductionSubmitPage } from './production/pages/SubmitPage';
 import { ProductionAssetDetailPage } from './production/pages/AssetDetailPage';
 import { ProductionAnalyticsPage } from './production/pages/AnalyticsPage';
+import { ProductionEarningsPage } from './production/pages/EarningsPage';
 import { AdminOverviewPage } from './admin/pages/OverviewPage';
 import { AdminScreenerQueuePage } from './admin/pages/ScreenerQueuePage';
 import { AdminLibraryPage } from './admin/pages/LibraryPage';
 import { AdminProductionCompaniesPage } from './admin/pages/ProductionCompaniesPage';
 import { AdminBroadcastersPage } from './admin/pages/BroadcastersPage';
 import { AdminPlaceholderPage } from './admin/pages/PlaceholderPage';
+import { AdminRevenuePage } from './admin/pages/RevenuePage';
 
 function PortalRoutes() {
   const { user } = useAuth();
@@ -91,6 +93,14 @@ function PortalRoutes() {
           element={
             <ProtectedRoute isAllowed={isPC}>
               <ProductionAnalyticsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="production/earnings"
+          element={
+            <ProtectedRoute isAllowed={isPC}>
+              <ProductionEarningsPage />
             </ProtectedRoute>
           }
         />
@@ -199,6 +209,14 @@ function PortalRoutes() {
                 title="Unvalidated assets"
                 description="Assets awaiting QC review before their titles can go active."
               />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="admin/revenue"
+          element={
+            <ProtectedRoute isAllowed={isAdmin}>
+              <AdminRevenuePage />
             </ProtectedRoute>
           }
         />

@@ -17,6 +17,7 @@ import {
   FiTrendingUp,
   FiDatabase,
   FiList,
+  FiDollarSign,
 } from 'react-icons/fi';
 import { useAuth } from './AuthContext';
 import { postLogout } from './auth';
@@ -27,6 +28,7 @@ const PRODUCTION_NAV = [
   { to: '/portal/production/dashboard', label: 'Dashboard', Icon: FiHome },
   { to: '/portal/production/assets', label: 'My Catalogue', Icon: FiFilm },
   { to: '/portal/production/screeners', label: 'Screener Requests', Icon: FiEye },
+  { to: '/portal/production/earnings', label: 'Earnings', Icon: FiDollarSign },
   { to: '/portal/production/submit', label: 'Submit New Title', Icon: FiPlus },
 ];
 
@@ -323,6 +325,7 @@ function AdminSidebarNav() {
       </NavGroup>
 
       <NavGroup label="Platform">
+        <NavItem to="/portal/admin/revenue" label="Revenue" Icon={FiDollarSign} />
         <NavItem to="/portal/admin/analytics" label="Analytics" Icon={FiTrendingUp} />
         <NavItem to="/portal/admin/storage" label="Storage" Icon={FiDatabase} />
         <NavItem to="/portal/admin/events" label="Event log" Icon={FiList} />

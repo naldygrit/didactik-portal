@@ -63,6 +63,19 @@ all scoped under `.portal-control`. `PortalLayout` picks theme by path PREFIX
 (`/portal/admin` vs `/portal/broadcaster`) — do NOT use bare substring match
 (`/portal/admin/broadcasters` contains "broadcaster").
 
+## Monetisation / deals (DONE — reverses the off-platform call)
+- Funnel: screener → EOI (no price) → **Offer** (priced bid) → production accepts
+  → **Deal** → Didactik commission (15% default). Surfaces:
+  - Broadcaster detail Rights tab: MakeOfferForm (amount/currency/license/territory/
+    window) → POST /broadcaster/offers/ (gated on screener).
+  - Production detail "Offers" tab: the bid board with Accept/Decline (accept →
+    Deal via /production/titles/offers/{uuid}/accept/).
+  - Production "Earnings" page (+ nav): deals net of commission + payout-account
+    CRUD.
+  - Admin "Revenue" page (+ nav, Platform group): GMV + Didactik commission +
+    recent deals.
+  Money values are strings (DecimalField). Mocks added for every endpoint.
+
 ## Recently viewed (DONE)
 - RecentlyViewedContext (adapted from Samuel's didactik-media, Title-based +
   localStorage persistence). Provider wraps PortalApp; broadcaster detail calls

@@ -365,6 +365,88 @@ export const handlers = [
     return HttpResponse.json({ id: 999, role_display: '', ...body }, { status: 201 });
   }),
 
+  http.get(`${API}/production/titles/:slug/offers/`, () => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    if (!user.me.profile?.production_company) {
+      return HttpResponse.json({ detail: 'Production companies only.' }, { status: 403 });
+    }
+    return HttpResponse.json([
+      {
+        uuid: 'offer-1',
+        broadcaster: { id: 2, name: 'Africa Magic', contact_email: 'rights@africamagic.example' },
+        territory: 'West Africa', rights_type: 'broadcast', license_type: 'non_exclusive',
+        amount: '22000.00', currency: 'USD', window_duration: '1y',
+        message: 'Strong fit for our weekend slate.', status: 'submitted', created_at: '2026-02-03T09:00:00Z',
+      },
+    ]);
+  }),
+
+  http.post(`${API}/production/titles/offers/:uuid/accept/`, () =>
+    HttpResponse.json(
+      {
+        uuid: 'deal-new', title_name: 'Lagos After Dark', title_slug: 'lagos-after-dark',
+        broadcaster_name: 'Africa Magic', production_company_name: 'EbonyLife Studios',
+        territory: 'West Africa', rights_type: 'broadcast', license_type: 'non_exclusive',
+        amount: '22000.00', currency: 'USD', commission_rate: '15.00',
+        commission_amount: '3300.00', net_to_producer: '18700.00', status: 'active',
+        created_at: '2026-02-04T09:00:00Z',
+      },
+      { status: 201 },
+    ),
+  ),
+  http.post(`${API}/production/titles/offers/:uuid/decline/`, () =>
+    HttpResponse.json({ uuid: 'offer-1', status: 'declined' }),
+  ),
+
+  http.get(`${API}/production/deals/`, () => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    return HttpResponse.json([
+      {
+        uuid: 'deal-1', title_name: 'Lagos After Dark', title_slug: 'lagos-after-dark',
+        broadcaster_name: 'Showmax', production_company_name: 'EbonyLife Studios',
+        territory: 'West Africa', rights_type: 'svod', license_type: 'exclusive',
+        amount: '45000.00', currency: 'USD', commission_rate: '15.00',
+        commission_amount: '6750.00', net_to_producer: '38250.00', status: 'active',
+        created_at: '2026-01-20T09:00:00Z',
+      },
+    ]);
+  }),
+
+  http.get(`${API}/production/payout-accounts/`, () => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    return HttpResponse.json([
+      { id: 1, label: 'Main account', account_details: 'GTB ****1234', percentage: 100, created_at: '2026-01-01T00:00:00Z' },
+    ]);
+  }),
+  http.post(`${API}/production/payout-accounts/`, async ({ request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({ id: 99, created_at: '2026-02-01T00:00:00Z', ...body }, { status: 201 });
+  }),
+  http.delete(`${API}/production/payout-accounts/:id/`, () => new HttpResponse(null, { status: 204 })),
+
+  http.get(`${API}/admin/revenue/`, () => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    return HttpResponse.json({
+      deal_count: 1,
+      gmv: '45000.00',
+      commission: '6750.00',
+      recent_deals: [
+        {
+          uuid: 'deal-1', title_name: 'Lagos After Dark', title_slug: 'lagos-after-dark',
+          broadcaster_name: 'Showmax', production_company_name: 'EbonyLife Studios',
+          territory: 'West Africa', rights_type: 'svod', license_type: 'exclusive',
+          amount: '45000.00', currency: 'USD', commission_rate: '15.00',
+          commission_amount: '6750.00', net_to_producer: '38250.00', status: 'active',
+          created_at: '2026-01-20T09:00:00Z',
+        },
+      ],
+    });
+  }),
+
   http.get(`${API}/production/titles/:slug/interest/`, () => {
     const user = session.current;
     if (!user) return unauthorized();
@@ -627,6 +709,14 @@ export const handlers = [
     if (!user) return unauthorized();
     const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json({ uuid: 'eoi-new', ...body, status: 'submitted' }, { status: 201 });
+  }),
+
+  // ── Broadcaster: Offers (priced bids) ───────────────────────────────────────
+  http.post(`${API}/broadcaster/offers/`, async ({ request }) => {
+    const user = session.current;
+    if (!user) return unauthorized();
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({ uuid: 'offer-new', ...body, status: 'submitted' }, { status: 201 });
   }),
 
   // ── Broadcaster: Watchlist ──────────────────────────────────────────────────

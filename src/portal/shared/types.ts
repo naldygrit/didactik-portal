@@ -512,6 +512,57 @@ export interface ProductionInterestResponse {
   competitive_territories: string[];
 }
 
+// Offers (priced bids) + deals (licences) + commission. Money values are
+// serialized as strings (DecimalField).
+export type LicenseType = 'exclusive' | 'non_exclusive';
+
+export interface ProductionOffer {
+  uuid: string;
+  broadcaster: { id: number; name: string; contact_email: string };
+  territory: string;
+  rights_type: string;
+  license_type: LicenseType;
+  amount: string;
+  currency: string;
+  window_duration: string;
+  message: string;
+  status: string;
+  created_at: string;
+}
+
+export interface Deal {
+  uuid: string;
+  title_name: string;
+  title_slug: string;
+  broadcaster_name: string;
+  production_company_name: string;
+  territory: string;
+  rights_type: string;
+  license_type: LicenseType;
+  amount: string;
+  currency: string;
+  commission_rate: string;
+  commission_amount: string;
+  net_to_producer: string;
+  status: string;
+  created_at: string;
+}
+
+export interface AdminRevenue {
+  deal_count: number;
+  gmv: string;
+  commission: string;
+  recent_deals: Deal[];
+}
+
+export interface PayoutAccount {
+  id: number;
+  label: string;
+  account_details: string;
+  percentage: number;
+  created_at: string;
+}
+
 // One rule in a Title's metadata completeness breakdown.
 export interface CompletenessRule {
   key: string;
