@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiGet } from '../../../shared/apiHelpers';
 import { jurisdictionalBasisForCountry } from '../../lib/jurisdiction';
 import { CONSENT_TEXTS, INTERNATIONAL_LICENSEE_ADDENDUM } from '../../consentTexts';
+import { RIGHTS_WARRANTY_DIMENSIONS, RIGHTS_WARRANTY_FOOTER } from '../../attestationTexts';
 import { PrivacyPolicyDrawer } from './PrivacyPolicyDrawer';
 import type { MeResponse, ProductionCompanyDetail } from '../../../shared/types';
 import type { WizardFormData } from '../../pages/SubmitPage';
@@ -45,6 +46,45 @@ export function Step3Consent() {
 
   return (
     <div className="space-y-4">
+      {/* Rights warranty (Q2 — content provenance). Distinct from the data-transfer
+          consent below (Q1). Required by the backend; submission cannot proceed
+          without it. */}
+      <p className="text-sm font-medium text-gray-700">Rights warranty</p>
+      <p className="text-sm text-gray-500">
+        Before this title can be offered to broadcasters, you must confirm you hold
+        the rights to license it — including each of the following.
+      </p>
+      <ul className="space-y-2">
+        {RIGHTS_WARRANTY_DIMENSIONS.map((d) => (
+          <li key={d.title} className="flex gap-2 text-sm">
+            <span className="mt-0.5 text-indigo-600">•</span>
+            <span>
+              <span className="font-medium text-gray-800">{d.title}.</span>{' '}
+              <span className="text-gray-600">{d.body}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+      <p className="text-xs text-gray-500">{RIGHTS_WARRANTY_FOOTER}</p>
+
+      <div className="flex items-start gap-3 pt-1">
+        <input
+          id="rights_attested"
+          type="checkbox"
+          {...register('rights_attested')}
+          className="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+        />
+        <label htmlFor="rights_attested" className="text-sm text-gray-700 cursor-pointer">
+          I warrant that I hold all rights necessary to license this title, including
+          the title, music, personality/property, and co-production rights described above.
+        </label>
+      </div>
+      {errors.rights_attested && (
+        <p className="text-xs text-red-600">{errors.rights_attested.message as string}</p>
+      )}
+
+      <div className="border-t border-gray-100" />
+
       <p className="text-sm text-gray-700 font-medium">Data transfer consent</p>
       <p className="text-sm text-gray-500">
         Before your content can be stored, you must consent to the transfer of your

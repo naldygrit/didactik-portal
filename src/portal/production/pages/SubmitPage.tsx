@@ -56,9 +56,14 @@ const wizardSchema = z.object({
   licensing_preference: z
     .enum(['nigerian_broadcasters', 'international_streaming', 'both'])
     .default('both'),
-  // Step 3 — Consent
+  // Step 3 — Consent (Q1, data transfer)
   consented: z.boolean().refine((v) => v === true, {
     message: 'You must accept the consent terms to proceed',
+  }),
+  // Step 3 — Rights warranty (Q2, content provenance). Required by the backend
+  // initiate-upload endpoint; a submission cannot proceed without it.
+  rights_attested: z.boolean().refine((v) => v === true, {
+    message: 'You must affirm the rights warranty to proceed',
   }),
 });
 
@@ -69,7 +74,7 @@ export type WizardFormData = z.infer<typeof wizardSchema>;
 // optional, so they are not gated.
 const STEP_FIELDS: Record<1 | 2, (keyof WizardFormData)[]> = {
   1: ['name', 'title_type', 'production_year', 'synopsis', 'original_language', 'country_of_origin'],
-  2: ['submitter_name', 'submitter_contact', 'licensing_preference', 'consented'],
+  2: ['submitter_name', 'submitter_contact', 'licensing_preference', 'consented', 'rights_attested'],
 };
 
 const STEPS = [
@@ -124,6 +129,7 @@ export function ProductionSubmitPage() {
       submitter_contact: user?.email ?? '',
       licensing_preference: 'both',
       consented: false,
+      rights_attested: false,
     },
   });
 
@@ -203,6 +209,7 @@ export function ProductionSubmitPage() {
       submitter_name: d.submitter_name,
       submitter_contact: d.submitter_contact,
       consented: true,
+      rights_attested: true,
       filename: upload.file.name,
       content_type: upload.file.type || 'application/octet-stream',
       file_key: upload.fileKey,
@@ -236,13 +243,15 @@ export function ProductionSubmitPage() {
   const current = STEPS[step - 1];
   // The Rights & consent step cannot be left until every field on it is filled
   // and the data-transfer consent box is ticked.
-  const [submitterName, submitterContact, consented] = methods.watch([
+  const [submitterName, submitterContact, consented, rightsAttested] = methods.watch([
     'submitter_name',
     'submitter_contact',
     'consented',
+    'rights_attested',
   ]);
   const nextBlocked =
-    step === 2 && (!consented || !submitterName?.trim() || !submitterContact?.trim());
+    step === 2 &&
+    (!consented || !rightsAttested || !submitterName?.trim() || !submitterContact?.trim());
 
   return (
     <div className="mx-auto max-w-4xl">

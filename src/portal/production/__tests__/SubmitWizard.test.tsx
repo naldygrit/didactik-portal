@@ -133,12 +133,17 @@ describe('SubmitPage wizard', () => {
     fireEvent.change(screen.getByPlaceholderText('As it appears on official documents'), {
       target: { value: 'Tobi O.' },
     });
-    // Name filled, but consent still unticked.
+    // Name filled, but neither the rights warranty nor the consent is ticked.
     expect(continueBtn.disabled).toBe(true);
 
-    fireEvent.click(await screen.findByRole('checkbox'));
-    // Name filled and consent ticked.
-    expect(continueBtn.disabled).toBe(false);
+    // Step 2 now has two gates: the rights warranty and the data-transfer consent.
+    // Both must be ticked before the step can be left.
+    const checkboxes = await screen.findAllByRole('checkbox');
+    expect(checkboxes).toHaveLength(2);
+    fireEvent.click(checkboxes[0]); // rights warranty (rendered first)
+    expect(continueBtn.disabled).toBe(true); // consent still unticked
+    fireEvent.click(checkboxes[1]); // data-transfer consent
+    expect(continueBtn.disabled).toBe(false); // both ticked → step complete
   });
 
   it('offers the licensing destination on step 2 with Both recommended', async () => {
