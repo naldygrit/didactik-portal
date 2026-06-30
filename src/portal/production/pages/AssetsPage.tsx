@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { apiGet } from '../../shared/apiHelpers';
 import { thumbUrl } from '../../shared/media';
 import { TitleStatusBadge } from '../components/TitleStatusBadge';
@@ -26,10 +26,24 @@ const FILTERS: ('all' | TitleStatus)[] = [
 
 export function ProductionAssetsPage() {
   const [filter, setFilter] = useState<'all' | TitleStatus>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  // Debounce so we hit the search API once typing settles, not per keystroke.
+  const [query, setQuery] = useState('');
+  useEffect(() => {
+    const id = setTimeout(() => setQuery(searchTerm.trim()), 250);
+    return () => clearTimeout(id);
+  }, [searchTerm]);
 
+  // Server-side ?q= search (trigram; matches name/synopsis/logline). The status
+  // pills then filter client-side over the search results. keepPreviousData
+  // avoids a flash of empty while a new query refetches.
   const { data: titles, isLoading, isError } = useQuery<ProductionTitle[]>({
-    queryKey: ['production-titles'],
-    queryFn: () => apiGet<ProductionTitle[]>('/api/v1/production/titles/'),
+    queryKey: ['production-titles', query],
+    queryFn: () =>
+      apiGet<ProductionTitle[]>(
+        `/api/v1/production/titles/${query ? `?q=${encodeURIComponent(query)}` : ''}`,
+      ),
+    placeholderData: keepPreviousData,
   });
   // Watchlist counts per title, keyed by slug, for the card stat cluster.
   const { data: dashboard } = useQuery<ProductionDashboard>({
@@ -61,6 +75,17 @@ export function ProductionAssetsPage() {
         >
           Submit a title
         </Link>
+      </div>
+
+      {/* Search */}
+      <div className="mb-4">
+        <input
+          type="search"
+          placeholder="Search your titles…"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-80 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        />
       </div>
 
       {/* Status filter pills */}

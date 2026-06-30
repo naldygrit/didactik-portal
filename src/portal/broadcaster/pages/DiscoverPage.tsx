@@ -1,28 +1,33 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { apiGet } from '../../shared/apiHelpers';
 import type { Title } from '../../shared/types';
 import { titleTypeLabel } from '../posters';
 
 export function BroadcasterDiscoverPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  // Debounce so we send one request after typing settles, not one per keystroke.
+  const [query, setQuery] = useState('');
+  useEffect(() => {
+    const id = setTimeout(() => setQuery(searchTerm.trim()), 250);
+    return () => clearTimeout(id);
+  }, [searchTerm]);
 
-  const { data: allTitles, isLoading } = useQuery<Title[]>({
-    queryKey: ['broadcaster-titles'],
-    queryFn: () => apiGet<Title[]>('/api/v1/broadcaster/titles/'),
+  // Server-side search via the backend ?q= param: trigram, diacritic-insensitive,
+  // role-filtered, and matches synopsis/logline too — beyond a name-only client
+  // filter. keepPreviousData avoids a flash of empty while a new query refetches.
+  const { data, isLoading } = useQuery<Title[]>({
+    queryKey: ['broadcaster-titles', query],
+    queryFn: () =>
+      apiGet<Title[]>(
+        `/api/v1/broadcaster/titles/${query ? `?q=${encodeURIComponent(query)}` : ''}`,
+      ),
+    placeholderData: keepPreviousData,
   });
 
-  // Client-side filter over the loaded titles. The dedicated full-text search
-  // API is not part of the broadcaster Title contract yet (deferred follow-up),
-  // so we filter by name / original title locally for now.
-  const q = searchTerm.trim().toLowerCase();
-  const titles = (allTitles ?? []).filter(
-    (t) =>
-      !q ||
-      t.name.toLowerCase().includes(q) ||
-      t.original_title.toLowerCase().includes(q),
-  );
+  const titles = data ?? [];
+  const q = query.toLowerCase();
 
   return (
     <div>
@@ -37,7 +42,7 @@ export function BroadcasterDiscoverPage() {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="border border-gray-300 rounded-md px-3 py-2 text-sm w-80 focus:outline-none focus:ring-2 focus:ring-indigo-400"
         />
-        {q && allTitles && (
+        {q && data && (
           <span className="ml-3 text-sm text-gray-400">
             {titles.length} result{titles.length !== 1 ? 's' : ''}
           </span>

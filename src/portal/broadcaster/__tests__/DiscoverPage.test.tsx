@@ -90,9 +90,17 @@ describe('BroadcasterDiscoverPage', () => {
     expect(screen.getByText('South Africa')).toBeDefined();
   });
 
-  it('filters client-side when a query is typed', async () => {
+  it('searches via the server ?q= param when a query is typed', async () => {
     const { apiGet } = await import('../../shared/apiHelpers');
-    vi.mocked(apiGet).mockResolvedValue(mockTitles);
+    // Mock the server: when ?q= is present, return only matching titles.
+    vi.mocked(apiGet).mockImplementation((url: string) => {
+      const m = url.match(/[?&]q=([^&]+)/);
+      if (!m) return Promise.resolve(mockTitles) as ReturnType<typeof apiGet>;
+      const needle = decodeURIComponent(m[1]).toLowerCase();
+      return Promise.resolve(
+        mockTitles.filter((t) => t.name.toLowerCase().includes(needle)),
+      ) as ReturnType<typeof apiGet>;
+    });
 
     render(<BroadcasterDiscoverPage />, { wrapper: Wrapper });
 
@@ -100,8 +108,8 @@ describe('BroadcasterDiscoverPage', () => {
     const searchInput = screen.getByPlaceholderText(/Search titles/);
     fireEvent.change(searchInput, { target: { value: 'Mandela' } });
 
+    // Debounced request goes out with ?q=Mandela; the server returns only it.
     expect(await screen.findByText('1 result')).toBeDefined();
-    // The non-matching title is filtered out.
     expect(screen.queryByText('Riverwood Nights')).toBeNull();
   });
 
