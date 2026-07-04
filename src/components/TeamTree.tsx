@@ -45,9 +45,9 @@ export default function TeamTree() {
           Our Team
         </h2>
 
-        <div>
+        <div role="list" aria-label="Team">
           {/* Founder Node */}
-          <div className="flex justify-center mb-10">
+          <div role="listitem" className="flex justify-center mb-10">
             <motion.div
               initial={{ opacity: 0, y: -30 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: -30 }}
@@ -79,6 +79,7 @@ export default function TeamTree() {
             {teamData.slice(1).map((member, index) => (
               <motion.div
                 key={member.name}
+                role="listitem"
                 initial={{ opacity: 0, y: 30 }}
                 animate={
                   isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }
@@ -90,9 +91,11 @@ export default function TeamTree() {
                 }}
                 className="bg-white p-8 rounded-xl border border-gray-200 text-center shadow-lg hover:shadow-xl transition-shadow duration-300"
               >
-                <h4 className="text-xl font-bold mb-2 text-gray-900">
+                {/* Same heading level as the founder's h3 — both are a
+                    person in the same team list, not a sub-section of it. */}
+                <h3 className="text-xl font-bold mb-2 text-gray-900">
                   {member.name}
-                </h4>
+                </h3>
                 <p className="text-primary font-medium mb-2">{member.role}</p>
                 <p className="text-sm text-gray-600 font-medium">
                   {member.credential}
