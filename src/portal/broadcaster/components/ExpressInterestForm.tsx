@@ -2,6 +2,9 @@ import { useState, type FormEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiGet, apiPost } from '../../shared/apiHelpers';
 import type { TerritoryOption } from '../../shared/types';
+import { useDkDisclosure } from '../../../components/dk/useDkDisclosure';
+import { DkFormMessage } from '../../../components/dk/DkFormMessage';
+import { DkFieldError } from '../../../components/dk/DkFieldError';
 
 const RIGHTS: [string, string][] = [
   ['broadcast', 'Broadcast'],
@@ -28,7 +31,7 @@ const fieldClass =
 // price. Gated server-side on holding an approved screener; a 403 surfaces a
 // friendly prompt.
 export function ExpressInterestForm({ slug }: { slug: string }) {
-  const [open, setOpen] = useState(false);
+  const { open, toggle, close, triggerProps, panelProps } = useDkDisclosure();
   const [state, setState] = useState<State>('idle');
   const [form, setForm] = useState({
     territory: '',
@@ -66,13 +69,17 @@ export function ExpressInterestForm({ slug }: { slug: string }) {
 
   if (state === 'done') {
     return (
-      <div className="rounded-xl border p-4" style={{ borderColor: 'rgba(34,197,94,0.25)', background: 'rgba(34,197,94,0.06)' }}>
+      <DkFormMessage
+        tone="success"
+        className="rounded-xl border p-4"
+        style={{ borderColor: 'rgba(34,197,94,0.25)', background: 'rgba(34,197,94,0.06)' }}
+      >
         <div className="text-sm font-semibold text-emerald-400">Expression of interest sent</div>
         <p className="mt-1 text-xs text-[var(--muted)]">
           The production company can now see your interest and reach out to negotiate the licence
           directly. Didactik does not handle the deal terms.
         </p>
-      </div>
+      </DkFormMessage>
     );
   }
 
@@ -88,7 +95,8 @@ export function ExpressInterestForm({ slug }: { slug: string }) {
           </div>
           <button
             type="button"
-            onClick={() => setOpen(true)}
+            onClick={toggle}
+            {...triggerProps}
             className="shrink-0 rounded-lg px-4 py-2 text-sm font-semibold text-white"
             style={{ background: 'var(--accent)' }}
           >
@@ -96,11 +104,13 @@ export function ExpressInterestForm({ slug }: { slug: string }) {
           </button>
         </div>
       ) : (
-        <form onSubmit={submit} className="space-y-3">
+        <form onSubmit={submit} {...panelProps} className="space-y-3">
           <div className="text-sm font-semibold text-white">Express interest</div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label className="block">
-              <span className="mb-1 block text-xs text-[var(--muted)]">Territory</span>
+              <span className="mb-1 block text-xs text-[var(--muted)]">
+                Territory<span aria-hidden="true"> *</span>
+              </span>
               <select className={fieldClass} value={form.territory} onChange={(e) => set('territory', e.target.value)} required>
                 <option value="">Select a territory</option>
                 {(territories ?? []).map((t) => (
@@ -150,11 +160,13 @@ export function ExpressInterestForm({ slug }: { slug: string }) {
           </label>
 
           {state === 'error' && (
-            <p className="text-xs text-red-400">Something went wrong. Please try again.</p>
+            <DkFieldError className="text-xs text-red-400">
+              Something went wrong. Please try again.
+            </DkFieldError>
           )}
 
           <div className="flex items-center gap-3">
-            <button type="button" onClick={() => setOpen(false)} className="text-sm text-[var(--muted)] hover:text-white">
+            <button type="button" onClick={close} className="text-sm text-[var(--muted)] hover:text-white">
               Cancel
             </button>
             <button

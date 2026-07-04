@@ -24,4 +24,13 @@ describe('DkFormMessage', () => {
     );
     expect(screen.getByRole('alert')).toHaveClass('my-banner-class');
   });
+
+  it('passes through an optional style prop, for colors outside the Tailwind config', () => {
+    render(
+      <DkFormMessage tone="success" style={{ background: 'rgba(34,197,94,0.06)' }}>
+        Done
+      </DkFormMessage>,
+    );
+    expect(screen.getByRole('status')).toHaveStyle({ background: 'rgba(34,197,94,0.06)' });
+  });
 });
