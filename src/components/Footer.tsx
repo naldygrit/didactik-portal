@@ -30,12 +30,12 @@ export default function Footer() {
                   href="mailto:emem@didactikmedia.com"
                   className="hover:text-secondary transition-colors flex items-center gap-2"
                 >
-                  <FaEnvelope className="text-secondary" />
+                  <FaEnvelope aria-hidden="true" className="text-secondary" />
                   emem@didactikmedia.com
                 </a>
               </p>
               <p className="flex items-center gap-2">
-                <FaMapMarkerAlt className="text-secondary" />
+                <FaMapMarkerAlt aria-hidden="true" className="text-secondary" />
                 Lagos, Nigeria
               </p>
             </div>
@@ -52,7 +52,7 @@ export default function Footer() {
                   rel="noopener noreferrer"
                   className="text-gray-500 hover:text-secondary transition-colors flex items-center gap-2"
                 >
-                  <FaLinkedin className="text-secondary text-lg" />
+                  <FaLinkedin aria-hidden="true" className="text-secondary text-lg" />
                   Didactik Media
                 </a>
               </p>
@@ -64,7 +64,7 @@ export default function Footer() {
                   rel="noopener noreferrer"
                   className="text-gray-500 hover:text-secondary transition-colors flex items-center gap-2"
                 >
-                  <FaInstagram className="text-secondary text-lg" />
+                  <FaInstagram aria-hidden="true" className="text-secondary text-lg" />
                   @didactikmedia
                 </a>
               </p>

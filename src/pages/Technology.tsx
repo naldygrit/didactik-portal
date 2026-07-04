@@ -51,7 +51,7 @@ export default function Technology() {
                 {/* Step 1 */}
                 <div className="text-center">
                   <div className="bg-white p-6 rounded-xl shadow-lg mb-4">
-                    <div className="text-4xl mb-3">📼</div>
+                    <div aria-hidden="true" className="text-4xl mb-3">📼</div>
                     <h3 className="font-bold text-lg mb-2">Physical Media</h3>
                     <p className="text-sm text-gray-600">
                       Betacam, VHS, Film Reels
@@ -63,7 +63,7 @@ export default function Technology() {
                 {/* Step 2 */}
                 <div className="text-center">
                   <div className="bg-white p-6 rounded-xl shadow-lg mb-4">
-                    <div className="text-4xl mb-3">🗄️</div>
+                    <div aria-hidden="true" className="text-4xl mb-3">🗄️</div>
                     <h3 className="font-bold text-lg mb-2">Master Vault</h3>
                     <p className="text-sm text-gray-600">
                       LTO Cold Storage (On-Premise)
@@ -75,7 +75,7 @@ export default function Technology() {
                 {/* Step 3 */}
                 <div className="text-center">
                   <div className="bg-white p-6 rounded-xl shadow-lg mb-4">
-                    <div className="text-4xl mb-3">☁️</div>
+                    <div aria-hidden="true" className="text-4xl mb-3">☁️</div>
                     <h3 className="font-bold text-lg mb-2">Cloud Proxies</h3>
                     <p className="text-sm text-gray-600">
                       Optimized for Access & Distribution
@@ -178,21 +178,21 @@ export default function Technology() {
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                   <div className="text-center">
                     <div className="bg-white p-4 rounded-lg shadow-md mb-2">
-                      <span className="text-2xl">🤖</span>
+                      <span aria-hidden="true" className="text-2xl">🤖</span>
                     </div>
                     <p className="text-sm font-medium">AI Transcription</p>
                   </div>
                   <div className="text-2xl text-secondary">→</div>
                   <div className="text-center">
                     <div className="bg-white p-4 rounded-lg shadow-md mb-2">
-                      <span className="text-2xl">👤</span>
+                      <span aria-hidden="true" className="text-2xl">👤</span>
                     </div>
                     <p className="text-sm font-medium">Human Verification</p>
                   </div>
                   <div className="text-2xl text-secondary">→</div>
                   <div className="text-center">
                     <div className="bg-white p-4 rounded-lg shadow-md mb-2">
-                      <span className="text-2xl">✅</span>
+                      <span aria-hidden="true" className="text-2xl">✅</span>
                     </div>
                     <p className="text-sm font-medium">Cultural Accuracy</p>
                   </div>
@@ -307,7 +307,7 @@ export default function Technology() {
                 </h3>
                 <ul className="space-y-4">
                   <li className="flex items-start gap-3">
-                    <span className="text-2xl">🔒</span>
+                    <span aria-hidden="true" className="text-2xl">🔒</span>
                     <div>
                       <h4 className="font-bold">NDPR Compliant</h4>
                       <p className="text-sm text-gray-600">
@@ -343,7 +343,7 @@ export default function Technology() {
                 </h3>
                 <ul className="space-y-4">
                   <li className="flex items-start gap-3">
-                    <span className="text-2xl">🔐</span>
+                    <span aria-hidden="true" className="text-2xl">🔐</span>
                     <div>
                       <h4 className="font-bold">End-to-End Encryption</h4>
                       <p className="text-sm text-gray-600">

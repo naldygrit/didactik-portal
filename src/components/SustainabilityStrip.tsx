@@ -16,7 +16,7 @@ export default function SustainabilityStrip() {
         >
           <div className="inline-block mb-6">
             <div className="flex items-center gap-3 bg-green-100 text-green-800 px-6 py-3 rounded-full font-semibold">
-              <span className="text-2xl">🌱</span>
+              <span aria-hidden="true" className="text-2xl">🌱</span>
               <span>Climate-Positive Digital Archive</span>
             </div>
           </div>
