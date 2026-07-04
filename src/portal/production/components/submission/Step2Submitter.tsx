@@ -1,15 +1,12 @@
 import { useFormContext } from 'react-hook-form';
 import type { WizardFormData } from '../../pages/SubmitPage';
-
-function FieldError({ name }: { name: keyof WizardFormData }) {
-  const { formState: { errors } } = useFormContext<WizardFormData>();
-  const error = errors[name];
-  if (!error) return null;
-  return <p className="mt-1 text-xs text-red-600">{error.message as string}</p>;
-}
+import { DkField } from '../../../../components/dk/DkField';
 
 export function Step2Submitter() {
-  const { register } = useFormContext<WizardFormData>();
+  const {
+    register,
+    formState: { errors },
+  } = useFormContext<WizardFormData>();
 
   return (
     <div className="space-y-5">
@@ -18,34 +15,32 @@ export function Step2Submitter() {
         consent record and is only visible to Didactik admin.
       </p>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Your full name <span className="text-red-500">*</span>
-        </label>
+      <DkField
+        label="Your full name"
+        required
+        error={errors.submitter_name?.message as string | undefined}
+      >
         <input
           type="text"
           {...register('submitter_name')}
           placeholder="As it appears on official documents"
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
         />
-        <FieldError name="submitter_name" />
-      </div>
+      </DkField>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Contact email or phone <span className="text-red-500">*</span>
-        </label>
+      <DkField
+        label="Contact email or phone"
+        required
+        hint="Didactik will use this to contact you about your submission status."
+        error={errors.submitter_contact?.message as string | undefined}
+      >
         <input
           type="text"
           {...register('submitter_contact')}
           placeholder="Email or phone number"
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
         />
-        <p className="mt-1 text-xs text-gray-400">
-          Didactik will use this to contact you about your submission status.
-        </p>
-        <FieldError name="submitter_contact" />
-      </div>
+      </DkField>
     </div>
   );
 }
