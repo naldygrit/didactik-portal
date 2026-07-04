@@ -10,6 +10,8 @@ import type {
 } from '../../shared/types';
 import { initials, statusThumbBg } from '../adminUi';
 import '../admin.css';
+import { DkPageHeading } from '../components/DkPageHeading';
+import { DkCardTitle } from '../components/DkCardTitle';
 
 function formatBytes(bytes: number): string {
   const tb = bytes / 1_000_000_000_000;
@@ -85,14 +87,11 @@ export function AdminOverviewPage() {
 
   return (
     <div>
-      <div className="page-header">
-        <div className="page-title">Overview</div>
-        <div className="page-sub">Platform health and the work waiting on you</div>
-      </div>
+      <DkPageHeading title="Overview" subtitle="Platform health and the work waiting on you" />
 
       {/* Content pipeline — every status, so triage state reads at a glance. */}
       <div className="kpi-row-label">Content pipeline</div>
-      <div className="kpi-grid">
+      <div className="kpi-grid" aria-busy={!data}>
         <Kpi label="Total titles" value={data?.content.total_titles} />
         <Kpi label="Active" value={byStatus.active ?? 0} />
         <Kpi label="Under review" value={byStatus.under_review ?? 0} primary={(byStatus.under_review ?? 0) > 0} />
@@ -107,7 +106,7 @@ export function AdminOverviewPage() {
 
       {/* Engagement & organisations. Deltas only where a real sub-line exists. */}
       <div className="kpi-row-label">Engagement &amp; organisations</div>
-      <div className="kpi-grid">
+      <div className="kpi-grid" aria-busy={!data}>
         <Kpi
           label="Screeners pending"
           value={data?.screeners.pending_queue}
@@ -137,7 +136,7 @@ export function AdminOverviewPage() {
         <div>
           <motion.div className="card" variants={panel} initial="hidden" animate="show">
             <div className="card-header">
-              <span className="card-title">Triage queue</span>
+              <DkCardTitle>Triage queue</DkCardTitle>
               <Link className="card-link" to="/portal/admin/library">
                 View library →
               </Link>
@@ -175,7 +174,7 @@ export function AdminOverviewPage() {
 
           <motion.div className="card" variants={panel} initial="hidden" animate="show">
             <div className="card-header">
-              <span className="card-title">Screeners pending</span>
+              <DkCardTitle>Screeners pending</DkCardTitle>
               <Link className="card-link" to="/portal/admin/screeners">
                 View all →
               </Link>
@@ -224,7 +223,7 @@ export function AdminOverviewPage() {
 
           <motion.div className="card" variants={panel} initial="hidden" animate="show">
             <div className="card-header">
-              <span className="card-title">Organisations awaiting verification</span>
+              <DkCardTitle>Organisations awaiting verification</DkCardTitle>
             </div>
             {unverified.length === 0 ? (
               <div className="page-sub">Every organisation is verified.</div>
@@ -267,7 +266,7 @@ export function AdminOverviewPage() {
         <div>
           <motion.div className="card" variants={panel} initial="hidden" animate="show">
             <div className="card-header">
-              <span className="card-title">Production company activity</span>
+              <DkCardTitle>Production company activity</DkCardTitle>
               <Link className="card-link" to="/portal/admin/production">
                 View all →
               </Link>
@@ -285,7 +284,7 @@ export function AdminOverviewPage() {
 
           <motion.div className="card" variants={panel} initial="hidden" animate="show">
             <div className="card-header">
-              <span className="card-title">Broadcaster activity</span>
+              <DkCardTitle>Broadcaster activity</DkCardTitle>
               <Link className="card-link" to="/portal/admin/broadcasters">
                 View all →
               </Link>
@@ -303,7 +302,7 @@ export function AdminOverviewPage() {
 
           <motion.div className="card" variants={panel} initial="hidden" animate="show">
             <div className="card-header">
-              <span className="card-title">Rights coverage by territory</span>
+              <DkCardTitle>Rights coverage by territory</DkCardTitle>
             </div>
             <div className="bar-wrap">
               {coverage.map((c) => (

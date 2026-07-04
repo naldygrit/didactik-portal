@@ -50,4 +50,11 @@ describe('AdminOverviewPage', () => {
     );
     expect(screen.getByText('Rights coverage by territory')).toBeInTheDocument();
   });
+
+  it('renders the page title and every card title as real headings', async () => {
+    renderPage();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Overview' })).toBeInTheDocument();
+    ['Triage queue', 'Screeners pending', 'Organisations awaiting verification']
+      .forEach((name) => expect(screen.getByRole('heading', { level: 2, name })).toBeInTheDocument());
+  });
 });
