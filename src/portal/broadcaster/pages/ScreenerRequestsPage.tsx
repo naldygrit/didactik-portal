@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { apiGet } from '../../shared/apiHelpers';
 import type { ScreenerStatus, ScreenerSummary } from '../../shared/types';
+import { DkFormMessage } from '../../../components/dk/DkFormMessage';
 
 // Display groups, in the order an evaluator works them.
 const GROUPS: { key: ScreenerStatus[]; label: string }[] = [
@@ -21,6 +23,9 @@ export function BroadcasterScreenerRequestsPage() {
     queryKey: ['broadcaster-screener-requests'],
     queryFn: () => apiGet<ScreenerSummary[]>('/api/v1/broadcaster/screener-requests/'),
   });
+  // No screener-delivery backend exists yet (see HANDOFF.md) — this just
+  // confirms the click did something instead of sitting inert.
+  const [accessed, setAccessed] = useState<Set<string>>(new Set());
 
   const all = screeners ?? [];
 
@@ -81,9 +86,18 @@ export function BroadcasterScreenerRequestsPage() {
                           <p className="mt-1 text-xs text-emerald-400">Access expires {expires}</p>
                         )}
                       </div>
-                      {approved ? (
+                      {approved && accessed.has(req.uuid) ? (
+                        <DkFormMessage
+                          tone="success"
+                          className="shrink-0 rounded-lg px-3 py-2 text-xs font-medium"
+                          style={{ color: '#4ade80', background: 'rgba(34,197,94,0.1)' }}
+                        >
+                          Link sent — check your email
+                        </DkFormMessage>
+                      ) : approved ? (
                         <button
                           type="button"
+                          onClick={() => setAccessed((prev) => new Set(prev).add(req.uuid))}
                           className="shrink-0 rounded-lg px-4 py-2 text-sm font-semibold text-white"
                           style={{ background: '#16a34a' }}
                         >
