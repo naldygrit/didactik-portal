@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState, type KeyboardEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiGet, apiPost } from '../../shared/apiHelpers';
 import { ageTone, relativeTime } from '../../shared/format';
@@ -14,6 +14,13 @@ const PURPOSE_LABELS: Record<string, string> = {
 };
 
 type Tab = 'all' | 'pending' | 'approved' | 'declined';
+
+const TABS: { key: Tab; label: string }[] = [
+  { key: 'pending', label: 'Pending' },
+  { key: 'approved', label: 'Approved' },
+  { key: 'declined', label: 'Declined' },
+  { key: 'all', label: 'All' },
+];
 
 const PILL_CLASS: Record<string, string> = {
   pending: 'pill-pending',
@@ -36,6 +43,26 @@ export function AdminScreenerQueuePage() {
   const queryClient = useQueryClient();
   // Default to the actionable queue — clearing pending requests is the job.
   const [tab, setTab] = useState<Tab>('pending');
+  const tablistId = useId();
+  const panelId = `${tablistId}-panel`;
+  const tabButtonId = (key: Tab) => `${tablistId}-tab-${key}`;
+
+  // Full ARIA APG tabs pattern, not just decorative roles: a screen reader
+  // that hears role="tab" expects arrow-key movement between tabs (Tab key
+  // itself moves *out* of the tablist), so roving tabIndex + Left/Right/
+  // Home/End are required for this to behave correctly, not optional polish.
+  function handleTabKeyDown(e: KeyboardEvent<HTMLButtonElement>, index: number) {
+    let nextIndex: number | null = null;
+    if (e.key === 'ArrowRight') nextIndex = (index + 1) % TABS.length;
+    else if (e.key === 'ArrowLeft') nextIndex = (index - 1 + TABS.length) % TABS.length;
+    else if (e.key === 'Home') nextIndex = 0;
+    else if (e.key === 'End') nextIndex = TABS.length - 1;
+    if (nextIndex === null) return;
+    e.preventDefault();
+    const nextTab = TABS[nextIndex].key;
+    setTab(nextTab);
+    document.getElementById(tabButtonId(nextTab))?.focus();
+  }
   // Per-request approve duration (hours) and decline reason, kept local until acted on.
   const [hours, setHours] = useState<Record<string, number>>({});
   const [reasons, setReasons] = useState<Record<string, string>>({});
@@ -81,21 +108,29 @@ export function AdminScreenerQueuePage() {
         </div>
       </div>
 
-      <div className="tab-bar">
-        <button type="button" className={`tab ${tab === 'pending' ? 'active' : ''}`} onClick={() => setTab('pending')}>
-          Pending ({counts.pending})
-        </button>
-        <button type="button" className={`tab ${tab === 'approved' ? 'active' : ''}`} onClick={() => setTab('approved')}>
-          Approved ({counts.approved})
-        </button>
-        <button type="button" className={`tab ${tab === 'declined' ? 'active' : ''}`} onClick={() => setTab('declined')}>
-          Declined ({counts.declined})
-        </button>
-        <button type="button" className={`tab ${tab === 'all' ? 'active' : ''}`} onClick={() => setTab('all')}>
-          All ({counts.all})
-        </button>
+      <div role="tablist" aria-label="Screener request status" className="tab-bar">
+        {TABS.map(({ key, label }, index) => {
+          const selected = tab === key;
+          return (
+            <button
+              key={key}
+              type="button"
+              id={tabButtonId(key)}
+              role="tab"
+              aria-selected={selected}
+              aria-controls={panelId}
+              tabIndex={selected ? 0 : -1}
+              className={`tab ${selected ? 'active' : ''}`}
+              onClick={() => setTab(key)}
+              onKeyDown={(e) => handleTabKeyDown(e, index)}
+            >
+              {label} ({counts[key]})
+            </button>
+          );
+        })}
       </div>
 
+      <div role="tabpanel" id={panelId} aria-labelledby={tabButtonId(tab)}>
       {isLoading && <div className="page-sub">Loading…</div>}
       {data && rows.length === 0 && (
         <div className="empty-state">
@@ -177,6 +212,7 @@ export function AdminScreenerQueuePage() {
           </div>
         );
       })}
+      </div>
     </div>
   );
 }

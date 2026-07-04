@@ -51,4 +51,60 @@ describe('AdminScreenerQueuePage', () => {
       expect(screen.getAllByRole('button', { name: 'Approve' })).toHaveLength(1),
     );
   });
+
+  it('exposes the tab bar with real ARIA tabs semantics, not just styled buttons', async () => {
+    renderPage();
+    await screen.findByText('Canal+ International', { exact: false });
+
+    const tablist = screen.getByRole('tablist', { name: 'Screener request status' });
+    const tabs = screen.getAllByRole('tab');
+    expect(tabs).toHaveLength(4);
+    expect(tablist).toContainElement(tabs[0]);
+
+    const pendingTab = screen.getByRole('tab', { name: /^Pending/ });
+    expect(pendingTab).toHaveAttribute('aria-selected', 'true');
+    expect(pendingTab).toHaveAttribute('tabIndex', '0');
+
+    const approvedTab = screen.getByRole('tab', { name: /^Approved/ });
+    expect(approvedTab).toHaveAttribute('aria-selected', 'false');
+    expect(approvedTab).toHaveAttribute('tabIndex', '-1');
+
+    const panel = screen.getByRole('tabpanel');
+    expect(panel.getAttribute('aria-labelledby')).toBe(pendingTab.id);
+    expect(pendingTab.getAttribute('aria-controls')).toBe(panel.id);
+  });
+
+  it('moves selection and focus with ArrowRight/ArrowLeft, wrapping at the ends', async () => {
+    renderPage();
+    await screen.findByText('Canal+ International', { exact: false });
+
+    const pendingTab = screen.getByRole('tab', { name: /^Pending/ });
+    const approvedTab = screen.getByRole('tab', { name: /^Approved/ });
+    const allTab = screen.getByRole('tab', { name: /^All/ });
+
+    pendingTab.focus();
+    fireEvent.keyDown(pendingTab, { key: 'ArrowRight' });
+    expect(approvedTab).toHaveAttribute('aria-selected', 'true');
+    expect(document.activeElement).toBe(approvedTab);
+
+    // Wrap backward from the first tab (Pending, index 0) to the last (All).
+    fireEvent.keyDown(approvedTab, { key: 'ArrowLeft' });
+    fireEvent.keyDown(pendingTab, { key: 'ArrowLeft' });
+    expect(allTab).toHaveAttribute('aria-selected', 'true');
+    expect(document.activeElement).toBe(allTab);
+  });
+
+  it('jumps to the first/last tab on Home/End', async () => {
+    renderPage();
+    await screen.findByText('Canal+ International', { exact: false });
+
+    const pendingTab = screen.getByRole('tab', { name: /^Pending/ });
+    const allTab = screen.getByRole('tab', { name: /^All/ });
+
+    fireEvent.keyDown(pendingTab, { key: 'End' });
+    expect(allTab).toHaveAttribute('aria-selected', 'true');
+
+    fireEvent.keyDown(allTab, { key: 'Home' });
+    expect(pendingTab).toHaveAttribute('aria-selected', 'true');
+  });
 });
