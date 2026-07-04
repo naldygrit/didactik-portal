@@ -8,6 +8,8 @@ import type {
   ScreenerSummary,
   WatchlistEntry,
 } from '../../shared/types';
+import { DkField } from '../../../components/dk/DkField';
+import { DkFieldError } from '../../../components/dk/DkFieldError';
 
 interface Props {
   slug: string;
@@ -142,13 +144,15 @@ export function ScreenerPanel({ slug }: Props) {
                 </option>
               ))}
             </select>
-            <textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Message to the producer (optional)"
-              rows={2}
-              className="w-full resize-none rounded-lg border border-white/15 bg-[var(--surface)] px-3 py-2 text-sm text-white placeholder:text-[var(--muted)] focus:border-[var(--accent-2)] focus:outline-none"
-            />
+            <DkField label="Message to the producer" visuallyHiddenLabel>
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Message to the producer (optional)"
+                rows={2}
+                className="w-full resize-none rounded-lg border border-white/15 bg-[var(--surface)] px-3 py-2 text-sm text-white placeholder:text-[var(--muted)] focus:border-[var(--accent-2)] focus:outline-none"
+              />
+            </DkField>
             <button
               type="button"
               disabled={requestScreener.isPending}
@@ -158,7 +162,9 @@ export function ScreenerPanel({ slug }: Props) {
               {requestScreener.isPending ? 'Requesting…' : 'Request screener'}
             </button>
             {requestScreener.isError && (
-              <p className="text-xs text-red-400">{(requestScreener.error as Error).message}</p>
+              <DkFieldError className="text-xs text-red-400">
+                {(requestScreener.error as Error).message}
+              </DkFieldError>
             )}
           </>
         )}
@@ -172,14 +178,20 @@ export function ScreenerPanel({ slug }: Props) {
           onClick={() => addToWatchlist.mutate()}
           className="w-full rounded-lg border border-white/15 px-5 py-2 text-sm font-medium text-[var(--ink)]/85 transition-colors hover:border-white/30 hover:text-white disabled:cursor-default disabled:opacity-80"
         >
-          {watchlisted
-            ? '✓ On your watchlist'
-            : addToWatchlist.isPending
-              ? 'Adding…'
-              : 'Add to watchlist'}
+          {watchlisted ? (
+            <>
+              <span aria-hidden="true">✓</span> On your watchlist
+            </>
+          ) : addToWatchlist.isPending ? (
+            'Adding…'
+          ) : (
+            'Add to watchlist'
+          )}
         </button>
         {addToWatchlist.isError && (
-          <p className="mt-1 text-xs text-red-400">{(addToWatchlist.error as Error).message}</p>
+          <DkFieldError className="mt-1 text-xs text-red-400">
+            {(addToWatchlist.error as Error).message}
+          </DkFieldError>
         )}
       </div>
     </div>

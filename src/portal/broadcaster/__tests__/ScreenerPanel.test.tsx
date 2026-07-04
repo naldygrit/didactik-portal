@@ -60,4 +60,18 @@ describe('ScreenerPanel', () => {
     fireEvent.click(screen.getByRole('button', { name: /Add to watchlist/i }));
     expect(await screen.findByText(/On your watchlist/i)).toBeInTheDocument();
   });
+
+  it('gives the message textarea an accessible name instead of placeholder-only', async () => {
+    renderPanel();
+    await screen.findByText('Nigeria');
+    expect(screen.getByLabelText('Message to the producer')).toBeInTheDocument();
+  });
+
+  it("hides the watchlist button's checkmark from assistive tech so it isn't announced redundantly", async () => {
+    renderPanel();
+    await screen.findByText('Nigeria');
+    fireEvent.click(screen.getByRole('button', { name: /Add to watchlist/i }));
+    const button = await screen.findByRole('button', { name: 'On your watchlist' });
+    expect(button.querySelector('[aria-hidden="true"]')).toHaveTextContent('✓');
+  });
 });
