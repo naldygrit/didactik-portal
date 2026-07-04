@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { postApplication, type OnboardingApplicationInput, type OrgType } from './onboarding';
+import { DkFormMessage } from '../../components/dk/DkFormMessage';
 
 const BRAND = '#5343fd';
 
@@ -120,7 +121,9 @@ export function ApplyPage() {
               </div>
 
               {error && (
-                <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+                <DkFormMessage tone="error" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {error}
+                </DkFormMessage>
               )}
 
               <Field

@@ -53,4 +53,21 @@ describe('ApplyPage', () => {
       }),
     );
   });
+
+  it('announces a failed submission as an alert', async () => {
+    const { postApplication } = await import('../onboarding');
+    vi.mocked(postApplication).mockRejectedValue(new Error('Application already pending.'));
+
+    renderPage();
+    fireEvent.click(screen.getByRole('button', { name: /Broadcaster/ }));
+    fireEvent.change(screen.getByLabelText('Broadcaster name'), { target: { value: 'Canal+' } });
+    fireEvent.change(screen.getByLabelText('Country'), { target: { value: 'Senegal' } });
+    fireEvent.change(screen.getByLabelText('Your name'), { target: { value: 'Ada' } });
+    fireEvent.change(screen.getByLabelText('Work email'), { target: { value: 'ada@canal.example' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Submit application' }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveAttribute('aria-live', 'assertive');
+    expect(alert).toHaveTextContent('Application already pending.');
+  });
 });
