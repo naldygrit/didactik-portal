@@ -1,9 +1,15 @@
-import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { useDkDisclosure } from "./dk/useDkDisclosure";
 
 export default function Header() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const {
+    open: mobileMenuOpen,
+    toggle: toggleMobileMenu,
+    close: closeMobileMenu,
+    triggerProps: mobileMenuTriggerProps,
+    panelProps: mobileMenuPanelProps,
+  } = useDkDisclosure();
   const location = useLocation();
 
   const navLinks = [
@@ -47,10 +53,10 @@ export default function Header() {
 
           {/* Mobile Menu Toggle */}
           <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            onClick={toggleMobileMenu}
             className="md:hidden p-2"
             aria-label="Toggle menu"
-            aria-expanded={mobileMenuOpen}
+            {...mobileMenuTriggerProps}
           >
             <svg
               className="w-6 h-6"
@@ -82,6 +88,7 @@ export default function Header() {
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.nav
+            {...mobileMenuPanelProps}
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -98,7 +105,7 @@ export default function Header() {
                 >
                   <Link
                     to={link.href}
-                    onClick={() => setMobileMenuOpen(false)}
+                    onClick={closeMobileMenu}
                     className={`block py-3 text-sm font-medium uppercase tracking-wide ${
                       location.pathname === link.href
                         ? "text-secondary"
