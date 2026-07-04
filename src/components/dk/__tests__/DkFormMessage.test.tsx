@@ -33,4 +33,13 @@ describe('DkFormMessage', () => {
     );
     expect(screen.getByRole('status')).toHaveStyle({ background: 'rgba(34,197,94,0.06)' });
   });
+
+  it('passes through an optional id, so a field can aria-describedby it', () => {
+    render(
+      <DkFormMessage tone="error" id="login-error">
+        Invalid credentials
+      </DkFormMessage>,
+    );
+    expect(screen.getByRole('alert')).toHaveAttribute('id', 'login-error');
+  });
 });

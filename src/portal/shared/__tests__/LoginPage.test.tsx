@@ -64,6 +64,24 @@ describe('LoginPage', () => {
     });
   });
 
+  it('announces a failed login as an alert and marks both fields invalid', async () => {
+    vi.mocked(auth.postLogin).mockRejectedValue(new Error('Invalid credentials'));
+    renderLoginPage();
+    fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'bad' } });
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'bad' } });
+    fireEvent.submit(screen.getByRole('button', { name: /sign in/i }).closest('form')!);
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveAttribute('aria-live', 'assertive');
+
+    const username = screen.getByLabelText('Username');
+    const password = screen.getByLabelText('Password');
+    expect(username).toHaveAttribute('aria-invalid', 'true');
+    expect(username.getAttribute('aria-describedby')).toBe(alert.id);
+    expect(password).toHaveAttribute('aria-invalid', 'true');
+    expect(password.getAttribute('aria-describedby')).toBe(alert.id);
+  });
+
   it('navigates to broadcaster dashboard on successful broadcaster login', async () => {
     const FAKE_TOKEN = 'header.payload.sig';
     const fakeUser: JwtPayload = {

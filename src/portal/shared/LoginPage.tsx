@@ -1,7 +1,8 @@
-import { useState, type FormEvent } from 'react';
+import { useId, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { postLogin, decodeToken } from './auth';
 import { useAuth } from './AuthContext';
+import { DkFormMessage } from '../../components/dk/DkFormMessage';
 
 export function LoginPage() {
   const { login } = useAuth();
@@ -10,6 +11,7 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const errorId = useId();
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -47,9 +49,13 @@ export function LoginPage() {
         </div>
 
         {error && (
-          <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+          <DkFormMessage
+            tone="error"
+            id={errorId}
+            className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700"
+          >
             {error}
-          </div>
+          </DkFormMessage>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -67,6 +73,8 @@ export function LoginPage() {
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? errorId : undefined}
               className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
@@ -84,6 +92,8 @@ export function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? errorId : undefined}
               className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
@@ -93,7 +103,7 @@ export function LoginPage() {
             className="w-full rounded-lg py-2 text-sm font-semibold text-white transition-opacity disabled:opacity-60"
             style={{ backgroundColor: '#5343fd' }}
           >
-            {submitting ? 'Signing in…' : 'Sign in'}
+            <span aria-live="polite">{submitting ? 'Signing in…' : 'Sign in'}</span>
           </button>
         </form>
 

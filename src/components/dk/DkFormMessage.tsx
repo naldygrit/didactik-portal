@@ -5,6 +5,8 @@ interface DkFormMessageProps {
   children: ReactNode;
   className?: string;
   style?: CSSProperties;
+  /** So a field can point aria-describedby at this banner. */
+  id?: string;
 }
 
 // Whole-form outcome banner (submit succeeded / failed). Unlike DkFieldError,
@@ -13,9 +15,10 @@ interface DkFormMessageProps {
 // config, inline style) and just get the right role/aria-live for the tone:
 // errors are assertive (role="alert"), success is polite (role="status")
 // since it isn't urgent enough to interrupt.
-export function DkFormMessage({ tone, children, className, style }: DkFormMessageProps) {
+export function DkFormMessage({ tone, children, className, style, id }: DkFormMessageProps) {
   return (
     <div
+      id={id}
       role={tone === 'error' ? 'alert' : 'status'}
       aria-live={tone === 'error' ? 'assertive' : 'polite'}
       className={className}
