@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { FiX } from 'react-icons/fi';
 import type { Title } from '../../shared/types';
@@ -12,18 +12,49 @@ interface Props {
   onClose: () => void;
 }
 
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 export function DetailModal({ title, onClose }: Props) {
   const reduce = useReducedMotion();
   const [showScreener, setShowScreener] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
+  // Only modal in the codebase — a focus trap/restore hook isn't justified
+  // for one consumer (Phase 1's "copy it twice before you extract" rule).
   useEffect(() => {
     if (!title) return;
     setShowScreener(false);
+
+    // Remember the poster card that opened this, and move focus into the
+    // dialog — otherwise a keyboard user's focus silently lands on <body>.
+    previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
+    dialogRef.current?.focus();
+
     function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      if (e.key !== 'Tab' || !dialogRef.current) return;
+      const focusable = dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     }
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      previouslyFocusedRef.current?.focus();
+    };
   }, [title, onClose]);
 
   const meta = title
@@ -52,10 +83,12 @@ export function DetailModal({ title, onClose }: Props) {
           onClick={onClose}
         >
           <motion.div
+            ref={dialogRef}
             role="dialog"
             aria-modal="true"
             aria-label={title.name}
-            className="portal-cinema relative max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-2xl md:rounded-2xl"
+            tabIndex={-1}
+            className="portal-cinema relative max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-2xl md:rounded-2xl focus:outline-none"
             initial={reduce ? false : { scale: 0.96, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={reduce ? { opacity: 0 } : { scale: 0.96, opacity: 0 }}
