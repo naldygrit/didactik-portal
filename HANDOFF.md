@@ -128,6 +128,21 @@ all scoped under `.portal-control`. `PortalLayout` picks theme by path PREFIX
   (`POST /admin/organisations/{type}/{id}/verify/` + AuditLog).
 - Two pre-existing `set-state-in-effect` eslint warnings on the URL-sync effects
   (the established sidebar query-sync pattern; eslint still exits 0).
+- **A11y: Footer "opens in new tab" cue — needs a fix.** Identified in the
+  accessibility remediation in PR #1 (`naldygrit/didactik-portal#1`), deferred
+  out of that PR's scope. `Footer.tsx`'s LinkedIn and Instagram links
+  (`target="_blank"`, in the "Connect" `<nav>`) give no warning to screen
+  reader users that activating them opens a new tab. Fix: add an indicator
+  that's both visual and accessible — e.g. visually-hidden text inside the
+  link (`<span className="sr-only"> (opens in new tab)</span>`) or an
+  `aria-label` on the link that includes "opens in new tab". The existing
+  `FaLinkedin`/`FaInstagram` icons are already `aria-hidden` and decorative;
+  don't repurpose them for this cue.
+- **A11y: Billboard truncation — assessed, no action needed.** Also reviewed
+  during PR #1's final pass. `Billboard.tsx`'s synopsis (`line-clamp-3`) only
+  clips visually — the full text stays in the DOM, so screen readers read the
+  complete synopsis regardless of the 3-line visual clip. Confirmed twice
+  (original audit + PR #1 final review) so a future audit doesn't re-flag it.
 
 ## Recent commits (newest first)
 - `chore(mocks)` removed the legacy Asset intake mock handlers (/assets/initiate
