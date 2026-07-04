@@ -6,6 +6,8 @@ import { ageTone, relativeTime } from '../../shared/format';
 import type { AdminTitle, TitleStatus } from '../../shared/types';
 import { humanize, scoreFillClass, statusDotClass } from '../adminUi';
 import '../admin.css';
+import { DkPageHeading } from '../components/DkPageHeading';
+import { DkField } from '../../../components/dk/DkField';
 
 const STATUS_OPTIONS: TitleStatus[] = [
   'draft',
@@ -98,29 +100,30 @@ export function AdminLibraryPage() {
 
   return (
     <div>
-      <div className="page-header">
-        <div className="page-title">Library</div>
-        <div className="page-sub">Every title submitted to Didactik</div>
-      </div>
+      <DkPageHeading title="Library" subtitle="Every title submitted to Didactik" />
 
       <div className="filter-bar">
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Filter titles, producers…"
-        />
-        <select
-          className="status-select"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as 'all' | TitleStatus)}
-        >
-          <option value="all">All statuses</option>
-          {STATUS_OPTIONS.map((s) => (
-            <option key={s} value={s}>
-              {humanize(s)}
-            </option>
-          ))}
-        </select>
+        <DkField label="Filter titles, producers" visuallyHiddenLabel className="flex-1">
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Filter titles, producers…"
+          />
+        </DkField>
+        <DkField label="Filter by status" visuallyHiddenLabel>
+          <select
+            className="status-select"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as 'all' | TitleStatus)}
+          >
+            <option value="all">All statuses</option>
+            {STATUS_OPTIONS.map((s) => (
+              <option key={s} value={s}>
+                {humanize(s)}
+              </option>
+            ))}
+          </select>
+        </DkField>
       </div>
 
       {statusFilter !== 'all' && (
@@ -134,7 +137,11 @@ export function AdminLibraryPage() {
         </div>
       )}
 
-      {isLoading && <div className="page-sub">Loading…</div>}
+      {isLoading && (
+        <div className="page-sub" role="status" aria-live="polite">
+          Loading…
+        </div>
+      )}
       {data && rows.length === 0 && (
         <div className="empty-state">
           {statusFilter !== 'all' || q ? (
@@ -164,7 +171,7 @@ export function AdminLibraryPage() {
       )}
 
       {selected.size > 0 && (
-        <div className="bulk-bar">
+        <div className="bulk-bar" role="status" aria-live="polite">
           <span className="bulk-count">{selected.size} selected</span>
           <button type="button" className="btn-sm btn-primary" onClick={bulkApprove}>
             Approve all
@@ -183,7 +190,7 @@ export function AdminLibraryPage() {
       )}
 
       {rows.length > 0 && (
-        <table className="lib-table">
+        <table className="lib-table" aria-label="Library">
           <thead>
             <tr>
               <th className="check-col">
