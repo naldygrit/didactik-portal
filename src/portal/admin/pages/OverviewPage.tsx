@@ -201,7 +201,7 @@ export function AdminOverviewPage() {
                       <button
                         type="button"
                         className="btn-sm btn-primary"
-                        disabled={approve.isPending}
+                        disabled={approve.isPending && approve.variables === req.uuid}
                         onClick={() => approve.mutate(req.uuid)}
                       >
                         Approve
@@ -209,7 +209,7 @@ export function AdminOverviewPage() {
                       <button
                         type="button"
                         className="btn-sm"
-                        disabled={decline.isPending}
+                        disabled={decline.isPending && decline.variables === req.uuid}
                         onClick={() => decline.mutate(req.uuid)}
                       >
                         Decline

@@ -176,7 +176,7 @@ export function AdminScreenerQueuePage() {
                 <button
                   type="button"
                   className="btn-sm btn-primary"
-                  disabled={approve.isPending}
+                  disabled={approve.isPending && approve.variables?.uuid === req.uuid}
                   onClick={() =>
                     approve.mutate({ uuid: req.uuid, access_duration_hours: hours[req.uuid] ?? 48 })
                   }
@@ -194,7 +194,7 @@ export function AdminScreenerQueuePage() {
                 <button
                   type="button"
                   className="btn-sm btn-danger"
-                  disabled={decline.isPending}
+                  disabled={decline.isPending && decline.variables?.uuid === req.uuid}
                   onClick={() => decline.mutate({ uuid: req.uuid, reason: reasons[req.uuid] ?? '' })}
                 >
                   Decline

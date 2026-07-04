@@ -1,6 +1,7 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { http, HttpResponse, delay } from 'msw';
 import { setupServer } from 'msw/node';
 import { handlers } from '../../../mocks/handlers';
 import { adminScreenerRequests, session, users } from '../../../mocks/db';
@@ -55,6 +56,29 @@ describe('AdminScreenerQueuePage', () => {
     await waitFor(() =>
       expect(screen.getAllByRole('button', { name: 'Approve' })).toHaveLength(1),
     );
+  });
+
+  it('disables only the row whose Approve is actually in flight, not every row', async () => {
+    // The real bug this fixes: approve/decline were one shared useMutation
+    // instance, so approve.isPending disabled *every* row's button when
+    // only one request was in flight. Delaying the response gives a window
+    // to prove the *other* row's button stays enabled during that time.
+    server.use(
+      http.post('/api/v1/admin/screener-requests/:uuid/approve/', async ({ params }) => {
+        await delay(50);
+        const req = adminScreenerRequests.find((r) => r.uuid === params.uuid);
+        if (req) req.status = 'approved';
+        return HttpResponse.json(req ?? {});
+      }),
+    );
+    renderPage();
+    const [firstApprove, secondApprove] = await screen.findAllByRole('button', { name: 'Approve' });
+
+    fireEvent.click(firstApprove);
+    await waitFor(() => expect(firstApprove).toBeDisabled());
+    expect(secondApprove).not.toBeDisabled();
+
+    await waitFor(() => expect(firstApprove).not.toBeInTheDocument());
   });
 
   it('exposes the tab bar with real ARIA tabs semantics, not just styled buttons', async () => {
