@@ -1,0 +1,3 @@
+## Design
+
+When building new UI components, consult HeroUI's source (via Context7, library ID /llmstxt/heroui_react_llms-full_txt) for compound-component structure and React Aria accessibility patterns. Port the pattern by hand into dk-* component conventions — never install @heroui/react as a dependency.
