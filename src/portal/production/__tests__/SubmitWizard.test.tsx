@@ -1,5 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { axe } from 'jest-axe';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ProductionSubmitPage } from '../pages/SubmitPage';
@@ -67,6 +68,19 @@ describe('SubmitPage wizard', () => {
     render(<ProductionSubmitPage />, { wrapper: Wrapper });
     expect(screen.getByRole('heading', { name: 'Submit a title' })).toBeDefined();
     expect(screen.getByPlaceholderText('Working or anglicised title')).toBeDefined();
+  });
+
+  // Found during final review, not the original audit: the wizard's own
+  // step rail (separate from the submission subcomponents that were
+  // audited) uses a real <ol>/<li> already, but its done/current glyph had
+  // no aria-hidden and the current step had no aria-current — same pattern
+  // as PipelineTracker.tsx, fixed the same way for consistency.
+  it('marks the current wizard step with aria-current and hides the decorative status glyph', () => {
+    render(<ProductionSubmitPage />, { wrapper: Wrapper });
+    const items = screen.getAllByRole('listitem');
+    const current = items.find((li) => li.getAttribute('aria-current') === 'step');
+    expect(current).toHaveTextContent('Title details');
+    expect(current?.querySelector('[aria-hidden="true"]')).toHaveTextContent('1');
   });
 
   it('blocks advance from Step 1 when title is too short', async () => {
@@ -166,5 +180,55 @@ describe('SubmitPage wizard', () => {
 
     fireEvent.click(screen.getByText('Back'));
     expect(screen.getByPlaceholderText('Working or anglicised title')).toBeDefined();
+  });
+
+  // Automated WCAG checks (axe-core via jest-axe) as a substitute for a real
+  // screen reader/browser pass — no Playwright connection is available in
+  // this environment. This does not replace a real assistive-tech run before
+  // launch, but catches the class of issue ("technically has ARIA" vs.
+  // "actually usable") a pure code read can miss: unlabeled controls,
+  // invalid aria-* combinations, contrast, duplicate ids, etc.
+  it('Step 1 has no automated accessibility violations', async () => {
+    const { container } = render(<ProductionSubmitPage />, { wrapper: Wrapper });
+    await screen.findByPlaceholderText('Working or anglicised title');
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it('Step 2 (submitter, licensing, and consent) has no violations — closed and with both Step3Consent disclosures open', async () => {
+    const { container } = render(<ProductionSubmitPage />, { wrapper: Wrapper });
+    await fillStep1Valid();
+    fireEvent.click(screen.getByText('Save and continue'));
+    await screen.findByPlaceholderText('As it appears on official documents');
+
+    // Closed state first.
+    expect(await axe(container)).toHaveNoViolations();
+
+    // Then with both of Step3Consent's disclosures open — this is the state
+    // the audit's Moderate findings were actually about (the revealed
+    // content, not just the collapsed trigger).
+    fireEvent.click(screen.getByRole('button', { name: 'View full consent terms' }));
+    await waitFor(() => screen.getByRole('button', { name: 'Hide consent terms' }));
+    fireEvent.click(screen.getByRole('button', { name: /Privacy Policy/ }));
+    await screen.findByRole('region', { name: 'Privacy Policy' });
+
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it('Step 3 (review) has no automated accessibility violations', async () => {
+    const { container } = render(<ProductionSubmitPage />, { wrapper: Wrapper });
+    await fillStep1Valid();
+    fireEvent.click(screen.getByText('Save and continue'));
+    await screen.findByPlaceholderText('As it appears on official documents');
+
+    fireEvent.change(screen.getByPlaceholderText('As it appears on official documents'), {
+      target: { value: 'Tobi O.' },
+    });
+    const checkboxes = await screen.findAllByRole('checkbox');
+    fireEvent.click(checkboxes[0]);
+    fireEvent.click(checkboxes[1]);
+    fireEvent.click(screen.getByText('Continue to review'));
+
+    await screen.findByRole('heading', { name: 'Review & submit' });
+    expect(await axe(container)).toHaveNoViolations();
   });
 });
