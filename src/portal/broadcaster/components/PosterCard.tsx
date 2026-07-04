@@ -47,8 +47,11 @@ export function PosterCard({ title, onSelect }: Props) {
         <p className="font-display mt-0.5 text-sm font-semibold leading-tight text-white">
           {title.name}
         </p>
-        {/* Extra meta surfaces on hover. */}
-        <p className="mt-0.5 max-h-0 overflow-hidden text-[11px] text-[var(--muted)] opacity-0 transition-all duration-200 group-hover:max-h-8 group-hover:opacity-100">
+        {/* Extra meta surfaces on hover — and on keyboard focus, since the
+            card itself is the only focusable element (a group-hover-only
+            reveal would otherwise never be seen by keyboard users tabbing
+            through the rail). */}
+        <p className="mt-0.5 max-h-0 overflow-hidden text-[11px] text-[var(--muted)] opacity-0 transition-all duration-200 group-hover:max-h-8 group-hover:opacity-100 group-focus-visible:max-h-8 group-focus-visible:opacity-100">
           {[title.production_year, title.country_of_origin?.name].filter(Boolean).join(' · ')}
         </p>
       </div>
