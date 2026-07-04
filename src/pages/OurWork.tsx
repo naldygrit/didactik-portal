@@ -79,9 +79,9 @@ export default function OurWork() {
       {/* Process Flow */}
       <section className="py-16 bg-white">
         <div className="container">
-          <div className="space-y-10">
+          <ol className="space-y-10">
             {processSteps.map((step, index) => (
-              <motion.div
+              <motion.li
                 key={step.number}
                 initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -89,7 +89,7 @@ export default function OurWork() {
                 transition={{ duration: 0.8 }}
                 className="flex flex-col md:flex-row items-start gap-6"
               >
-                <div className="text-6xl md:text-8xl font-bold bg-gradient-to-br from-primary/20 to-secondary/20 bg-clip-text font-serif leading-none">
+                <div aria-hidden="true" className="text-6xl md:text-8xl font-bold bg-gradient-to-br from-primary/20 to-secondary/20 bg-clip-text font-serif leading-none">
                   {step.number}
                 </div>
                 <div className="flex-1 pt-2">
@@ -100,9 +100,9 @@ export default function OurWork() {
                     {step.description}
                   </p>
                 </div>
-              </motion.div>
+              </motion.li>
             ))}
-          </div>
+          </ol>
         </div>
       </section>
 
