@@ -45,4 +45,20 @@ describe('AdminLibraryPage', () => {
     const bulkBar = screen.getByText('1 selected').closest('[role="status"]');
     expect(bulkBar).toHaveAttribute('aria-live', 'polite');
   });
+
+  it('marks "select all" indeterminate for a partial selection, not just checked/unchecked', async () => {
+    renderPage();
+    const rowCheckbox = await screen.findByLabelText('Select Lagos After Dark');
+    const selectAll = screen.getByLabelText('Select all') as HTMLInputElement;
+    expect(selectAll.indeterminate).toBe(false);
+    expect(selectAll.checked).toBe(false);
+
+    fireEvent.click(rowCheckbox);
+    expect(selectAll.indeterminate).toBe(true);
+    expect(selectAll.checked).toBe(false);
+
+    fireEvent.click(selectAll);
+    expect(selectAll.indeterminate).toBe(false);
+    expect(selectAll.checked).toBe(true);
+  });
 });

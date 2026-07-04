@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiGet, apiPatch } from '../../shared/apiHelpers';
@@ -98,6 +98,17 @@ export function AdminLibraryPage() {
     );
   });
 
+  // `indeterminate` is a DOM property, not an HTML attribute — React has no
+  // JSX prop for it, so a partial selection has to be set imperatively.
+  // Without this the "select all" checkbox only ever renders fully
+  // checked/unchecked, misrepresenting a partial selection as "none".
+  const selectAllRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (selectAllRef.current) {
+      selectAllRef.current.indeterminate = selected.size > 0 && selected.size < rows.length;
+    }
+  }, [selected, rows.length]);
+
   return (
     <div>
       <DkPageHeading title="Library" subtitle="Every title submitted to Didactik" />
@@ -195,6 +206,7 @@ export function AdminLibraryPage() {
             <tr>
               <th className="check-col">
                 <input
+                  ref={selectAllRef}
                   type="checkbox"
                   aria-label="Select all"
                   checked={selected.size === rows.length && rows.length > 0}
