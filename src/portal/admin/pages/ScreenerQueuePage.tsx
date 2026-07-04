@@ -5,6 +5,8 @@ import { ageTone, relativeTime } from '../../shared/format';
 import type { AdminScreenerRequest } from '../../shared/types';
 import { humanize } from '../adminUi';
 import '../admin.css';
+import { DkPageHeading } from '../components/DkPageHeading';
+import { DkField } from '../../../components/dk/DkField';
 
 const PURPOSE_LABELS: Record<string, string> = {
   acquisition_evaluation: 'Acquisition evaluation',
@@ -101,12 +103,10 @@ export function AdminScreenerQueuePage() {
 
   return (
     <div>
-      <div className="page-header">
-        <div className="page-title">Screeners</div>
-        <div className="page-sub">
-          Approve or decline broadcaster screener requests ({counts.pending} pending)
-        </div>
-      </div>
+      <DkPageHeading
+        title="Screeners"
+        subtitle={`Approve or decline broadcaster screener requests (${counts.pending} pending)`}
+      />
 
       <div role="tablist" aria-label="Screener request status" className="tab-bar">
         {TABS.map(({ key, label }, index) => {
@@ -183,12 +183,14 @@ export function AdminScreenerQueuePage() {
                 >
                   Approve
                 </button>
-                <input
-                  className="decline-input"
-                  value={reasons[req.uuid] ?? ''}
-                  onChange={(e) => setReasons((r) => ({ ...r, [req.uuid]: e.target.value }))}
-                  placeholder="Decline reason (optional)"
-                />
+                <DkField label="Decline reason" visuallyHiddenLabel className="flex-1 min-w-[140px]">
+                  <input
+                    className="decline-input"
+                    value={reasons[req.uuid] ?? ''}
+                    onChange={(e) => setReasons((r) => ({ ...r, [req.uuid]: e.target.value }))}
+                    placeholder="Decline reason (optional)"
+                  />
+                </DkField>
                 <button
                   type="button"
                   className="btn-sm btn-danger"

@@ -36,8 +36,13 @@ describe('AdminScreenerQueuePage', () => {
   it('lists requests with broadcaster identity and purpose', async () => {
     renderPage();
     expect(await screen.findByText('Canal+ International', { exact: false })).toBeInTheDocument();
-    // The dense console renders the page title as a styled div, not a heading.
-    expect(screen.getByText('Screeners')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Screeners' })).toBeInTheDocument();
+  });
+
+  it('gives the decline-reason input an accessible name instead of placeholder-only', async () => {
+    renderPage();
+    await screen.findByText('Canal+ International', { exact: false });
+    expect(screen.getAllByLabelText('Decline reason').length).toBeGreaterThan(0);
   });
 
   it('approves a pending request and removes its Approve action', async () => {
