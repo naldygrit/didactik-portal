@@ -111,6 +111,10 @@ export function BidPanel({ slug }: { slug: string }) {
 
       {/* Place / raise */}
       {!open && !hasBid ? (
+        // This button unmounts once clicked (replaced by the form below,
+        // closed via a separate Cancel button) — so aria-expanded="true"
+        // is never observed on a live element; it's correct ARIA that just
+        // can't complete a visible toggle here. Not a bug to "fix" later.
         <button
           type="button"
           onClick={toggle}

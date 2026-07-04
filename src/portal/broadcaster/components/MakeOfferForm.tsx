@@ -97,6 +97,9 @@ export function MakeOfferForm({ slug }: { slug: string }) {
               Propose a licence fee. The producer can accept, and the deal closes on Didactik.
             </div>
           </div>
+          {/* Unmounts once clicked (replaced by the form; Cancel closes it,
+              not this button) — aria-expanded="true" is correct ARIA but
+              never observed on a live element here. Not a bug to "fix". */}
           <button
             type="button"
             onClick={toggle}

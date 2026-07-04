@@ -93,6 +93,9 @@ export function ExpressInterestForm({ slug }: { slug: string }) {
               Send a formal expression of interest. No price, just the rights you want.
             </div>
           </div>
+          {/* Unmounts once clicked (replaced by the form; Cancel closes it,
+              not this button) — aria-expanded="true" is correct ARIA but
+              never observed on a live element here. Not a bug to "fix". */}
           <button
             type="button"
             onClick={toggle}
