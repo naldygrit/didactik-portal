@@ -1,7 +1,11 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiGet, apiPost } from '../../shared/apiHelpers';
 import type { BiddingStats } from '../../shared/types';
+import { useDkDisclosure } from '../../../components/dk/useDkDisclosure';
+import { DkField } from '../../../components/dk/DkField';
+import { DkFieldError } from '../../../components/dk/DkFieldError';
+import { DkFormMessage } from '../../../components/dk/DkFormMessage';
 
 function money(value: string | null, currency = 'USD'): string {
   if (value == null) return '';
@@ -16,8 +20,16 @@ function money(value: string | null, currency = 'USD'): string {
 // Didactik's commission.
 export function BidPanel({ slug }: { slug: string }) {
   const qc = useQueryClient();
-  const [open, setOpen] = useState(false);
+  const { open, toggle, triggerProps, panelProps } = useDkDisclosure();
   const [amount, setAmount] = useState('');
+  const amountInputRef = useRef<HTMLInputElement>(null);
+
+  // useDkDisclosure doesn't manage focus (the revealed content varies too
+  // much across its consumers to do this generically) — this file's own
+  // Minor finding calls for it specifically, so it's handled here.
+  useEffect(() => {
+    if (open) amountInputRef.current?.focus();
+  }, [open]);
 
   const { data } = useQuery<BiddingStats>({
     queryKey: ['bidding', slug],
@@ -78,43 +90,53 @@ export function BidPanel({ slug }: { slug: string }) {
         )}
       </div>
 
-      {/* Your standing */}
+      {/* Your standing — ambient state, not a one-off outcome, so a plain
+          status region rather than DkFormMessage's success/error framing. */}
       {hasBid && (
-        <p className={`mt-2 text-sm ${data.you_leading ? 'text-emerald-400' : 'text-amber-400'}`}>
+        <p
+          role="status"
+          aria-live="polite"
+          className={`mt-2 text-sm ${data.you_leading ? 'text-emerald-400' : 'text-amber-400'}`}
+        >
           {data.you_leading
             ? `Your bid of ${money(data.your_bid, currency)} is leading.`
             : `Your bid is ${money(data.your_bid, currency)}. The top bid is ${money(data.top_bid, currency)}.`}
         </p>
       )}
       {place.isSuccess && (
-        <p className="mt-1 text-sm text-emerald-400">
+        <DkFormMessage tone="success" className="mt-1 text-sm text-emerald-400">
           {data.you_leading ? 'Bid placed. You are leading.' : 'Bid placed.'}
-        </p>
+        </DkFormMessage>
       )}
 
       {/* Place / raise */}
       {!open && !hasBid ? (
         <button
           type="button"
-          onClick={() => setOpen(true)}
+          onClick={toggle}
+          {...triggerProps}
           className="btn-gradient mt-3 inline-flex items-center rounded-full px-5 py-2 text-sm font-semibold"
         >
           Place a bid
         </button>
       ) : (
-        <form onSubmit={submit} className="mt-3">
-          <label className="mb-1 block text-xs text-[var(--muted)]">
-            {hasBid ? 'Raise your bid' : 'Your bid'} ({currency})
-          </label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              min={1}
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder={data.top_bid ? String(Number(data.top_bid) + 1000) : '8000'}
-              className="flex-1 rounded-lg border border-white/12 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
-            />
+        <form onSubmit={submit} {...panelProps} className="mt-3">
+          <div className="flex items-end gap-2">
+            <DkField
+              label={`${hasBid ? 'Raise your bid' : 'Your bid'} (${currency})`}
+              labelClassName="mb-1 block text-xs text-[var(--muted)]"
+              className="flex-1"
+            >
+              <input
+                ref={amountInputRef}
+                type="number"
+                min={1}
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder={data.top_bid ? String(Number(data.top_bid) + 1000) : '8000'}
+                className="w-full rounded-lg border border-white/12 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
+              />
+            </DkField>
             <button
               type="submit"
               disabled={place.isPending || !(Number(amount) > 0)}
@@ -124,7 +146,9 @@ export function BidPanel({ slug }: { slug: string }) {
             </button>
           </div>
           {place.isError && (
-            <p className="mt-1 text-xs text-red-400">Could not place the bid. Try again.</p>
+            <DkFieldError className="mt-1 text-xs text-red-400">
+              Could not place the bid. Try again.
+            </DkFieldError>
           )}
         </form>
       )}
