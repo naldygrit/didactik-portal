@@ -61,9 +61,16 @@ export function PortalLayout() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const mobileNavId = useId();
 
-  useEffect(() => {
+  // Reset on navigation via the "adjust state during render" pattern
+  // (React docs: "You Might Not Need an Effect"), not an effect — closing
+  // this is a direct response to location.key changing, not a
+  // synchronization with an external system, so setState-in-an-effect here
+  // would just cost an extra render for no benefit.
+  const [lastLocationKey, setLastLocationKey] = useState(location.key);
+  if (location.key !== lastLocationKey) {
+    setLastLocationKey(location.key);
     setMobileNavOpen(false);
-  }, [location.key]);
+  }
 
   useEffect(() => {
     if (!mobileNavOpen) return;
