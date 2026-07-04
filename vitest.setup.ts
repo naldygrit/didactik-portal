@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom'
+import 'jest-axe/extend-expect'
 
 // jsdom has no matchMedia; framer-motion's useReducedMotion needs it.
 if (!window.matchMedia) {
