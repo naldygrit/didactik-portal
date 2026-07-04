@@ -816,6 +816,31 @@ export const titleRights: Record<string, RightsRow[]> = {
   ],
 };
 
+// Per-title licensing fee range + starting baseline bids for biddingStats()
+// in handlers.ts, keyed by slug. Roughly scaled by title type/prestige so
+// repeat clicks across the catalogue in a demo don't show identical numbers.
+// Any slug not listed here falls back to biddingStats()'s own default.
+export const titleFeeRanges: Record<
+  string,
+  { min: number; max: number; baseline: [number, number] }
+> = {
+  'lagos-after-dark': { min: 15000, max: 45000, baseline: [22000, 27500] },
+  'the-salt-harvesters': { min: 5000, max: 15000, baseline: [7000, 9500] },
+  'harmattan-letters': { min: 10000, max: 30000, baseline: [14000, 18000] },
+  'riverwood-nights': { min: 4000, max: 12000, baseline: [5500, 7000] },
+  'the-griot-of-saint-louis': { min: 5000, max: 14000, baseline: [6500, 8500] },
+  'danfo-diaries': { min: 12000, max: 32000, baseline: [16000, 20000] },
+  'the-last-cocoa-house': { min: 9000, max: 26000, baseline: [12000, 16000] },
+  'matatu-blues': { min: 4000, max: 11000, baseline: [5000, 6800] },
+  'the-baobab-keepers': { min: 5500, max: 15000, baseline: [7000, 9000] },
+  'cairo-red-line': { min: 14000, max: 38000, baseline: [19000, 24000] },
+  'the-nubian-heist': { min: 13000, max: 35000, baseline: [17000, 22000] },
+  'addis-morning': { min: 4500, max: 13000, baseline: [6000, 8000] },
+  'the-tailor-of-kano': { min: 2000, max: 7000, baseline: [2800, 3800] },
+  'joburg-nights': { min: 11000, max: 29000, baseline: [14500, 18500] },
+  'the-matchmaker-of-soweto': { min: 4500, max: 12500, baseline: [5800, 7500] },
+};
+
 // Watchlist entries, keyed by user id (the broadcaster keeps a private list).
 export const watchlist: Record<number, WatchlistEntry[]> = {
   1: [
@@ -834,6 +859,30 @@ export const watchlist: Record<number, WatchlistEntry[]> = {
       internal_note: '',
       priority: 'medium',
       added_at: '2026-06-25T09:00:00Z',
+    },
+    {
+      id: 5,
+      title_slug: 'danfo-diaries',
+      title_name: 'Danfo Diaries',
+      internal_note: 'Follow-up to Lagos After Dark — check territory overlap.',
+      priority: 'high',
+      added_at: '2026-06-28T09:00:00Z',
+    },
+    {
+      id: 6,
+      title_slug: 'the-baobab-keepers',
+      title_name: 'The Baobab Keepers',
+      internal_note: '',
+      priority: 'medium',
+      added_at: '2026-06-29T09:00:00Z',
+    },
+    {
+      id: 7,
+      title_slug: 'joburg-nights',
+      title_name: 'Joburg Nights',
+      internal_note: '',
+      priority: 'low',
+      added_at: '2026-06-30T09:00:00Z',
     },
   ],
   // Synthetic broadcaster users whose watchlists feed the seller-studio demand
@@ -874,7 +923,9 @@ export function allocateWatchlistId(): number {
   return nextWatchlistId++;
 }
 
-// Screener requests, keyed by user id.
+// Screener requests, keyed by user id. Covers all four statuses the
+// ScreenerRequestsPage groups by (pending / approved+accessed / expired /
+// declined) so none of its section headers silently disappear.
 export const screenerRequests: Record<number, ScreenerSummary[]> = {
   1: [
     {
@@ -884,6 +935,42 @@ export const screenerRequests: Record<number, ScreenerSummary[]> = {
       purpose: 'acquisition_evaluation',
       status: 'pending',
       requested_at: '2026-06-24T11:00:00Z',
+      access_expires_at: null,
+    },
+    {
+      uuid: '00000000-0000-0000-0000-0000000000a2',
+      title_slug: 'lagos-after-dark',
+      title_name: 'Lagos After Dark',
+      purpose: 'acquisition_evaluation',
+      status: 'approved',
+      requested_at: '2026-06-10T09:00:00Z',
+      access_expires_at: '2026-08-10T09:00:00Z',
+    },
+    {
+      uuid: '00000000-0000-0000-0000-0000000000a3',
+      title_slug: 'danfo-diaries',
+      title_name: 'Danfo Diaries',
+      purpose: 'programming_review',
+      status: 'approved',
+      requested_at: '2026-06-18T09:00:00Z',
+      access_expires_at: '2026-08-18T09:00:00Z',
+    },
+    {
+      uuid: '00000000-0000-0000-0000-0000000000a4',
+      title_slug: 'the-baobab-keepers',
+      title_name: 'The Baobab Keepers',
+      purpose: 'acquisition_evaluation',
+      status: 'expired',
+      requested_at: '2026-04-02T09:00:00Z',
+      access_expires_at: '2026-05-02T09:00:00Z',
+    },
+    {
+      uuid: '00000000-0000-0000-0000-0000000000a5',
+      title_slug: 'cairo-red-line',
+      title_name: 'Cairo Red Line',
+      purpose: 'co_production_interest',
+      status: 'declined',
+      requested_at: '2026-06-01T09:00:00Z',
       access_expires_at: null,
     },
   ],

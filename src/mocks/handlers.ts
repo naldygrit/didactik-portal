@@ -39,6 +39,7 @@ import {
   screenerRequests,
   session,
   territories,
+  titleFeeRanges,
   titleRights,
   titles,
   userInterests,
@@ -54,15 +55,17 @@ const API = '/api/v1';
 // updates in place and the leading state reacts.
 const baselineBids: Record<string, number[]> = {};
 const userBids: Record<string, Record<number, number>> = {};
+const DEFAULT_FEE_RANGE = { min: 8000, max: 25000, baseline: [12000, 14500] as [number, number] };
 function biddingStats(slug: string, userId: number) {
-  const baseline = (baselineBids[slug] ??= [12000, 14500]);
+  const range = titleFeeRanges[slug] ?? DEFAULT_FEE_RANGE;
+  const baseline = (baselineBids[slug] ??= [...range.baseline]);
   const yourBid = userBids[slug]?.[userId];
   const all = yourBid != null ? [...baseline, yourBid] : [...baseline];
   const top = all.length ? Math.max(...all) : null;
   return {
     currency: 'USD',
-    fee_min: '8000.00',
-    fee_max: '25000.00',
+    fee_min: `${range.min}.00`,
+    fee_max: `${range.max}.00`,
     bidder_count: baseline.length + (yourBid != null ? 1 : 0),
     top_bid: top != null ? String(top) : null,
     your_bid: yourBid != null ? String(yourBid) : null,
