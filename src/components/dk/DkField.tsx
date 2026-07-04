@@ -9,6 +9,7 @@ interface DkFieldProps {
   error?: ReactNode;
   visuallyHiddenLabel?: boolean;
   labelClassName?: string;
+  /** If wrapping a flex-child input, pass your flex utility (e.g. `flex-1`) via this prop, not on the child directly — DkField adds a DOM layer that breaks flex targeting. */
   className?: string;
   children: ReactElement;
 }
