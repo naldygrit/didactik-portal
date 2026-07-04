@@ -6,6 +6,8 @@ import { ageTone, relativeTime } from '../../shared/format';
 import type { AdminOrganisations, AdminProductionCompanyRow } from '../../shared/types';
 import { initials } from '../adminUi';
 import '../admin.css';
+import { DkPageHeading } from '../components/DkPageHeading';
+import { DkField } from '../../../components/dk/DkField';
 
 type Filter = 'all' | 'verified' | 'unverified';
 
@@ -57,18 +59,19 @@ export function AdminProductionCompaniesPage() {
 
   return (
     <div>
-      <div className="page-header">
-        <div className="page-title">Production companies</div>
-        <div className="page-sub">Production companies registered on Didactik</div>
-      </div>
+      <DkPageHeading title="Production companies" subtitle="Production companies registered on Didactik" />
 
       <div className="filter-bar">
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search companies…" />
-        <select className="status-select" value={filter} onChange={(e) => setFilter(e.target.value as Filter)}>
-          <option value="all">All</option>
-          <option value="verified">Verified</option>
-          <option value="unverified">Unverified</option>
-        </select>
+        <DkField label="Search companies" visuallyHiddenLabel className="flex-1">
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search companies…" />
+        </DkField>
+        <DkField label="Filter by verification status" visuallyHiddenLabel>
+          <select className="status-select" value={filter} onChange={(e) => setFilter(e.target.value as Filter)}>
+            <option value="all">All</option>
+            <option value="verified">Verified</option>
+            <option value="unverified">Unverified</option>
+          </select>
+        </DkField>
       </div>
 
       {filter !== 'all' && (
@@ -82,7 +85,11 @@ export function AdminProductionCompaniesPage() {
         </div>
       )}
 
-      {isLoading && <div className="page-sub">Loading…</div>}
+      {isLoading && (
+        <div className="page-sub" role="status" aria-live="polite">
+          Loading…
+        </div>
+      )}
       {data && rows.length === 0 && (
         <div className="empty-state">
           {filter !== 'all' || q ? (
@@ -110,7 +117,7 @@ export function AdminProductionCompaniesPage() {
       )}
 
       {rows.length > 0 && (
-        <table className="org-table">
+        <table className="org-table" aria-label="Production companies">
           <thead>
             <tr>
               <th>Company</th>

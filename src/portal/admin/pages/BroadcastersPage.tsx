@@ -5,6 +5,8 @@ import { hoursSince, relativeTime } from '../../shared/format';
 import type { AdminBroadcasterRow, AdminOrganisations } from '../../shared/types';
 import { humanize, initials } from '../adminUi';
 import '../admin.css';
+import { DkPageHeading } from '../components/DkPageHeading';
+import { DkField } from '../../../components/dk/DkField';
 
 export function AdminBroadcastersPage() {
   const [q, setQ] = useState('');
@@ -31,24 +33,29 @@ export function AdminBroadcastersPage() {
 
   return (
     <div>
-      <div className="page-header">
-        <div className="page-title">Broadcasters</div>
-        <div className="page-sub">Broadcasters registered on Didactik</div>
-      </div>
+      <DkPageHeading title="Broadcasters" subtitle="Broadcasters registered on Didactik" />
 
       <div className="filter-bar">
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search broadcasters…" />
-        <select className="status-select" value={category} onChange={(e) => setCategory(e.target.value)}>
-          <option value="all">All types</option>
-          {categories.map((c) => (
-            <option key={c} value={c}>
-              {humanize(c)}
-            </option>
-          ))}
-        </select>
+        <DkField label="Search broadcasters" visuallyHiddenLabel className="flex-1">
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search broadcasters…" />
+        </DkField>
+        <DkField label="Filter by type" visuallyHiddenLabel>
+          <select className="status-select" value={category} onChange={(e) => setCategory(e.target.value)}>
+            <option value="all">All types</option>
+            {categories.map((c) => (
+              <option key={c} value={c}>
+                {humanize(c)}
+              </option>
+            ))}
+          </select>
+        </DkField>
       </div>
 
-      {isLoading && <div className="page-sub">Loading…</div>}
+      {isLoading && (
+        <div className="page-sub" role="status" aria-live="polite">
+          Loading…
+        </div>
+      )}
       {data && rows.length === 0 && (
         <div className="empty-state">
           {category !== 'all' || q ? (
@@ -76,7 +83,7 @@ export function AdminBroadcastersPage() {
       )}
 
       {rows.length > 0 && (
-        <table className="org-table">
+        <table className="org-table" aria-label="Broadcasters">
           <thead>
             <tr>
               <th>Broadcaster</th>
