@@ -28,10 +28,14 @@ export function ContentRail({ title, titles, onSelect }: Props) {
 
       <div
         ref={trackRef}
+        role="list"
+        aria-label={title}
         className="rail-scroll flex gap-3 overflow-x-auto px-4 pb-2 md:px-8"
       >
         {titles.map((t) => (
-          <PosterCard key={t.slug} title={t} onSelect={onSelect} />
+          <div role="listitem" key={t.slug} className="shrink-0">
+            <PosterCard title={t} onSelect={onSelect} />
+          </div>
         ))}
       </div>
 
