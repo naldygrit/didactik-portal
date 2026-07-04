@@ -19,7 +19,14 @@ export function ScoreRing({ score, size = 32 }: { score: number; size?: number }
   const circ = 2 * Math.PI * r;
   const dash = (Math.max(0, Math.min(100, score)) / 100) * circ;
   return (
-    <span className="inline-flex items-center gap-1.5">
+    <span
+      role="meter"
+      aria-label={`Metadata completeness: ${score}%`}
+      aria-valuenow={score}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      className="inline-flex items-center gap-1.5"
+    >
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={TRACK} strokeWidth={3} />
         <circle
