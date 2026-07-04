@@ -2,6 +2,10 @@ import { useState, type FormEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiGet, apiPost } from '../../shared/apiHelpers';
 import type { TerritoryOption } from '../../shared/types';
+import { useDkDisclosure } from '../../../components/dk/useDkDisclosure';
+import { DkField } from '../../../components/dk/DkField';
+import { DkFieldError } from '../../../components/dk/DkFieldError';
+import { DkFormMessage } from '../../../components/dk/DkFormMessage';
 
 const RIGHTS: [string, string][] = [
   ['broadcast', 'Broadcast'],
@@ -27,7 +31,7 @@ const fieldClass =
 // commission. Not gated on screening; the producer sees whether the bidder
 // screened.
 export function MakeOfferForm({ slug }: { slug: string }) {
-  const [open, setOpen] = useState(false);
+  const { open, toggle, close, triggerProps, panelProps } = useDkDisclosure();
   const [state, setState] = useState<State>('idle');
   const [form, setForm] = useState({
     territory: '',
@@ -69,13 +73,17 @@ export function MakeOfferForm({ slug }: { slug: string }) {
 
   if (state === 'done') {
     return (
-      <div className="rounded-xl border p-4" style={{ borderColor: 'rgba(34,197,94,0.25)', background: 'rgba(34,197,94,0.06)' }}>
+      <DkFormMessage
+        tone="success"
+        className="rounded-xl border p-4"
+        style={{ borderColor: 'rgba(34,197,94,0.25)', background: 'rgba(34,197,94,0.06)' }}
+      >
         <div className="text-sm font-semibold text-emerald-400">Offer submitted</div>
         <p className="mt-1 text-xs text-[var(--muted)]">
           The production company can review and accept your offer. If accepted, Didactik confirms
           the licence and its commission.
         </p>
-      </div>
+      </DkFormMessage>
     );
   }
 
@@ -91,7 +99,8 @@ export function MakeOfferForm({ slug }: { slug: string }) {
           </div>
           <button
             type="button"
-            onClick={() => setOpen(true)}
+            onClick={toggle}
+            {...triggerProps}
             className="shrink-0 rounded-lg px-4 py-2 text-sm font-semibold text-white"
             style={{ background: 'var(--accent)' }}
           >
@@ -99,17 +108,30 @@ export function MakeOfferForm({ slug }: { slug: string }) {
           </button>
         </div>
       ) : (
-        <form onSubmit={submit} className="space-y-3">
+        <form onSubmit={submit} {...panelProps} className="space-y-3">
           <div className="text-sm font-semibold text-white">Make an offer</div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <label className="block">
-              <span className="mb-1 block text-xs text-[var(--muted)]">Licence fee</span>
-              <div className="flex gap-2">
-                <select className={`${fieldClass} w-20`} value={form.currency} onChange={(e) => set('currency', e.target.value)}>
+            {/* One label used to wrap both the currency select and the
+                amount input, giving both an identical, imprecise
+                accessible name — split into two DkFields instead. */}
+            <div className="flex gap-2">
+              <DkField label="Currency" visuallyHiddenLabel className="w-20">
+                <select
+                  className={`${fieldClass} w-20`}
+                  value={form.currency}
+                  onChange={(e) => set('currency', e.target.value)}
+                >
                   <option value="USD">USD</option>
                   <option value="EUR">EUR</option>
                   <option value="NGN">NGN</option>
                 </select>
+              </DkField>
+              <DkField
+                label="Licence fee"
+                labelClassName="mb-1 block text-xs text-[var(--muted)]"
+                required
+                className="flex-1"
+              >
                 <input
                   type="number"
                   min={1}
@@ -119,8 +141,8 @@ export function MakeOfferForm({ slug }: { slug: string }) {
                   placeholder="Amount"
                   required
                 />
-              </div>
-            </label>
+              </DkField>
+            </div>
             <label className="block">
               <span className="mb-1 block text-xs text-[var(--muted)]">Territory</span>
               <select className={fieldClass} value={form.territory} onChange={(e) => set('territory', e.target.value)} required>
@@ -161,10 +183,14 @@ export function MakeOfferForm({ slug }: { slug: string }) {
             </label>
           </div>
 
-          {state === 'error' && <p className="text-xs text-red-400">Something went wrong. Please try again.</p>}
+          {state === 'error' && (
+            <DkFieldError className="text-xs text-red-400">
+              Something went wrong. Please try again.
+            </DkFieldError>
+          )}
 
           <div className="flex items-center gap-3">
-            <button type="button" onClick={() => setOpen(false)} className="text-sm text-[var(--muted)] hover:text-white">
+            <button type="button" onClick={close} className="text-sm text-[var(--muted)] hover:text-white">
               Cancel
             </button>
             <button
