@@ -25,17 +25,26 @@ export function PipelineTracker({ status }: { status: TitleStatus }) {
   const isChanges = status === 'changes_requested';
 
   return (
-    <div className="flex items-center py-4">
+    <div role="list" aria-label="Submission pipeline" className="flex items-center py-4">
       {STAGES.map((stage, i) => {
         const done = currentIdx >= 0 && i < currentIdx && !isChanges;
         const current = stage.key === status;
         const nodeColour = current && isChanges ? AMBER : current ? BRAND : done ? GREEN : TRACK;
         const textColour = current && isChanges ? AMBER : current ? BRAND : done ? GREEN : MUTED;
         const isLast = i === STAGES.length - 1;
+        const stageStatus = current ? 'current step' : done ? 'completed' : 'not yet reached';
         return (
-          <div key={stage.key} className="flex items-center" style={{ flex: isLast ? '0 0 auto' : 1 }}>
+          <div
+            key={stage.key}
+            role="listitem"
+            aria-current={current ? 'step' : undefined}
+            aria-label={`${stage.label} — ${stageStatus}`}
+            className="flex items-center"
+            style={{ flex: isLast ? '0 0 auto' : 1 }}
+          >
             <div className="flex shrink-0 flex-col items-center gap-1">
               <div
+                aria-hidden="true"
                 className="flex h-5 w-5 items-center justify-center rounded-full"
                 style={{
                   background: done ? GREEN : current ? nodeColour : TRACK,
@@ -48,6 +57,7 @@ export function PipelineTracker({ status }: { status: TitleStatus }) {
                 )}
               </div>
               <span
+                aria-hidden="true"
                 className="whitespace-nowrap text-center text-[10px] font-semibold leading-tight"
                 style={{ color: textColour }}
               >
@@ -56,6 +66,7 @@ export function PipelineTracker({ status }: { status: TitleStatus }) {
             </div>
             {!isLast && (
               <div
+                aria-hidden="true"
                 className="mb-3.5 mx-1 h-0.5 flex-1"
                 style={{ background: done ? GREEN : TRACK }}
               />
