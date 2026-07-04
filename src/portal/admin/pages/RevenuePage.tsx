@@ -2,6 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { apiGet } from '../../shared/apiHelpers';
 import type { AdminRevenue } from '../../shared/types';
 import '../admin.css';
+import { DkPageHeading } from '../components/DkPageHeading';
+import { DkCardTitle } from '../components/DkCardTitle';
 
 function money(amount: string | number, currency = 'USD'): string {
   const n = typeof amount === 'string' ? Number(amount) : amount;
@@ -16,14 +18,16 @@ export function AdminRevenuePage() {
 
   return (
     <div>
-      <div className="page-header">
-        <div className="page-title">Revenue</div>
-        <div className="page-sub">
-          Gross licence value and Didactik's commission across closed deals.
-        </div>
-      </div>
+      <DkPageHeading
+        title="Revenue"
+        subtitle="Gross licence value and Didactik's commission across closed deals."
+      />
 
-      <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+      <div
+        className="kpi-grid"
+        style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}
+        aria-busy={!data}
+      >
         <div className="kpi">
           <div className="kpi-label">Deals closed</div>
           <div className="kpi-val">{data?.deal_count ?? '—'}</div>
@@ -38,9 +42,7 @@ export function AdminRevenuePage() {
         </div>
       </div>
 
-      <div className="card-title" style={{ margin: '18px 0 8px' }}>
-        Recent deals
-      </div>
+      <DkCardTitle style={{ margin: '18px 0 8px' }}>Recent deals</DkCardTitle>
       {data && data.recent_deals.length === 0 ? (
         <div className="empty-state">
           <div className="empty-state-title">No deals yet.</div>
@@ -49,7 +51,7 @@ export function AdminRevenuePage() {
           </div>
         </div>
       ) : (
-        <table className="lib-table">
+        <table className="lib-table" aria-label="Recent deals">
           <thead>
             <tr>
               <th>Title</th>

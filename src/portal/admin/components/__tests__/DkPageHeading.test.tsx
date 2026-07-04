@@ -29,4 +29,11 @@ describe('DkCardTitle', () => {
     const heading = screen.getByRole('heading', { level: 2, name: 'Triage queue' });
     expect(heading).toHaveClass('card-title');
   });
+
+  it('passes through an optional style prop for the odd call site with a one-off inline margin', () => {
+    render(<DkCardTitle style={{ margin: '18px 0 8px' }}>Recent deals</DkCardTitle>);
+    expect(screen.getByRole('heading', { level: 2, name: 'Recent deals' })).toHaveStyle({
+      margin: '18px 0px 8px',
+    });
+  });
 });
