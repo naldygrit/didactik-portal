@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { DkFieldError } from "./dk/DkFieldError";
 
 interface ImageWithSkeletonProps {
   src: string;
@@ -29,8 +30,11 @@ export default function ImageWithSkeleton({
       {/* Skeleton Loader */}
       {!isLoaded && !hasError && (
         <div
-          className={`absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-pulse rounded ${skeletonClassName}`}
-        />
+          role="status"
+          className={`absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-pulse motion-reduce:animate-none rounded ${skeletonClassName}`}
+        >
+          <span className="sr-only">Loading image</span>
+        </div>
       )}
 
       {/* Actual Image */}
@@ -52,7 +56,7 @@ export default function ImageWithSkeleton({
       {/* Error State */}
       {hasError && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded">
-          <span className="text-gray-400 text-sm">Failed to load image</span>
+          <DkFieldError className="text-gray-400 text-sm">Failed to load image</DkFieldError>
         </div>
       )}
     </div>
