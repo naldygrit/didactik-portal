@@ -35,13 +35,16 @@ export function LicensingPreference() {
   const selected = watch('licensing_preference');
 
   return (
-    <div className="space-y-3">
-      <div>
-        <p className="text-sm font-medium text-gray-700">Where would you like this title licensed?</p>
-        <p className="mt-0.5 text-sm text-gray-500">
-          This sets who we offer the title to. You can change it later.
-        </p>
-      </div>
+    // fieldset/legend give the three options a group name a screen reader
+    // announces once, rather than three unrelated radios — border/padding
+    // reset since this design has no visible group box.
+    <fieldset className="space-y-3 border-0 p-0 m-0">
+      <legend className="block p-0 text-sm font-medium text-gray-700">
+        Where would you like this title licensed?
+      </legend>
+      <p className="mt-0.5 text-sm text-gray-500">
+        This sets who we offer the title to. You can change it later.
+      </p>
 
       <div className="space-y-2">
         {OPTIONS.map((o) => {
@@ -80,6 +83,6 @@ export function LicensingPreference() {
           );
         })}
       </div>
-    </div>
+    </fieldset>
   );
 }
