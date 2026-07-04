@@ -1,6 +1,6 @@
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import type { ReactNode } from 'react';
+import { useEffect, useId, useState, type ReactNode } from 'react';
 import {
   FiHome,
   FiFilm,
@@ -18,6 +18,8 @@ import {
   FiDatabase,
   FiList,
   FiDollarSign,
+  FiMenu,
+  FiX,
 } from 'react-icons/fi';
 import { useAuth } from './AuthContext';
 import { postLogout } from './auth';
@@ -31,18 +33,46 @@ const PRODUCTION_NAV = [
   { to: '/portal/production/earnings', label: 'Earnings', Icon: FiDollarSign },
 ];
 
+const CINEMA_NAV = [
+  { to: '/portal/broadcaster/dashboard', label: 'Browse' },
+  { to: '/portal/broadcaster/watchlist', label: 'Watchlist' },
+  { to: '/portal/broadcaster/screeners', label: 'Screeners' },
+];
+
 export function PortalLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   // The broadcaster browse experience is the dark "cinema" surface; production
   // and admin keep the light chrome they were built against.
-  const pathname = useLocation().pathname;
+  const pathname = location.pathname;
   // Match the portal PREFIX, not a bare substring — /portal/admin/broadcasters
   // contains "broadcaster" and must NOT fall into the dark cinema surface.
   const control = pathname.startsWith('/portal/admin');
   const cinema = pathname.startsWith('/portal/broadcaster');
   // Admin (control) is a Stripe-style light surface; only the cinema is dark.
   const dark = cinema;
+
+  // One mobile-nav toggle shared across all three variants (only one variant
+  // ever renders per mount, so a single piece of state is enough). Closes
+  // itself on Escape and on every navigation — location.key changes on
+  // query-string-only navigations too (e.g. the admin nav's ?status= links),
+  // unlike pathname alone.
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const mobileNavId = useId();
+
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [location.key]);
+
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setMobileNavOpen(false);
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [mobileNavOpen]);
 
   async function handleLogout() {
     await postLogout();
@@ -68,31 +98,18 @@ export function PortalLayout() {
         <header className="sticky top-0 z-40 flex items-center justify-between border-b border-white/5 bg-[var(--surface)]/80 px-4 py-3 backdrop-blur md:px-8">
           <div className="flex items-center gap-6">
             {Brand}
-            <nav className="hidden items-center gap-5 text-sm md:flex">
-              <NavLink
-                to="/portal/broadcaster/dashboard"
-                className={({ isActive }) =>
-                  isActive ? 'text-white' : 'text-[var(--muted)] transition-colors hover:text-white'
-                }
-              >
-                Browse
-              </NavLink>
-              <NavLink
-                to="/portal/broadcaster/watchlist"
-                className={({ isActive }) =>
-                  isActive ? 'text-white' : 'text-[var(--muted)] transition-colors hover:text-white'
-                }
-              >
-                Watchlist
-              </NavLink>
-              <NavLink
-                to="/portal/broadcaster/screeners"
-                className={({ isActive }) =>
-                  isActive ? 'text-white' : 'text-[var(--muted)] transition-colors hover:text-white'
-                }
-              >
-                Screeners
-              </NavLink>
+            <nav aria-label="Primary navigation" className="hidden items-center gap-5 text-sm md:flex">
+              {CINEMA_NAV.map(({ to, label }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={({ isActive }) =>
+                    isActive ? 'text-white' : 'text-[var(--muted)] transition-colors hover:text-white'
+                  }
+                >
+                  {label}
+                </NavLink>
+              ))}
             </nav>
           </div>
           <div className="flex items-center gap-4">
@@ -103,8 +120,39 @@ export function PortalLayout() {
             >
               Sign out
             </button>
+            <button
+              type="button"
+              onClick={() => setMobileNavOpen((v) => !v)}
+              aria-expanded={mobileNavOpen}
+              aria-controls={mobileNavId}
+              aria-label="Toggle navigation menu"
+              className="text-[var(--muted)] transition-colors hover:text-white md:hidden"
+            >
+              {mobileNavOpen ? <FiX size={20} /> : <FiMenu size={20} />}
+            </button>
           </div>
         </header>
+        {mobileNavOpen && (
+          <nav
+            id={mobileNavId}
+            aria-label="Primary navigation"
+            className="border-b border-white/5 bg-[var(--surface)] px-4 py-3 md:hidden"
+          >
+            <div className="flex flex-col gap-3 text-sm">
+              {CINEMA_NAV.map(({ to, label }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={({ isActive }) =>
+                    isActive ? 'text-white' : 'text-[var(--muted)] transition-colors hover:text-white'
+                  }
+                >
+                  {label}
+                </NavLink>
+              ))}
+            </div>
+          </nav>
+        )}
         <main className="flex-grow">
           <Outlet />
         </main>
@@ -123,9 +171,9 @@ export function PortalLayout() {
           <div className="mb-2 border-b px-4 pb-3" style={{ borderColor: 'var(--hairline)' }}>
             {Brand}
           </div>
-          <div className="flex-grow overflow-y-auto">
+          <nav aria-label="Admin" className="flex-grow overflow-y-auto">
             <AdminSidebarNav />
-          </div>
+          </nav>
           <div className="mt-auto border-t px-3 py-3" style={{ borderColor: 'var(--hairline)' }}>
             <div className="flex items-center gap-2">
               <div
@@ -158,11 +206,33 @@ export function PortalLayout() {
             className="flex items-center justify-between border-b px-4 py-3 md:hidden"
             style={{ borderColor: 'var(--hairline)' }}
           >
-            {Brand}
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setMobileNavOpen((v) => !v)}
+                aria-expanded={mobileNavOpen}
+                aria-controls={mobileNavId}
+                aria-label="Toggle navigation menu"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                {mobileNavOpen ? <FiX size={20} /> : <FiMenu size={20} />}
+              </button>
+              {Brand}
+            </div>
             <button onClick={handleLogout} className="text-sm text-[var(--muted)]">
               Sign out
             </button>
           </header>
+          {mobileNavOpen && (
+            <nav
+              id={mobileNavId}
+              aria-label="Admin"
+              className="max-h-[70vh] overflow-y-auto border-b px-2 py-2 md:hidden"
+              style={{ borderColor: 'var(--hairline)', background: 'var(--surface-raised)' }}
+            >
+              <AdminSidebarNav />
+            </nav>
+          )}
           <main className="flex-grow px-5 py-6 md:px-8">
             <Outlet />
           </main>
@@ -217,11 +287,57 @@ export function PortalLayout() {
 
       <div className="flex min-h-screen flex-grow flex-col">
         <header className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 md:hidden">
-          {Brand}
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setMobileNavOpen((v) => !v)}
+              aria-expanded={mobileNavOpen}
+              aria-controls={mobileNavId}
+              aria-label="Toggle navigation menu"
+              className="text-gray-500"
+            >
+              {mobileNavOpen ? <FiX size={20} /> : <FiMenu size={20} />}
+            </button>
+            {Brand}
+          </div>
           <button onClick={handleLogout} className="text-sm text-gray-500">
             Sign out
           </button>
         </header>
+        {mobileNavOpen && (
+          <nav
+            id={mobileNavId}
+            aria-label="Primary navigation"
+            className="border-b border-gray-200 bg-white px-3 py-3 md:hidden"
+          >
+            <Link
+              to="/portal/production/submit"
+              className="mb-3 flex w-full items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
+              style={{ backgroundColor: '#5343fd' }}
+            >
+              <FiPlus size={16} />
+              Submit a title
+            </Link>
+            <div className="space-y-0.5">
+              {PRODUCTION_NAV.map(({ to, label, Icon }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={({ isActive }) =>
+                    `flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors ${
+                      isActive
+                        ? 'bg-gray-100 font-medium text-gray-900'
+                        : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                    }`
+                  }
+                >
+                  <Icon size={16} />
+                  {label}
+                </NavLink>
+              ))}
+            </div>
+          </nav>
+        )}
         <main className="flex-grow p-6 md:p-8">
           <Outlet />
         </main>
@@ -382,7 +498,7 @@ function NavItem({
   const loc = useLocation();
   const active = isNavActive(loc.pathname, loc.search, to);
   return (
-    <Link to={to} className={`nav-item ${active ? 'active' : ''}`}>
+    <Link to={to} className={`nav-item ${active ? 'active' : ''}`} aria-current={active ? 'page' : undefined}>
       <span className="left">
         <Icon size={15} />
         {label}
