@@ -14,3 +14,16 @@ if (!window.matchMedia) {
       dispatchEvent: () => false,
     }) as unknown as MediaQueryList
 }
+
+// jsdom has no IntersectionObserver; framer-motion's whileInView needs it.
+if (!('IntersectionObserver' in window)) {
+  class MockIntersectionObserver {
+    observe = () => {}
+    unobserve = () => {}
+    disconnect = () => {}
+    takeRecords = () => []
+  }
+  // @ts-expect-error -- jsdom's lib.dom types expect a fuller implementation
+  // than this test stub provides; framer-motion only calls observe/disconnect.
+  window.IntersectionObserver = MockIntersectionObserver
+}

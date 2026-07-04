@@ -8,6 +8,7 @@ import {
   FaEnvelope,
   FaMapMarkerAlt,
 } from "react-icons/fa";
+import { DkFormMessage } from "../components/dk/DkFormMessage";
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -183,24 +184,28 @@ export default function Contact() {
                 </motion.button>
 
                 {submitStatus === "success" && (
-                  <motion.p
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-green-600 text-center"
-                  >
-                    Thank you! We'll be in touch soon.
-                  </motion.p>
+                  <DkFormMessage tone="success">
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-green-600 text-center"
+                    >
+                      Thank you! We'll be in touch soon.
+                    </motion.p>
+                  </DkFormMessage>
                 )}
 
                 {submitStatus === "error" && (
-                  <motion.p
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-red-600 text-center"
-                  >
-                    Failed to send message. Please try again or email us
-                    directly.
-                  </motion.p>
+                  <DkFormMessage tone="error">
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-red-600 text-center"
+                    >
+                      Failed to send message. Please try again or email us
+                      directly.
+                    </motion.p>
+                  </DkFormMessage>
                 )}
               </form>
             </motion.div>
