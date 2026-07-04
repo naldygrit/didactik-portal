@@ -679,10 +679,22 @@ export const handlers = [
 
   // ── Broadcaster: Titles (screener model) ───────────────────────────────────
   // Public Title projection — active titles only, slug-based. Returns a bare
-  // array (no pagination wrapper), matching the live contract.
-  http.get(`${API}/broadcaster/titles/`, () => {
+  // array (no pagination wrapper), matching the live contract. Mirrors the
+  // /search/ handler's case-insensitive substring match — not the real
+  // backend's unaccent+pg_trgm behavior, just enough for the mock to not
+  // silently ignore ?q=.
+  http.get(`${API}/broadcaster/titles/`, ({ request }) => {
     if (!session.current) return unauthorized();
-    return HttpResponse.json(titles);
+    const q = (new URL(request.url).searchParams.get('q') ?? '').toLowerCase().trim();
+    if (!q) return HttpResponse.json(titles);
+    const matches = titles.filter(
+      (t) =>
+        t.name.toLowerCase().includes(q) ||
+        t.original_title.toLowerCase().includes(q) ||
+        t.logline.toLowerCase().includes(q) ||
+        t.synopsis.toLowerCase().includes(q),
+    );
+    return HttpResponse.json(matches);
   }),
 
   http.get(`${API}/broadcaster/titles/:slug/`, ({ params }) => {
