@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useId, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { postApplication, type OnboardingApplicationInput, type OrgType } from './onboarding';
 import { DkFormMessage } from '../../components/dk/DkFormMessage';
@@ -21,6 +21,7 @@ const ORG_OPTIONS: { type: OrgType; title: string; blurb: string }[] = [
 ];
 
 export function ApplyPage() {
+  const orgTypeHeadingId = useId();
   const [step, setStep] = useState<Step>('choose');
   const [orgType, setOrgType] = useState<OrgType | null>(null);
   const [form, setForm] = useState({
@@ -82,18 +83,30 @@ export function ApplyPage() {
         <div className="rounded-2xl bg-white p-8 shadow-md">
           {step === 'choose' && (
             <>
-              <h1 className="text-lg font-semibold text-gray-900">Who are you applying as?</h1>
+              <h1 id={orgTypeHeadingId} className="text-lg font-semibold text-gray-900">
+                Who are you applying as?
+              </h1>
               <p className="mt-1 text-sm text-gray-500">
                 Didactik is the licensing marketplace for African audiovisual content.
               </p>
-              <div className="mt-6 grid gap-3">
+              {/* role="group", not radiogroup/radio — clicking a card
+                  navigates immediately to the details step rather than
+                  persisting a selection, so radio semantics (which imply
+                  arrow-key nav between a lasting set of selected/unselected
+                  options) would be a mismatched fit for this one-shot
+                  choice, same lesson as the vanishing-trigger buttons
+                  elsewhere in this pass. */}
+              <div
+                role="group"
+                aria-labelledby={orgTypeHeadingId}
+                className="mt-6 grid gap-3"
+              >
                 {ORG_OPTIONS.map((opt) => (
                   <button
                     key={opt.type}
                     type="button"
                     onClick={() => choose(opt.type)}
                     className="rounded-xl border border-gray-200 p-4 text-left shadow-sm transition-[transform,box-shadow,border-color] duration-150 ease-out hover:-translate-y-px hover:shadow-md motion-reduce:transform-none"
-                    style={{ borderColor: orgType === opt.type ? BRAND : undefined }}
                   >
                     <div className="text-sm font-semibold text-gray-900">{opt.title}</div>
                     <div className="mt-0.5 text-sm text-gray-500">{opt.blurb}</div>

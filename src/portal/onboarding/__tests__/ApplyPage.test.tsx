@@ -26,6 +26,15 @@ describe('ApplyPage', () => {
     expect(screen.getByText(/Tell us about your broadcaster/)).toBeDefined();
   });
 
+  it('groups the org-type cards under their question via role=group', () => {
+    renderPage();
+    const heading = screen.getByRole('heading', { level: 1, name: 'Who are you applying as?' });
+    const group = screen.getByRole('group', { name: 'Who are you applying as?' });
+    expect(group.getAttribute('aria-labelledby')).toBe(heading.id);
+    expect(group).toContainElement(screen.getByRole('button', { name: /Broadcaster/ }));
+    expect(group).toContainElement(screen.getByRole('button', { name: /Production company/ }));
+  });
+
   it('submits an application and shows the confirmation', async () => {
     const { postApplication } = await import('../onboarding');
     vi.mocked(postApplication).mockResolvedValue({ status: 'received' });
