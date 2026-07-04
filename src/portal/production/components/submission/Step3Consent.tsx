@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
 import { apiGet } from '../../../shared/apiHelpers';
@@ -8,10 +7,12 @@ import { RIGHTS_WARRANTY_DIMENSIONS, RIGHTS_WARRANTY_FOOTER } from '../../attest
 import { PrivacyPolicyDrawer } from './PrivacyPolicyDrawer';
 import type { MeResponse, ProductionCompanyDetail } from '../../../shared/types';
 import type { WizardFormData } from '../../pages/SubmitPage';
+import { useDkDisclosure } from '../../../../components/dk/useDkDisclosure';
+import { DkFieldError } from '../../../../components/dk/DkFieldError';
 
 export function Step3Consent() {
-  const [expanded, setExpanded] = useState(false);
-  const [isPolicyOpen, setIsPolicyOpen] = useState(false);
+  const consentTerms = useDkDisclosure();
+  const privacyPolicy = useDkDisclosure();
   const { register, watch, formState: { errors } } = useFormContext<WizardFormData>();
 
   // Fetch /auth/me/ to get the production company ID
@@ -80,7 +81,9 @@ export function Step3Consent() {
         </label>
       </div>
       {errors.rights_attested && (
-        <p className="text-xs text-red-600">{errors.rights_attested.message as string}</p>
+        <DkFieldError className="text-xs text-red-600">
+          {errors.rights_attested.message as string}
+        </DkFieldError>
       )}
 
       <div className="border-t border-gray-100" />
@@ -103,14 +106,17 @@ export function Step3Consent() {
       <div className="border border-gray-200 rounded-md">
         <button
           type="button"
-          onClick={() => setExpanded((v) => !v)}
+          onClick={consentTerms.toggle}
+          {...consentTerms.triggerProps}
           className="w-full flex items-center justify-between px-4 py-3 text-sm text-indigo-600 hover:text-indigo-800 font-medium text-left"
         >
-          <span>{expanded ? 'Hide consent terms' : 'View full consent terms'}</span>
-          <span className="text-gray-400">{expanded ? '▲' : '▼'}</span>
+          <span>{consentTerms.open ? 'Hide consent terms' : 'View full consent terms'}</span>
+          <span aria-hidden="true" className="text-gray-400">
+            {consentTerms.open ? '▲' : '▼'}
+          </span>
         </button>
-        {expanded && (
-          <div className="px-4 pb-4 border-t border-gray-100">
+        {consentTerms.open && (
+          <div {...consentTerms.panelProps} className="px-4 pb-4 border-t border-gray-100">
             <pre className="text-xs text-gray-700 whitespace-pre-wrap font-sans leading-relaxed mt-3">
               {consentText}
             </pre>
@@ -131,17 +137,20 @@ export function Step3Consent() {
           of my personal data as described.{' '}
           <button
             type="button"
-            onClick={(e) => { e.stopPropagation(); setIsPolicyOpen((v) => !v); }}
+            onClick={(e) => { e.stopPropagation(); privacyPolicy.toggle(); }}
+            {...privacyPolicy.triggerProps}
             className="text-indigo-600 hover:text-indigo-800 font-medium whitespace-nowrap"
           >
-            Privacy Policy {isPolicyOpen ? '↑' : '↓'}
+            Privacy Policy {privacyPolicy.open ? '↑' : '↓'}
           </button>
         </label>
       </div>
       {errors.consented && (
-        <p className="text-xs text-red-600">{errors.consented.message as string}</p>
+        <DkFieldError className="text-xs text-red-600">
+          {errors.consented.message as string}
+        </DkFieldError>
       )}
-      <PrivacyPolicyDrawer isOpen={isPolicyOpen} />
+      <PrivacyPolicyDrawer isOpen={privacyPolicy.open} id={privacyPolicy.panelProps.id} />
     </div>
   );
 }
