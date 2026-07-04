@@ -1,8 +1,10 @@
+import { useId } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
 import { apiGet } from '../../../shared/apiHelpers';
 import type { Language, Country } from '../../../shared/types';
 import type { WizardFormData } from '../../pages/SubmitPage';
+import { DkField } from '../../../../components/dk/DkField';
 
 const TITLE_TYPES = [
   { value: 'film', label: 'Film' },
@@ -15,19 +17,15 @@ const TITLE_TYPES = [
 const inputClass =
   'w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400';
 
-function FieldError({ name }: { name: keyof WizardFormData }) {
-  const { formState: { errors } } = useFormContext<WizardFormData>();
-  const error = errors[name];
-  if (!error) return null;
-  return <p className="mt-1 text-xs text-red-600">{error.message as string}</p>;
-}
-
 // Toggleable pill used for the "other languages / other countries" multi-selects.
+// aria-pressed exposes the selected/unselected state; the surrounding
+// role="group" (below) exposes that these pills are a related set.
 function Chip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className="rounded-full border px-3 py-1 text-xs font-medium transition-colors"
       style={
         active
@@ -41,7 +39,19 @@ function Chip({ label, active, onClick }: { label: string; active: boolean; onCl
 }
 
 export function Step1Metadata() {
-  const { register, watch, setValue } = useFormContext<WizardFormData>();
+  const {
+    register,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useFormContext<WizardFormData>();
+
+  // Captions for the three chip toggle-groups, referenced via
+  // aria-labelledby on each group so a screen reader announces what the set
+  // of pills means, not just an unlabeled run of buttons.
+  const languagesGroupId = useId();
+  const countriesGroupId = useId();
+  const genresGroupId = useId();
 
   const { data: languages } = useQuery<Language[]>({
     queryKey: ['languages'],
@@ -76,32 +86,28 @@ export function Step1Metadata() {
 
   return (
     <div className="space-y-5">
-      <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">
-          Title <span className="text-red-500">*</span>
-        </label>
+      <DkField label="Title" required error={errors.name?.message as string | undefined}>
         <input
           type="text"
           {...register('name')}
           placeholder="Working or anglicised title"
           className={inputClass}
         />
-        <FieldError name="name" />
-      </div>
+      </DkField>
 
-      <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">
-          Original title
-          <span className="ml-1 text-xs text-gray-400">(optional, in the original language)</span>
-        </label>
+      <DkField
+        label={
+          <>
+            Original title
+            <span className="ml-1 text-xs text-gray-400">(optional, in the original language)</span>
+          </>
+        }
+      >
         <input type="text" {...register('original_title')} className={inputClass} />
-      </div>
+      </DkField>
 
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Type <span className="text-red-500">*</span>
-          </label>
+        <DkField label="Type" required error={errors.title_type?.message as string | undefined}>
           <select {...register('title_type')} className={inputClass}>
             <option value="">Select type…</option>
             {TITLE_TYPES.map((t) => (
@@ -110,12 +116,12 @@ export function Step1Metadata() {
               </option>
             ))}
           </select>
-          <FieldError name="title_type" />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Production year <span className="text-red-500">*</span>
-          </label>
+        </DkField>
+        <DkField
+          label="Production year"
+          required
+          error={errors.production_year?.message as string | undefined}
+        >
           <input
             type="number"
             {...register('production_year', { valueAsNumber: true })}
@@ -124,16 +130,18 @@ export function Step1Metadata() {
             max={2030}
             className={inputClass}
           />
-          <FieldError name="production_year" />
-        </div>
+        </DkField>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Runtime (minutes)
-            <span className="ml-1 text-xs text-gray-400">(optional)</span>
-          </label>
+        <DkField
+          label={
+            <>
+              Runtime (minutes)
+              <span className="ml-1 text-xs text-gray-400">(optional)</span>
+            </>
+          }
+        >
           <input
             type="number"
             {...register('runtime_minutes', { valueAsNumber: true })}
@@ -141,52 +149,53 @@ export function Step1Metadata() {
             min={1}
             className={inputClass}
           />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Logline
-            <span className="ml-1 text-xs text-gray-400">(optional, one line)</span>
-          </label>
+        </DkField>
+        <DkField
+          label={
+            <>
+              Logline
+              <span className="ml-1 text-xs text-gray-400">(optional, one line)</span>
+            </>
+          }
+        >
           <input
             type="text"
             {...register('logline')}
             placeholder="One sentence hook"
             className={inputClass}
           />
-        </div>
+        </DkField>
       </div>
 
-      <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">
-          Synopsis <span className="text-red-500">*</span>
-        </label>
+      <DkField label="Synopsis" required error={errors.synopsis?.message as string | undefined}>
         <textarea
           {...register('synopsis')}
           rows={4}
           placeholder="A short synopsis buyers read when deciding to license"
           className={`${inputClass} resize-none`}
         />
-        <FieldError name="synopsis" />
-      </div>
+      </DkField>
 
       {/* Languages: original + others */}
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">
-          Original language <span className="text-red-500">*</span>
-        </label>
-        <select {...register('original_language', { valueAsNumber: true })} className={inputClass}>
-          <option value="">— select language —</option>
-          {languages?.map((l) => (
-            <option key={l.id} value={l.id}>
-              {l.english_name}
-            </option>
-          ))}
-        </select>
-        <FieldError name="original_language" />
-        <p className="mt-2 mb-1 text-xs font-medium text-gray-600">
+        <DkField
+          label="Original language"
+          required
+          error={errors.original_language?.message as string | undefined}
+        >
+          <select {...register('original_language', { valueAsNumber: true })} className={inputClass}>
+            <option value="">— select language —</option>
+            {languages?.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.english_name}
+              </option>
+            ))}
+          </select>
+        </DkField>
+        <p id={languagesGroupId} className="mt-2 mb-1 text-xs font-medium text-gray-600">
           Other languages spoken <span className="text-gray-400">(optional)</span>
         </p>
-        <div className="flex flex-wrap gap-2">
+        <div role="group" aria-labelledby={languagesGroupId} className="flex flex-wrap gap-2">
           {(languages ?? [])
             .filter((l) => l.id !== originalLanguage)
             .map((l) => (
@@ -202,22 +211,24 @@ export function Step1Metadata() {
 
       {/* Countries: origin + co-production */}
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">
-          Country of origin <span className="text-red-500">*</span>
-        </label>
-        <select {...register('country_of_origin', { valueAsNumber: true })} className={inputClass}>
-          <option value="">— select country —</option>
-          {countries?.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-        <FieldError name="country_of_origin" />
-        <p className="mt-2 mb-1 text-xs font-medium text-gray-600">
+        <DkField
+          label="Country of origin"
+          required
+          error={errors.country_of_origin?.message as string | undefined}
+        >
+          <select {...register('country_of_origin', { valueAsNumber: true })} className={inputClass}>
+            <option value="">— select country —</option>
+            {countries?.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </DkField>
+        <p id={countriesGroupId} className="mt-2 mb-1 text-xs font-medium text-gray-600">
           Co-production countries <span className="text-gray-400">(optional)</span>
         </p>
-        <div className="flex flex-wrap gap-2">
+        <div role="group" aria-labelledby={countriesGroupId} className="flex flex-wrap gap-2">
           {(countries ?? [])
             .filter((c) => c.id !== countryOfOrigin)
             .map((c) => (
@@ -232,10 +243,10 @@ export function Step1Metadata() {
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">
+        <p id={genresGroupId} className="mb-1 block text-sm font-medium text-gray-700">
           Genres <span className="text-gray-400 text-xs">(optional)</span>
-        </label>
-        <div className="flex flex-wrap gap-2">
+        </p>
+        <div role="group" aria-labelledby={genresGroupId} className="flex flex-wrap gap-2">
           {(genres ?? []).map((g) => (
             <Chip
               key={g.id}
