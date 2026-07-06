@@ -30,8 +30,13 @@ export function BroadcasterDiscoverPage() {
   const q = query.toLowerCase();
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold text-gray-900 mb-6">Discover Content</h1>
+    <div className="mx-auto max-w-6xl px-4 py-8 md:px-8">
+      <h1 className="font-display mb-1 text-2xl font-bold text-white md:text-3xl">
+        Discover Content
+      </h1>
+      <p className="mb-6 text-sm text-[var(--muted)]">
+        Search the full catalogue by title, language, or country.
+      </p>
 
       {/* Search */}
       <div className="mb-4">
@@ -40,27 +45,29 @@ export function BroadcasterDiscoverPage() {
           placeholder="Search titles…"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="border border-gray-300 rounded-md px-3 py-2 text-sm w-80 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          className="w-80 rounded-lg border border-white/12 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-[var(--muted)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
         />
         {q && data && (
-          <span className="ml-3 text-sm text-gray-400">
+          <span className="ml-3 text-sm text-[var(--muted)]">
             {titles.length} result{titles.length !== 1 ? 's' : ''}
           </span>
         )}
       </div>
 
-      {isLoading && <p className="text-sm text-gray-500">Loading…</p>}
+      {isLoading && <p className="text-sm text-[var(--muted)]">Loading…</p>}
 
       {!isLoading && titles.length === 0 && (
-        <div className="text-center py-16 text-gray-400">
-          <p>{q ? 'No results for that query.' : 'No content available yet.'}</p>
+        <div className="rounded-xl border border-white/10 bg-[var(--surface-raised)] p-10 text-center">
+          <p className="font-display text-lg text-white">
+            {q ? 'No results for that query.' : 'No content available yet.'}
+          </p>
         </div>
       )}
 
       {titles.length > 0 && (
-        <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+        <div className="overflow-x-auto rounded-lg border border-white/10 bg-[var(--surface-raised)]">
           <table className="min-w-full text-sm">
-            <thead className="bg-gray-50 text-left text-xs text-gray-500 uppercase tracking-wide">
+            <thead className="bg-white/5 text-left text-xs text-[var(--muted)] uppercase tracking-wide">
               <tr>
                 <th className="px-4 py-3">Title</th>
                 <th className="px-4 py-3">Type</th>
@@ -71,29 +78,29 @@ export function BroadcasterDiscoverPage() {
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-white/10">
               {titles.map((title) => (
-                <tr key={title.slug} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-gray-900 max-w-xs truncate">
+                <tr key={title.slug} className="transition-colors hover:bg-white/5">
+                  <td className="px-4 py-3 font-medium text-white max-w-xs truncate">
                     {title.name}
                   </td>
-                  <td className="px-4 py-3 text-gray-500">
+                  <td className="px-4 py-3 text-[var(--muted)]">
                     {titleTypeLabel(title.title_type)}
                   </td>
-                  <td className="px-4 py-3 text-gray-500">
+                  <td className="px-4 py-3 text-[var(--muted)]">
                     {title.original_language?.english_name ?? '—'}
                   </td>
-                  <td className="px-4 py-3 text-gray-500">
+                  <td className="px-4 py-3 text-[var(--muted)]">
                     {title.country_of_origin?.name ?? '—'}
                   </td>
-                  <td className="px-4 py-3 text-gray-500">{title.production_year ?? '—'}</td>
-                  <td className="px-4 py-3 text-gray-500">
+                  <td className="px-4 py-3 text-[var(--muted)]">{title.production_year ?? '—'}</td>
+                  <td className="px-4 py-3 text-[var(--muted)]">
                     {title.production_company?.name ?? '—'}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link
                       to={`/portal/broadcaster/discover/${title.slug}`}
-                      className="text-indigo-600 hover:text-indigo-800 font-medium"
+                      className="font-medium text-[var(--accent-2)] hover:text-white"
                     >
                       View →
                     </Link>
