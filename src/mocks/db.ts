@@ -814,6 +814,46 @@ export const titleRights: Record<string, RightsRow[]> = {
   'the-griot-of-saint-louis': [
     { territory: 'Francophone Africa', rights_type: 'all', is_exclusive: false, available_from: null, available_until: null, availability: 'available' },
   ],
+  // Titles 106-115 (added alongside the catalogue growth above) get the same
+  // treatment as the original 5 — otherwise only the newest, most
+  // continentally-diverse titles would show "No territory rights listed yet".
+  'danfo-diaries': [
+    { territory: 'Nigeria', rights_type: 'broadcast', is_exclusive: true, available_from: null, available_until: null, availability: 'available' },
+    { territory: 'Pan-Africa', rights_type: 'svod', is_exclusive: false, available_from: '2026-08-01', available_until: null, availability: 'available' },
+  ],
+  'the-last-cocoa-house': [
+    { territory: 'West Africa', rights_type: 'broadcast', is_exclusive: true, available_from: null, available_until: null, availability: 'available' },
+    { territory: 'Worldwide', rights_type: 'svod', is_exclusive: false, available_from: null, available_until: null, availability: 'available' },
+  ],
+  'matatu-blues': [
+    { territory: 'Kenya', rights_type: 'broadcast', is_exclusive: true, available_from: null, available_until: null, availability: 'available' },
+  ],
+  'the-baobab-keepers': [
+    { territory: 'Francophone Africa', rights_type: 'all', is_exclusive: false, available_from: null, available_until: null, availability: 'available' },
+    { territory: 'Worldwide', rights_type: 'avod', is_exclusive: false, available_from: null, available_until: null, availability: 'available' },
+  ],
+  'cairo-red-line': [
+    { territory: 'North Africa', rights_type: 'broadcast', is_exclusive: true, available_from: null, available_until: null, availability: 'available' },
+    { territory: 'Worldwide', rights_type: 'svod', is_exclusive: false, available_from: '2026-09-15', available_until: null, availability: 'available' },
+  ],
+  'the-nubian-heist': [
+    { territory: 'Egypt', rights_type: 'theatrical', is_exclusive: true, available_from: null, available_until: null, availability: 'licensed' },
+    { territory: 'North Africa', rights_type: 'broadcast', is_exclusive: false, available_from: null, available_until: null, availability: 'available' },
+  ],
+  'addis-morning': [
+    { territory: 'East Africa', rights_type: 'broadcast', is_exclusive: false, available_from: null, available_until: null, availability: 'available' },
+    { territory: 'Worldwide', rights_type: 'avod', is_exclusive: false, available_from: null, available_until: null, availability: 'available' },
+  ],
+  'the-tailor-of-kano': [
+    { territory: 'Nigeria', rights_type: 'broadcast', is_exclusive: true, available_from: null, available_until: null, availability: 'available' },
+  ],
+  'joburg-nights': [
+    { territory: 'Southern Africa', rights_type: 'broadcast', is_exclusive: true, available_from: null, available_until: null, availability: 'available' },
+    { territory: 'Worldwide', rights_type: 'svod', is_exclusive: false, available_from: '2026-08-20', available_until: null, availability: 'available' },
+  ],
+  'the-matchmaker-of-soweto': [
+    { territory: 'South Africa', rights_type: 'broadcast', is_exclusive: true, available_from: null, available_until: null, availability: 'available' },
+  ],
 };
 
 // Per-title licensing fee range + starting baseline bids for biddingStats()
