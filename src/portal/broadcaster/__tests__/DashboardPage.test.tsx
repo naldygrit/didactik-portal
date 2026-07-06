@@ -53,4 +53,33 @@ describe('broadcaster browse surface', () => {
     expect(await screen.findByRole('dialog', { name: 'The Salt Harvesters' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Request screener' })).toBeInTheDocument();
   });
+
+  it('searching replaces the billboard/rails with matching results from the real ?q= handler', async () => {
+    renderDashboard();
+    await screen.findByRole('heading', { name: 'Lagos After Dark' });
+
+    fireEvent.change(screen.getByLabelText('Search the catalogue'), {
+      target: { value: 'Harmattan' },
+    });
+
+    expect(await screen.findByText('Results for "Harmattan"')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Harmattan Letters/i })).toBeInTheDocument();
+    // Billboard and rails are gone while searching.
+    expect(screen.queryByRole('heading', { name: 'Lagos After Dark' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Documentaries')).not.toBeInTheDocument();
+  });
+
+  it('clearing the search restores the normal browse view', async () => {
+    renderDashboard();
+    await screen.findByRole('heading', { name: 'Lagos After Dark' });
+
+    const search = screen.getByLabelText('Search the catalogue');
+    fireEvent.change(search, { target: { value: 'Harmattan' } });
+    await screen.findByText('Results for "Harmattan"');
+
+    fireEvent.change(search, { target: { value: '' } });
+
+    expect(await screen.findByRole('heading', { name: 'Lagos After Dark' })).toBeInTheDocument();
+    expect(screen.getByText('Documentaries')).toBeInTheDocument();
+  });
 });
