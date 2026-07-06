@@ -92,6 +92,44 @@ function buildRightsCoverage(): { territory: string; titles: number; pct: number
     .sort((a, b) => b.pct - a.pct);
 }
 
+// Rights windows opening soon across the whole catalogue, for the broadcaster
+// dashboard's "New in your territories" count + panel. Derived from
+// titleRights (same source buildRightsCoverage reads) so it can never show a
+// territory/date that contradicts what a title's own Rights tab displays, and
+// grows automatically as titles/rights are added instead of needing hand
+// upkeep as a separate hardcoded list.
+function buildRightsOpeningSoon(): {
+  title_slug: string;
+  title_name: string;
+  territory: string;
+  rights_type: string;
+  available_from: string | null;
+}[] {
+  const rows: {
+    title_slug: string;
+    title_name: string;
+    territory: string;
+    rights_type: string;
+    available_from: string | null;
+  }[] = [];
+  for (const [slug, windows] of Object.entries(titleRights)) {
+    const title = findTitleBySlug(slug);
+    if (!title) continue;
+    for (const w of windows) {
+      if (w.availability === 'available' && w.available_from) {
+        rows.push({
+          title_slug: slug,
+          title_name: title.name,
+          territory: w.territory,
+          rights_type: w.rights_type,
+          available_from: w.available_from,
+        });
+      }
+    }
+  }
+  return rows.sort((a, b) => (a.available_from ?? '').localeCompare(b.available_from ?? ''));
+}
+
 // Strip an AssetDetail down to the list-serializer shape the real API returns.
 function toListItem(a: AssetDetail): AssetListItem {
   const {
@@ -746,22 +784,7 @@ export const handlers = [
         screener_requests_by_status: byStatus,
       },
       browsable_titles: titles.length,
-      rights_opening_soon: [
-        {
-          title_slug: 'harmattan-letters',
-          title_name: 'Harmattan Letters',
-          territory: 'Francophone Africa',
-          rights_type: 'svod',
-          available_from: '2026-08-01',
-        },
-        {
-          title_slug: 'riverwood-nights',
-          title_name: 'Riverwood Nights',
-          territory: 'East Africa',
-          rights_type: 'broadcast',
-          available_from: '2026-09-15',
-        },
-      ],
+      rights_opening_soon: buildRightsOpeningSoon(),
     });
   }),
 
