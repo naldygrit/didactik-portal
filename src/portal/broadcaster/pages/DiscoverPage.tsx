@@ -5,14 +5,23 @@ import { apiGet } from '../../shared/apiHelpers';
 import type { Title } from '../../shared/types';
 import { titleTypeLabel } from '../posters';
 
+// Client-side page size. The full result set is small enough at current scale
+// that paging in the browser is adequate; a large catalogue would move this to
+// a dedicated server-paginated search endpoint (not the shared titles list,
+// which Browse and AssetDetail also consume as a bare array).
+const PAGE_SIZE = 12;
+
 export function BroadcasterDiscoverPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(0);
   // Debounce so we send one request after typing settles, not one per keystroke.
   const [query, setQuery] = useState('');
   useEffect(() => {
     const id = setTimeout(() => setQuery(searchTerm.trim()), 250);
     return () => clearTimeout(id);
   }, [searchTerm]);
+  // A new query resets to the first page.
+  useEffect(() => setPage(0), [query]);
 
   // Server-side search via the backend ?q= param: trigram, diacritic-insensitive,
   // role-filtered, and matches synopsis/logline too — beyond a name-only client
@@ -28,6 +37,8 @@ export function BroadcasterDiscoverPage() {
 
   const titles = data ?? [];
   const q = query.toLowerCase();
+  const pageCount = Math.ceil(titles.length / PAGE_SIZE);
+  const pageTitles = titles.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 md:px-8">
@@ -79,7 +90,7 @@ export function BroadcasterDiscoverPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/10">
-              {titles.map((title) => (
+              {pageTitles.map((title) => (
                 <tr key={title.slug} className="transition-colors hover:bg-white/5">
                   <td className="px-4 py-3 font-medium text-white max-w-xs truncate">
                     {title.name}
@@ -109,6 +120,30 @@ export function BroadcasterDiscoverPage() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {pageCount > 1 && (
+        <div className="mt-4 flex items-center justify-between text-sm">
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={page === 0}
+            className="rounded-lg px-3 py-1.5 text-[var(--accent-2)] hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+          >
+            ← Previous
+          </button>
+          <span className="text-[var(--muted)]">
+            Page {page + 1} of {pageCount}
+          </span>
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
+            disabled={page >= pageCount - 1}
+            className="rounded-lg px-3 py-1.5 text-[var(--accent-2)] hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+          >
+            Next →
+          </button>
         </div>
       )}
     </div>
