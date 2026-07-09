@@ -6,8 +6,11 @@ import {
   type ReactNode,
 } from 'react';
 import {
+  clearSession,
   decodeToken,
   getAccessToken,
+  hadSession,
+  markSession,
   setAccessToken,
   silentRefresh,
 } from './auth';
@@ -34,24 +37,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    // Attempt silent refresh on mount so a page reload restores the session
-    // if the HttpOnly refresh cookie is still valid.
+    // Only attempt a silent refresh if this browser has logged in before — a
+    // fresh visitor has no refresh cookie, so calling /auth/refresh/ would 401
+    // and noise the console for nothing.
+    if (!hadSession()) {
+      setState({ accessToken: null, user: null, loading: false });
+      return;
+    }
+    // Page reload: restore the session if the HttpOnly refresh cookie is valid.
     silentRefresh().then((token) => {
       if (token) {
         setAccessToken(token);
         setState({ accessToken: token, user: decodeToken(token), loading: false });
       } else {
+        // Cookie expired/absent — drop the stale marker so the next load is clean.
+        clearSession();
         setState({ accessToken: null, user: null, loading: false });
       }
     });
   }, []);
 
   function login(token: string) {
+    markSession();
     setAccessToken(token);
     setState({ accessToken: token, user: decodeToken(token), loading: false });
   }
 
   function logout() {
+    clearSession();
     setAccessToken(null);
     setState({ accessToken: null, user: null, loading: false });
   }

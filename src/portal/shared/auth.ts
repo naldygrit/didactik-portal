@@ -3,6 +3,37 @@ import type { JwtPayload } from './types';
 
 let _accessToken: string | null = null;
 
+// The refresh token is an HttpOnly cookie the JS can't read, so on load we can't
+// tell whether a session exists. This localStorage marker records "this browser
+// logged in at least once" so we only attempt a silent refresh when there could
+// be a cookie to use — a fresh visitor never hits /auth/refresh/ and never
+// 401-noises the console. Set on login, cleared on logout or a failed refresh.
+const SESSION_MARK = 'didactik.hadSession';
+
+export function markSession(): void {
+  try {
+    localStorage.setItem(SESSION_MARK, '1');
+  } catch {
+    /* storage unavailable (private mode / disabled) — refresh just won't be gated */
+  }
+}
+
+export function clearSession(): void {
+  try {
+    localStorage.removeItem(SESSION_MARK);
+  } catch {
+    /* ignore */
+  }
+}
+
+export function hadSession(): boolean {
+  try {
+    return localStorage.getItem(SESSION_MARK) === '1';
+  } catch {
+    return false;
+  }
+}
+
 export function getAccessToken(): string | null {
   return _accessToken;
 }
