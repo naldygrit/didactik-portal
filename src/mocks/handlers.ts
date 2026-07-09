@@ -733,7 +733,11 @@ export const handlers = [
         t.name.toLowerCase().includes(q) ||
         t.original_title.toLowerCase().includes(q) ||
         t.logline.toLowerCase().includes(q) ||
-        t.synopsis.toLowerCase().includes(q),
+        t.synopsis.toLowerCase().includes(q) ||
+        // Mirror the backend's Path-B: match by Genre / CulturalTag name so a
+        // search for "Documentary" or "Nollywood" surfaces titles tagged so.
+        t.genres.some((g) => g.name.toLowerCase().includes(q)) ||
+        t.cultural_tags.some((c) => c.name.toLowerCase().includes(q)),
     );
     return HttpResponse.json(matches);
   }),
