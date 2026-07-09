@@ -35,6 +35,7 @@ const PRODUCTION_NAV = [
 
 const CINEMA_NAV = [
   { to: '/portal/broadcaster/dashboard', label: 'Browse' },
+  { to: '/portal/broadcaster/discover', label: 'Discover' },
   { to: '/portal/broadcaster/watchlist', label: 'Watchlist' },
   { to: '/portal/broadcaster/screeners', label: 'Screeners' },
 ];
