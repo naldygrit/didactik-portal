@@ -10,6 +10,7 @@ import type {
 } from '../../shared/types';
 import { DkField } from '../../../components/dk/DkField';
 import { DkFieldError } from '../../../components/dk/DkFieldError';
+import { ScreenerPlayer } from './ScreenerPlayer';
 
 interface Props {
   slug: string;
@@ -78,6 +79,9 @@ export function ScreenerPanel({ slug }: Props) {
 
   return (
     <div className="space-y-4 rounded-xl border border-white/10 bg-[var(--surface-raised)] p-4">
+      {/* ── Screener ──────────────────────────────────────────────────────── */}
+      <ScreenerPlayer slug={slug} />
+
       {/* ── Territory rights availability ─────────────────────────────────── */}
       <div>
         <span className="text-xs uppercase tracking-wide text-[var(--muted)]">
