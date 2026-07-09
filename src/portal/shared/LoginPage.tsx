@@ -38,13 +38,12 @@ export function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-md p-8">
-        <div className="mb-8 text-center">
-          <span
-            className="text-2xl font-bold tracking-tight"
-            style={{ color: '#5343fd' }}
-          >
-            Didactik
-          </span>
+        <div className="mb-8 text-center flex flex-col items-center">
+          <img
+            src="/images/didactik-logo-1.svg"
+            alt="Didactik Media"
+            className="h-10 mb-2"
+          />
           <p className="mt-1 text-sm text-gray-500">Sign in to your portal</p>
         </div>
 
@@ -100,8 +99,7 @@ export function LoginPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full rounded-lg py-2 text-sm font-semibold text-white transition-opacity disabled:opacity-60"
-            style={{ backgroundColor: '#5343fd' }}
+            className="cta-button w-full border-none outline-none py-3 text-sm disabled:opacity-60"
           >
             <span aria-live="polite">{submitting ? 'Signing in…' : 'Sign in'}</span>
           </button>

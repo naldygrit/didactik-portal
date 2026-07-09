@@ -89,10 +89,11 @@ export function PortalLayout() {
 
   const Brand = (
     <span className="flex items-center gap-2 text-lg font-bold tracking-tight">
-      <span
+      <img
+        src="/images/didactik-logo.svg"
+        alt=""
         aria-hidden
-        className="h-5 w-5 rounded-full"
-        style={{ background: 'linear-gradient(135deg, #5343fd 0%, #3fd7ff 100%)' }}
+        className="h-6 w-6"
       />
       <span style={{ color: dark ? '#fff' : '#5343fd' }}>Didactik</span>
       <span className={dark ? 'font-light text-white/70' : 'font-light text-gray-500'}>Media</span>
