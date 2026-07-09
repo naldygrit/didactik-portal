@@ -9,7 +9,7 @@ import { ContentRail } from '../components/ContentRail';
 import { PosterCard } from '../components/PosterCard';
 import { DetailModal } from '../components/DetailModal';
 import { useRecentlyViewed } from '../RecentlyViewedContext';
-import { titleBackdropUrl, titleTypeLabel } from '../posters';
+import { titleBackdropBg, titleTypeLabel } from '../posters';
 
 export function BroadcasterDashboardPage() {
   const [selected, setSelected] = useState<Title | null>(null);
@@ -135,8 +135,8 @@ export function BroadcasterDashboardPage() {
                       className="group min-w-[150px] max-w-[150px] md:min-w-[180px] md:max-w-[180px]"
                     >
                       <div
-                        className="aspect-video w-full rounded-lg bg-cover bg-center ring-1 ring-white/10 transition-transform group-hover:scale-[1.03]"
-                        style={{ backgroundImage: `url(${titleBackdropUrl(t)})` }}
+                        className="aspect-video w-full rounded-lg ring-1 ring-white/10 transition-transform group-hover:scale-[1.03]"
+                        style={{ background: titleBackdropBg(t) }}
                       />
                       <div className="mt-1.5 truncate text-sm font-medium text-white/90">{t.name}</div>
                       <div className="truncate text-xs text-[var(--muted)]">

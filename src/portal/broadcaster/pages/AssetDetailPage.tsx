@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useRecentlyViewed } from '../RecentlyViewedContext';
 import { apiGet } from '../../shared/apiHelpers';
 import type { Title } from '../../shared/types';
-import { titleTypeLabel, titleBackdropUrl } from '../posters';
+import { titleTypeLabel, titleBackdropBg } from '../posters';
 import { ScreenerPanel } from '../components/ScreenerPanel';
 import { ExpressInterestForm } from '../components/ExpressInterestForm';
 import { MakeOfferForm } from '../components/MakeOfferForm';
@@ -93,8 +93,8 @@ export function BroadcasterAssetDetailPage() {
       {/* Hero */}
       <div className="relative">
         <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${titleBackdropUrl(title)})` }}
+          className="absolute inset-0"
+          style={{ background: titleBackdropBg(title) }}
           aria-hidden
         />
         <div
@@ -221,8 +221,8 @@ export function BroadcasterAssetDetailPage() {
                 className="group min-w-[160px] max-w-[160px]"
               >
                 <div
-                  className="aspect-video w-full rounded-lg bg-cover bg-center ring-1 ring-white/10 transition-transform group-hover:scale-[1.03]"
-                  style={{ backgroundImage: `url(${titleBackdropUrl(t)})` }}
+                  className="aspect-video w-full rounded-lg ring-1 ring-white/10 transition-transform group-hover:scale-[1.03]"
+                  style={{ background: titleBackdropBg(t) }}
                 />
                 <div className="mt-1.5 truncate text-sm font-medium text-white/90">{t.name}</div>
                 <div className="truncate text-xs text-[var(--muted)]">

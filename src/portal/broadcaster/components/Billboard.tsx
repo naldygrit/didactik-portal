@@ -1,6 +1,6 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import type { Title } from '../../shared/types';
-import { titleTypeLabel, titleBackdropUrl } from '../posters';
+import { titleTypeLabel, titleBackdropBg } from '../posters';
 
 interface Props {
   title: Title;
@@ -25,10 +25,9 @@ export function Billboard({ title, onSelect }: Props) {
 
   return (
     <section className="relative isolate min-h-[62vh] w-full overflow-hidden md:min-h-[70vh]">
-      <img
-        src={titleBackdropUrl(title)}
-        alt=""
-        className="absolute inset-0 -z-10 h-full w-full object-cover"
+      <div
+        className="absolute inset-0 -z-10"
+        style={{ background: titleBackdropBg(title) }}
       />
       {/* Scrims: darken left and bottom so the copy holds WCAG contrast. */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[var(--surface)] via-[var(--surface)]/70 to-transparent" />

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { FiX } from 'react-icons/fi';
 import type { Title } from '../../shared/types';
-import { titleTypeLabel, titleBackdropUrl } from '../posters';
+import { titleTypeLabel, titleBackdropBg } from '../posters';
 import { ScreenerPanel } from './ScreenerPanel';
 import { ExpressInterestForm } from './ExpressInterestForm';
 import { BidPanel } from './BidPanel';
@@ -96,10 +96,9 @@ export function DetailModal({ title, onClose }: Props) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="relative h-48 w-full md:h-60">
-              <img
-                src={titleBackdropUrl(title)}
-                alt=""
-                className="h-full w-full object-cover opacity-45"
+              <div
+                className="h-full w-full"
+                style={{ background: titleBackdropBg(title) }}
               />
               <div
                 className="absolute inset-0"

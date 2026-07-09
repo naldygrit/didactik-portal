@@ -1,6 +1,6 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import type { Title } from '../../shared/types';
-import { titleTypeLabel, titlePosterUrl } from '../posters';
+import { titleTypeLabel, titlePosterBg } from '../posters';
 
 interface Props {
   title: Title;
@@ -23,13 +23,12 @@ export function PosterCard({ title, onSelect }: Props) {
       transition={{ duration: 0.22, ease: EASE }}
       aria-label={`${title.name}, ${titleTypeLabel(title.title_type)}. View details.`}
     >
-      {/* Placeholder image, muted so it reads as texture under the title rather
-          than as literal (mismatched) content. Swapped for real key art later. */}
-      <img
-        src={titlePosterUrl(title)}
-        alt=""
-        loading="lazy"
-        className="absolute inset-0 h-full w-full object-cover opacity-40 transition-opacity duration-200 group-hover:opacity-55"
+      {/* Real key art (public/images/posters/<slug>.jpg) if present, else an
+          owned deterministic gradient — 404s silently, never a broken image.
+          The scrim below keeps the title legible over either. */}
+      <div
+        className="absolute inset-0"
+        style={{ background: titlePosterBg(title) }}
       />
       {/* Brand-tinted scrim: dark at the base for title legibility. */}
       <div
