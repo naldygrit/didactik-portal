@@ -14,7 +14,7 @@ version. Fine for a labelled demo as-is.
 | slug | Commons file | licence | author | source |
 |---|---|---|---|---|
 | `lagos-after-dark` | Aerial view of Lagos, Nigeria.jpg | CC BY-SA 4.0 | Adebayo Oluwole | https://commons.wikimedia.org/wiki/File:Aerial_view_of_Lagos,_Nigeria.jpg |
-| `danfo-diaries` | 2010 traffic Lagos Nigeria 4576800053.jpg | CC BY 2.0 | satanoid | https://commons.wikimedia.org/wiki/File:2010_traffic_Lagos_Nigeria_4576800053.jpg |
+| `danfo-diaries` | 'Go Slow' Marketers.jpg (Category:Danfo) | CC BY-SA 4.0 | Mir koks | https://commons.wikimedia.org/wiki/File:'Go_Slow'_Marketers.jpg |
 | `aso-rock` | Aso Rock Abuja.jpg | CC BY-SA 4.0 | Raymondjoe1986 | https://commons.wikimedia.org/wiki/File:Aso_Rock_Abuja.jpg |
 | `the-tailor-of-kano` | Kano municipal council gate.jpg | CC BY-SA 2.0 | Jonathan Riddell / MrPanyGoff | https://commons.wikimedia.org/wiki/File:Kano_municipal_council_gate.jpg |
 | `riverwood-nights` | Nairobi City County Skyline.jpg | CC BY-SA 4.0 | Antony Trivet | https://commons.wikimedia.org/wiki/File:Nairobi_City_County_Skyline.jpg |
