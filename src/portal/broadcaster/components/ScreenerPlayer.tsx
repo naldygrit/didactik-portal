@@ -1,5 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { titleBackdropBg } from '../posters';
+
+// Probe MP4 first (Mixkit etc.), then WebM (Wikimedia Commons), then the slate.
+type Fmt = 'mp4' | 'webm' | 'none';
 
 /**
  * Screener surface for the broadcaster demo. Plays a cleared sample clip at
@@ -9,22 +12,24 @@ import { titleBackdropBg } from '../posters';
  * domain, or partner-cleared with permission) — see public/screeners/README.md.
  */
 export function ScreenerPlayer({ slug }: { slug: string }) {
-  const [hasClip, setHasClip] = useState(true);
+  const [fmt, setFmt] = useState<Fmt>('mp4');
+  // Re-probe from MP4 when the title changes.
+  useEffect(() => setFmt('mp4'), [slug]);
 
   return (
     <div
       className="relative aspect-video w-full overflow-hidden rounded-lg ring-1 ring-white/10"
       style={{ background: titleBackdropBg({ slug }) }}
     >
-      {hasClip ? (
+      {fmt !== 'none' ? (
         <video
-          key={slug}
-          src={`/screeners/${slug}.mp4`}
+          key={`${slug}-${fmt}`}
+          src={`/screeners/${slug}.${fmt}`}
           className="absolute inset-0 h-full w-full bg-black"
           controls
           playsInline
           preload="metadata"
-          onError={() => setHasClip(false)}
+          onError={() => setFmt((f) => (f === 'mp4' ? 'webm' : 'none'))}
         />
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 p-4 text-center">

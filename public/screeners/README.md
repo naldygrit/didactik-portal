@@ -1,8 +1,10 @@
 # Screener clips — sources & licences
 
-Drop a cleared sample clip here as `<title-slug>.mp4` (e.g. `lagos-after-dark.mp4`)
-and it plays in that title's screener panel. Until then, the panel shows a
-clearly-labelled "Demo screener" slate — never a broken video.
+Drop a cleared sample clip here as `<title-slug>.mp4` **or** `<title-slug>.webm`
+(e.g. `lagos-after-dark.mp4`, or `.webm` for Wikimedia Commons downloads) and it
+plays in that title's screener panel — the player probes MP4 first, then WebM.
+Until a clip is present, the panel shows a clearly-labelled "Demo screener" slate
+— never a broken video.
 
 **The clip MUST be content you are legally cleared to use** — CC0 / public domain
 (archive.org, Wikimedia), Pexels/Mixkit under their licences, or **partner-cleared
