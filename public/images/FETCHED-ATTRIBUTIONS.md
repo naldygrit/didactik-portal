@@ -6,12 +6,10 @@ per aspect). **All are CC-BY / CC-BY-SA — attribution is required** (recorded
 below); CC-BY-SA also carries share-alike if you ever redistribute a modified
 version. Fine for a labelled demo as-is.
 
-> ⚠️ Selected by keyword + licence, **not reviewed visually** — eyeball each and
-> swap any that don't fit (drop a replacement `<slug>.jpg` in both folders).
-> `the-baobab-keepers` ("Our Tree") in particular is unverified.
->
-> No image yet (clean owned gradient shows): `matatu-blues`, `eko-rising`,
-> `harmattan-letters`.
+> ⚠️ Selected by keyword/category + licence, **not reviewed visually** — eyeball
+> each and swap any that don't fit (drop a replacement `<slug>.jpg` in both
+> `posters/` and `backdrops/`). All 17 titles below now have art; any others keep
+> the owned gradient.
 
 | slug | Commons file | licence | author | source |
 |---|---|---|---|---|
@@ -28,4 +26,7 @@ version. Fine for a labelled demo as-is.
 | `the-griot-of-saint-louis` | WL-Sénégal-St Louis-Pont Faidherbe.jpg | CC BY-SA 4.0 | WILLAV-FR | https://commons.wikimedia.org/wiki/File:WL-Sénégal-St_Louis-Pont_Faidherbe.jpg |
 | `the-last-cocoa-house` | Accra Ghana 2.jpg | CC BY-SA 4.0 | Quofi Dubai | https://commons.wikimedia.org/wiki/File:Accra_Ghana_2.jpg |
 | `the-salt-harvesters` | RetbaLakeShore.jpg | CC BY-SA 4.0 | Jjm2311 | https://commons.wikimedia.org/wiki/File:RetbaLakeShore.jpg |
-| `the-baobab-keepers` | Our Tree (2374132918).jpg | CC BY 2.0 | Chris Eason | https://commons.wikimedia.org/wiki/File:Our_Tree_(2374132918).jpg |
+| `the-baobab-keepers` | Baobab and palm trees at the outskirts of Thiès 2007.jpg | CC BY 3.0 | Radosław Botev | https://commons.wikimedia.org/wiki/File:Baobab_and_palm_trees_at_the_outskirts_of_Thiès_2007.jpg |
+| `matatu-blues` | 2013-01-22 Kenya Nairobi Area - Mumias.JPG | CC BY-SA 3.0 | Hansueli Krapf | https://commons.wikimedia.org/wiki/File:2013-01-22_11-28-17_Kenya_Nairobi_Area_-_Mumias.JPG |
+| `eko-rising` | Civic center towers.png | CC BY-SA 4.0 | Omonicrownbaby | https://commons.wikimedia.org/wiki/File:Civic_center_towers.png |
+| `harmattan-letters` | 20150105 Street vendors in harmattan haze - Mbiama.jpg | CC BY-SA 4.0 | Delondiny | https://commons.wikimedia.org/wiki/File:20150105_Street_vendors_in_harmattan_haze_and_dust_-_Mbiama.jpg |
