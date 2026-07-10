@@ -27,6 +27,36 @@ authenticated portal app.
   the httpOnly refresh cookie keeps you logged in across reloads.
 - **Verify:** `npx tsc -b --noEmit` and `npx vitest run` (currently 86 passing).
 
+## MultiChoice demo assets + Vercel (session 2026-07-10)
+The broadcaster surface now runs on real, licence-clean content for the pitch:
+- **Key art:** real CC-BY/CC-BY-SA African city/landmark images self-hosted at
+  `public/images/{posters,backdrops}/<slug>.jpg` (17 titles); an owned gradient
+  fallback (`titleGradient` in `broadcaster/posters.ts`) covers the rest — no
+  external picsum, no broken images. Attributions:
+  `public/images/FETCHED-ATTRIBUTIONS.md`.
+- **Screener:** `ScreenerPlayer` plays `public/screeners/<slug>.{mp4,webm}` (probes
+  mp4 → webm), else a labelled "Demo Screener" slate. A real CC clip is on
+  `lagos-after-dark`. Attributions: `public/screeners/README.md`.
+- **Production houses:** EbonyLife + real Nollywood studios — **Judith Audu
+  Productions, LowlaDee (Dolapo Adeleke), Uyoyou Adia** — on the catalogue.
+- **Search** is genre/cultural-tag aware (backend `search_titles` Path-B + mock
+  parity).
+- **Rule (rights product):** demo assets must be CC0 / CC-BY / partner-cleared —
+  never unlicensed content in your own demo.
+- **Console** is clean on load (session-marker gate on the `/auth/refresh/` call).
+
+### Vercel deploy (mock demo)
+Deploys via Vercel's **GitHub integration** (same pattern as Samuel's
+`didactik-media`; no local `.vercel/` link, no CLI). `vercel.json` = SPA rewrite;
+build = `npm run build` → `dist/`. **`.env.production` sets `VITE_USE_MOCK=true`**
+so the production build serves the MSW mock catalogue — a self-contained,
+backend-free demo (ideal MultiChoice pitch link). `npm run build` verified green;
+`dist/` includes the images, screener clip, and `mockServiceWorker.js`.
+**To deploy:** push, then in the Vercel dashboard import `naldygrit/didactik-portal`
+(framework auto-detects as Vite; set Production Branch = `feat/marketplace-portal`).
+When a real API is deployed later, flip `VITE_USE_MOCK=false` (here or as a Vercel
+env var) and point at the live backend.
+
 ## State of the three portals
 - **Broadcaster** (Netflix dark skin, KEEP): migrated off the legacy auction/Asset
   API onto the Title model — browse, detail, ScreenerPanel (rights + request
