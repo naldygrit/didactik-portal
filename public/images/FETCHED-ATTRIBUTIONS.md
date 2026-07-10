@@ -24,7 +24,7 @@ version. Fine for a labelled demo as-is.
 | `joburg-nights` | View of Hillbrow skyline with Hillbrow Tower, Johannesburg.jpg | CC BY-SA 4.0 | Bertrand van der Berg | https://commons.wikimedia.org/wiki/File:View_of_Hillbrow_skyline_with_Hillbrow_Tower,_Johannesburg,_South_Africa.jpg |
 | `the-matchmaker-of-soweto` | Soweto-003.jpg | CC BY-SA 2.0 | Fiver Löcker | https://commons.wikimedia.org/wiki/File:Soweto-003.jpg |
 | `the-griot-of-saint-louis` | WL-Sénégal-St Louis-Pont Faidherbe.jpg | CC BY-SA 4.0 | WILLAV-FR | https://commons.wikimedia.org/wiki/File:WL-Sénégal-St_Louis-Pont_Faidherbe.jpg |
-| `the-last-cocoa-house` | Accra Ghana 2.jpg | CC BY-SA 4.0 | Quofi Dubai | https://commons.wikimedia.org/wiki/File:Accra_Ghana_2.jpg |
+| `the-last-cocoa-house` | Cocoa house Ibadan Nigeria.jpg | CC BY-SA 4.0 | Babbiedon | https://commons.wikimedia.org/wiki/File:Cocoa_house_Ibadan_Nigeria.jpg |
 | `the-salt-harvesters` | RetbaLakeShore.jpg | CC BY-SA 4.0 | Jjm2311 | https://commons.wikimedia.org/wiki/File:RetbaLakeShore.jpg |
 | `the-baobab-keepers` | Baobab and palm trees at the outskirts of Thiès 2007.jpg | CC BY 3.0 | Radosław Botev | https://commons.wikimedia.org/wiki/File:Baobab_and_palm_trees_at_the_outskirts_of_Thiès_2007.jpg |
 | `matatu-blues` | 2013-01-22 Kenya Nairobi Area - Mumias.JPG | CC BY-SA 3.0 | Hansueli Krapf | https://commons.wikimedia.org/wiki/File:2013-01-22_11-28-17_Kenya_Nairobi_Area_-_Mumias.JPG |
