@@ -15,4 +15,4 @@ Record each clip's source + licence in the table below.
 
 | File | Title | Source (URL) | Licence | Verified by / date |
 |------|-------|--------------|---------|--------------------|
-| _(none yet — labelled slate in use)_ | | | | |
+| `lagos-after-dark.webm` | Lagos After Dark (hero) | https://commons.wikimedia.org/wiki/File:A_tricycle,_keke-napep_driver_calling_in_passengers_in_Ketu_Lagos_Nigeria_VP8.webm | CC BY-SA 4.0 (attribute Oreoluwa Adetimehin) | 2026-07-10 |
