@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { apiGet } from '../../shared/apiHelpers';
 import type { WatchlistEntry } from '../../shared/types';
+import { bcLink } from '../../shared/portalHost';
 
 export function BroadcasterWatchlistPage() {
   const { data: watchlist, isLoading } = useQuery<WatchlistEntry[]>({
@@ -45,7 +46,7 @@ export function BroadcasterWatchlistPage() {
               Browse the archive and save titles you are evaluating.
             </p>
             <Link
-              to="/portal/broadcaster/discover"
+              to={bcLink('discover')}
               className="mt-4 inline-block rounded-lg px-4 py-2 text-sm font-semibold text-white"
               style={{ background: 'var(--accent)' }}
             >

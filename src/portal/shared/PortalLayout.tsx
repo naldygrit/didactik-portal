@@ -25,19 +25,20 @@ import { useAuth } from './AuthContext';
 import { postLogout } from './auth';
 import { apiGet } from './apiHelpers';
 import type { AdminDashboard, AdminOrganisations } from './types';
+import { activePortal, adLink, bcLink, loginPath, pcLink } from './portalHost';
 
 const PRODUCTION_NAV = [
-  { to: '/portal/production/dashboard', label: 'Dashboard', Icon: FiHome },
-  { to: '/portal/production/assets', label: 'My Catalogue', Icon: FiFilm },
-  { to: '/portal/production/screeners', label: 'Screener Requests', Icon: FiEye },
-  { to: '/portal/production/earnings', label: 'Earnings', Icon: FiDollarSign },
+  { to: pcLink('dashboard'), label: 'Dashboard', Icon: FiHome },
+  { to: pcLink('assets'), label: 'My Catalogue', Icon: FiFilm },
+  { to: pcLink('screeners'), label: 'Screener Requests', Icon: FiEye },
+  { to: pcLink('earnings'), label: 'Earnings', Icon: FiDollarSign },
 ];
 
 const CINEMA_NAV = [
-  { to: '/portal/broadcaster/dashboard', label: 'Browse' },
-  { to: '/portal/broadcaster/discover', label: 'Discover' },
-  { to: '/portal/broadcaster/watchlist', label: 'Watchlist' },
-  { to: '/portal/broadcaster/screeners', label: 'Screeners' },
+  { to: bcLink('dashboard'), label: 'Browse' },
+  { to: bcLink('discover'), label: 'Discover' },
+  { to: bcLink('watchlist'), label: 'Watchlist' },
+  { to: bcLink('screeners'), label: 'Screeners' },
 ];
 
 export function PortalLayout() {
@@ -47,10 +48,13 @@ export function PortalLayout() {
   // The broadcaster browse experience is the dark "cinema" surface; production
   // and admin keep the light chrome they were built against.
   const pathname = location.pathname;
-  // Match the portal PREFIX, not a bare substring — /portal/admin/broadcasters
-  // contains "broadcaster" and must NOT fall into the dark cinema surface.
-  const control = pathname.startsWith('/portal/admin');
-  const cinema = pathname.startsWith('/portal/broadcaster');
+  // Theme by the active portal. On a dedicated subdomain that comes from the host
+  // (paths are clean, e.g. /overview); on the unified host it comes from the path
+  // PREFIX — matched as a prefix, not a bare substring, since /portal/admin/
+  // broadcasters contains "broadcaster" and must NOT fall into the dark cinema.
+  const active = activePortal();
+  const control = active === 'admin' || pathname.startsWith('/portal/admin');
+  const cinema = active === 'broadcaster' || pathname.startsWith('/portal/broadcaster');
   // Admin (control) is a Stripe-style light surface; only the cinema is dark.
   const dark = cinema;
 
@@ -85,7 +89,7 @@ export function PortalLayout() {
   async function handleLogout() {
     await postLogout();
     logout();
-    navigate('/portal/login', { replace: true });
+    navigate(loginPath(), { replace: true });
   }
 
   const Brand = (
@@ -257,7 +261,7 @@ export function PortalLayout() {
         <div className="px-4 py-4">{Brand}</div>
         <div className="px-3 pb-3">
           <Link
-            to="/portal/production/submit"
+            to={pcLink('submit')}
             className="flex w-full items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
             style={{ backgroundColor: '#5343fd' }}
           >
@@ -320,7 +324,7 @@ export function PortalLayout() {
             className="border-b border-gray-200 bg-white px-3 py-3 md:hidden"
           >
             <Link
-              to="/portal/production/submit"
+              to={pcLink('submit')}
               className="mb-3 flex w-full items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
               style={{ backgroundColor: '#5343fd' }}
             >
@@ -383,32 +387,32 @@ function AdminSidebarNav() {
   return (
     <>
       <NavGroup>
-        <NavItem to="/portal/admin/overview" label="Overview" Icon={FiGrid} />
+        <NavItem to={adLink('overview')} label="Overview" Icon={FiGrid} />
       </NavGroup>
 
       <NavGroup label="Content">
         <NavItem
-          to="/portal/admin/library"
+          to={adLink('library')}
           label="Library"
           Icon={FiBook}
           badge={dash?.content.total_titles}
         />
         <NavItem
-          to="/portal/admin/library?status=under_review"
+          to={adLink('library?status=under_review')}
           label="Under review"
           Icon={FiClock}
           badge={underReview || undefined}
           tone="warn"
         />
         <NavItem
-          to="/portal/admin/library?status=changes_requested"
+          to={adLink('library?status=changes_requested')}
           label="Changes requested"
           Icon={FiAlertTriangle}
           badge={changesRequested || undefined}
           tone="danger"
         />
         <NavItem
-          to="/portal/admin/assets"
+          to={adLink('assets')}
           label="Unvalidated assets"
           Icon={FiUploadCloud}
           badge={unvalidatedAssets || undefined}
@@ -418,7 +422,7 @@ function AdminSidebarNav() {
 
       <NavGroup label="Screeners">
         <NavItem
-          to="/portal/admin/screeners"
+          to={adLink('screeners')}
           label="All requests"
           Icon={FiEye}
           badge={pendingScreeners || undefined}
@@ -428,19 +432,19 @@ function AdminSidebarNav() {
 
       <NavGroup label="Organisations">
         <NavItem
-          to="/portal/admin/production"
+          to={adLink('production')}
           label="Production companies"
           Icon={FiVideo}
           badge={pcs.length || undefined}
         />
         <NavItem
-          to="/portal/admin/broadcasters"
+          to={adLink('broadcasters')}
           label="Broadcasters"
           Icon={FiRadio}
           badge={bcs.length || undefined}
         />
         <NavItem
-          to="/portal/admin/production?filter=unverified"
+          to={adLink('production?filter=unverified')}
           label="Verifications"
           Icon={FiShield}
           badge={unverified || undefined}
@@ -449,10 +453,10 @@ function AdminSidebarNav() {
       </NavGroup>
 
       <NavGroup label="Platform">
-        <NavItem to="/portal/admin/revenue" label="Revenue" Icon={FiDollarSign} />
-        <NavItem to="/portal/admin/analytics" label="Analytics" Icon={FiTrendingUp} />
-        <NavItem to="/portal/admin/storage" label="Storage" Icon={FiDatabase} />
-        <NavItem to="/portal/admin/events" label="Event log" Icon={FiList} />
+        <NavItem to={adLink('revenue')} label="Revenue" Icon={FiDollarSign} />
+        <NavItem to={adLink('analytics')} label="Analytics" Icon={FiTrendingUp} />
+        <NavItem to={adLink('storage')} label="Storage" Icon={FiDatabase} />
+        <NavItem to={adLink('events')} label="Event log" Icon={FiList} />
       </NavGroup>
     </>
   );

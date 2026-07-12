@@ -1,6 +1,7 @@
 import { Navigate } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { useAuth } from './AuthContext';
+import { loginPath } from './portalHost';
 
 interface ProtectedRouteProps {
   isAllowed: boolean;
@@ -10,7 +11,7 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({
   isAllowed,
-  redirectTo = '/portal/login',
+  redirectTo = loginPath(),
   children,
 }: ProtectedRouteProps) {
   const { loading } = useAuth();

@@ -49,10 +49,11 @@ describe('ApplyPage', () => {
       target: { value: 'tobi@ebonylife.example' },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Submit application' }));
+    // Production companies self-serve: "Create account" → instant "You're all set".
+    fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
 
     await waitFor(() =>
-      expect(screen.getByRole('heading', { name: 'Application received' })).toBeDefined(),
+      expect(screen.getByRole('heading', { name: "You're all set" })).toBeDefined(),
     );
     expect(postApplication).toHaveBeenCalledWith(
       expect.objectContaining({

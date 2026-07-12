@@ -13,6 +13,7 @@ import { FileUploadField, type UploadState } from '../components/submission/File
 import { apiPost } from '../../shared/apiHelpers';
 import type { TitleUploadInitiatedResponse } from '../../shared/types';
 import { useState } from 'react';
+import { pcLink } from '../../shared/portalHost';
 
 // ---------------------------------------------------------------------------
 // Zod schema — validated step-by-step using trigger()
@@ -256,7 +257,7 @@ export function ProductionSubmitPage() {
   return (
     <div className="mx-auto max-w-4xl">
       <Link
-        to="/portal/production/assets"
+        to={pcLink('assets')}
         className="inline-flex items-center text-sm font-medium text-gray-500 transition-colors hover:text-gray-800"
       >
         ← Back to catalogue
@@ -342,7 +343,7 @@ export function ProductionSubmitPage() {
                       <h3 className="text-lg font-semibold text-gray-900">Submission received</h3>
                       <p className="mx-auto max-w-sm text-sm text-gray-600">{submitState.message}</p>
                       <a
-                        href="/portal/production/assets"
+                        href={pcLink('assets')}
                         className="mt-2 inline-block rounded-md px-5 py-2 text-sm font-medium text-white"
                         style={{ backgroundColor: BRAND }}
                       >

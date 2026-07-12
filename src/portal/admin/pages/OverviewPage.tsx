@@ -12,6 +12,7 @@ import { initials, statusThumbBg } from '../adminUi';
 import '../admin.css';
 import { DkPageHeading } from '../components/DkPageHeading';
 import { DkCardTitle } from '../components/DkCardTitle';
+import { adLink } from '../../shared/portalHost';
 
 function formatBytes(bytes: number): string {
   const tb = bytes / 1_000_000_000_000;
@@ -137,7 +138,7 @@ export function AdminOverviewPage() {
           <motion.div className="card" variants={panel} initial="hidden" animate="show">
             <div className="card-header">
               <DkCardTitle>Triage queue</DkCardTitle>
-              <Link className="card-link" to="/portal/admin/library">
+              <Link className="card-link" to={adLink('library')}>
                 View library →
               </Link>
             </div>
@@ -161,7 +162,7 @@ export function AdminOverviewPage() {
                       <span className={`age ${tone}`}>{relativeTime(row.updated_at)}</span>
                       <Link
                         className="btn-sm"
-                        to={`/portal/admin/library?title=${encodeURIComponent(row.slug)}`}
+                        to={adLink(`library?title=${encodeURIComponent(row.slug)}`)}
                       >
                         Review
                       </Link>
@@ -175,7 +176,7 @@ export function AdminOverviewPage() {
           <motion.div className="card" variants={panel} initial="hidden" animate="show">
             <div className="card-header">
               <DkCardTitle>Screeners pending</DkCardTitle>
-              <Link className="card-link" to="/portal/admin/screeners">
+              <Link className="card-link" to={adLink('screeners')}>
                 View all →
               </Link>
             </div>
@@ -249,8 +250,8 @@ export function AdminOverviewPage() {
                       className="btn-sm btn-primary"
                       to={
                         o.kind === 'Broadcaster'
-                          ? '/portal/admin/broadcasters'
-                          : '/portal/admin/production'
+                          ? adLink('broadcasters')
+                          : adLink('production')
                       }
                     >
                       Verify
@@ -267,7 +268,7 @@ export function AdminOverviewPage() {
           <motion.div className="card" variants={panel} initial="hidden" animate="show">
             <div className="card-header">
               <DkCardTitle>Production company activity</DkCardTitle>
-              <Link className="card-link" to="/portal/admin/production">
+              <Link className="card-link" to={adLink('production')}>
                 View all →
               </Link>
             </div>
@@ -285,7 +286,7 @@ export function AdminOverviewPage() {
           <motion.div className="card" variants={panel} initial="hidden" animate="show">
             <div className="card-header">
               <DkCardTitle>Broadcaster activity</DkCardTitle>
-              <Link className="card-link" to="/portal/admin/broadcasters">
+              <Link className="card-link" to={adLink('broadcasters')}>
                 View all →
               </Link>
             </div>

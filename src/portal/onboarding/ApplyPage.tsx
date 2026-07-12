@@ -2,6 +2,7 @@ import { useId, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { postApplication, type OnboardingApplicationInput, type OrgType } from './onboarding';
 import { DkFormMessage } from '../../components/dk/DkFormMessage';
+import { loginPath } from '../shared/portalHost';
 
 const BRAND = '#5343fd';
 
@@ -126,7 +127,7 @@ export function ApplyPage() {
               </div>
               <p className="mt-6 text-center text-sm text-gray-500">
                 Already have an account?{' '}
-                <Link to="/portal/login" className="font-medium" style={{ color: BRAND }}>
+                <Link to={loginPath()} className="font-medium" style={{ color: BRAND }}>
                   Sign in
                 </Link>
               </p>
@@ -250,7 +251,7 @@ export function ApplyPage() {
                 )}
               </p>
               <Link
-                to="/portal/login"
+                to={loginPath()}
                 className="mt-6 inline-block rounded-lg px-5 py-2 text-sm font-semibold text-white"
                 style={{ backgroundColor: BRAND }}
               >

@@ -8,6 +8,7 @@ import { titleTypeLabel, titleBackdropBg } from '../posters';
 import { ScreenerPanel } from '../components/ScreenerPanel';
 import { ExpressInterestForm } from '../components/ExpressInterestForm';
 import { MakeOfferForm } from '../components/MakeOfferForm';
+import { bcLink } from '../../shared/portalHost';
 
 type Tab = 'overview' | 'credits' | 'rights';
 const TABS: { key: Tab; label: string }[] = [
@@ -64,7 +65,7 @@ export function BroadcasterAssetDetailPage() {
   if (isError || !title) {
     return (
       <div className="px-8 py-10">
-        <Link to="/portal/broadcaster/discover" className="text-sm text-[var(--accent-2)]">
+        <Link to={bcLink('discover')} className="text-sm text-[var(--accent-2)]">
           ← Back to browse
         </Link>
         <p className="mt-4 text-sm text-red-400">Title not found or failed to load.</p>
@@ -104,7 +105,7 @@ export function BroadcasterAssetDetailPage() {
         />
         <div className="relative px-6 pb-7 pt-10 md:px-10 md:pt-16">
           <Link
-            to="/portal/broadcaster/discover"
+            to={bcLink('discover')}
             className="text-sm text-white/80 transition-colors hover:text-white"
           >
             ← Back to browse
@@ -217,7 +218,7 @@ export function BroadcasterAssetDetailPage() {
             {similar.map((t) => (
               <Link
                 key={t.slug}
-                to={`/portal/broadcaster/discover/${t.slug}`}
+                to={bcLink(`discover/${t.slug}`)}
                 className="group min-w-[160px] max-w-[160px]"
               >
                 <div

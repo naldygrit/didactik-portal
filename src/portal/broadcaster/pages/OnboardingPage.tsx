@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { motion, useReducedMotion } from 'framer-motion';
 import { apiGet } from '../../shared/apiHelpers';
 import { apiFetch } from '../../shared/api';
+import { bcLink } from '../../shared/portalHost';
 import type { InterestOption } from '../../shared/types';
 
 export function BroadcasterOnboardingPage() {
@@ -41,7 +42,7 @@ export function BroadcasterOnboardingPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ interests: [...selected] }),
     });
-    navigate('/portal/broadcaster/dashboard', { replace: true });
+    navigate(bcLink('dashboard'), { replace: true });
   }
 
   return (
@@ -85,7 +86,7 @@ export function BroadcasterOnboardingPage() {
         </button>
         <button
           type="button"
-          onClick={() => navigate('/portal/broadcaster/dashboard', { replace: true })}
+          onClick={() => navigate(bcLink('dashboard'), { replace: true })}
           className="text-sm text-[var(--muted)] transition-colors hover:text-white"
         >
           Skip for now

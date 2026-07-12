@@ -10,6 +10,7 @@ import { PosterCard } from '../components/PosterCard';
 import { DetailModal } from '../components/DetailModal';
 import { useRecentlyViewed } from '../RecentlyViewedContext';
 import { titleBackdropBg, titleTypeLabel } from '../posters';
+import { bcLink } from '../../shared/portalHost';
 
 export function BroadcasterDashboardPage() {
   const [selected, setSelected] = useState<Title | null>(null);
@@ -111,7 +112,7 @@ export function BroadcasterDashboardPage() {
           <div className="-mt-6 space-y-8 md:-mt-10">
             {/* Personalisation prompt / status */}
             <Link
-              to="/portal/broadcaster/onboarding"
+              to={bcLink('onboarding')}
               className="mx-4 flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-[var(--surface-raised)] px-4 py-3 text-sm transition-colors hover:border-white/20 md:mx-8"
             >
               <span className="text-[var(--ink)]/85">
@@ -131,7 +132,7 @@ export function BroadcasterDashboardPage() {
                   {recentlyViewed.map((t) => (
                     <Link
                       key={t.slug}
-                      to={`/portal/broadcaster/discover/${t.slug}`}
+                      to={bcLink(`discover/${t.slug}`)}
                       className="group min-w-[150px] max-w-[150px] md:min-w-[180px] md:max-w-[180px]"
                     >
                       <div
@@ -175,10 +176,10 @@ export function BroadcasterDashboardPage() {
 function ActivityStrip({ dashboard }: { dashboard: BroadcasterDashboard }) {
   const byStatus = dashboard.activity.screener_requests_by_status;
   const items: { label: string; value: number; to: string; tone: string }[] = [
-    { label: 'New in your territories', value: dashboard.rights_opening_soon.length, to: '/portal/broadcaster/discover', tone: '#22c55e' },
-    { label: 'On your watchlist', value: dashboard.activity.watchlist_count, to: '/portal/broadcaster/watchlist', tone: 'var(--accent-2)' },
-    { label: 'Pending screeners', value: byStatus.pending ?? 0, to: '/portal/broadcaster/screeners', tone: '#f59e0b' },
-    { label: 'Active screeners', value: (byStatus.approved ?? 0) + (byStatus.accessed ?? 0), to: '/portal/broadcaster/screeners', tone: '#22c55e' },
+    { label: 'New in your territories', value: dashboard.rights_opening_soon.length, to: bcLink('discover'), tone: '#22c55e' },
+    { label: 'On your watchlist', value: dashboard.activity.watchlist_count, to: bcLink('watchlist'), tone: 'var(--accent-2)' },
+    { label: 'Pending screeners', value: byStatus.pending ?? 0, to: bcLink('screeners'), tone: '#f59e0b' },
+    { label: 'Active screeners', value: (byStatus.approved ?? 0) + (byStatus.accessed ?? 0), to: bcLink('screeners'), tone: '#22c55e' },
   ];
   return (
     <div className="flex flex-wrap gap-x-6 gap-y-2 border-b border-white/5 bg-[var(--surface-raised)]/60 px-4 py-3 md:px-8">
@@ -209,7 +210,7 @@ function OpeningSoonPanel({
         {windows.map((w) => (
           <Link
             key={`${w.title_slug}-${w.territory}-${w.rights_type}`}
-            to={`/portal/broadcaster/discover/${w.title_slug}`}
+            to={bcLink(`discover/${w.title_slug}`)}
             className="min-w-[220px] rounded-xl border border-white/8 bg-[var(--surface-raised)] px-4 py-3 transition-colors hover:border-white/20"
           >
             <div className="truncate text-sm font-semibold text-white">{w.title_name}</div>

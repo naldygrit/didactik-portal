@@ -5,6 +5,7 @@ import { apiGet, apiPost, apiDelete } from '../../shared/apiHelpers';
 import { TitleStatusBadge } from '../components/TitleStatusBadge';
 import { ScoreRing } from '../components/ScoreRing';
 import { PipelineTracker } from '../components/PipelineTracker';
+import { pcLink } from '../../shared/portalHost';
 import type {
   Completeness,
   CompletenessRule,
@@ -80,7 +81,7 @@ export function ProductionAssetDetailPage() {
   if (isError || !title) {
     return (
       <div>
-        <Link to="/portal/production/assets" className="text-sm" style={{ color: BRAND }}>
+        <Link to={pcLink('assets')} className="text-sm" style={{ color: BRAND }}>
           ← Back to catalogue
         </Link>
         <p className="mt-4 text-sm text-red-600">Title not found or failed to load.</p>
@@ -91,7 +92,7 @@ export function ProductionAssetDetailPage() {
   return (
     <div className="mx-auto max-w-4xl">
       <Link
-        to="/portal/production/assets"
+        to={pcLink('assets')}
         className="mb-3 inline-flex items-center text-sm font-medium"
         style={{ color: BRAND }}
       >

@@ -6,6 +6,7 @@ import { thumbUrl } from '../../shared/media';
 import { TitleStatusBadge } from '../components/TitleStatusBadge';
 import { ScoreRing } from '../components/ScoreRing';
 import type { ProductionDashboard, ProductionTitle, TitleStatus } from '../../shared/types';
+import { pcLink } from '../../shared/portalHost';
 
 const BRAND = '#5343fd';
 
@@ -69,7 +70,7 @@ export function ProductionAssetsPage() {
           </p>
         </div>
         <Link
-          to="/portal/production/submit"
+          to={pcLink('submit')}
           className="rounded-full px-5 py-2 text-sm font-semibold text-white shadow-sm transition-transform active:scale-[0.98]"
           style={{ backgroundColor: BRAND }}
         >
@@ -134,7 +135,7 @@ export function ProductionAssetsPage() {
         {shown.map((t) => (
           <Link
             key={t.slug}
-            to={`/portal/production/assets/${t.slug}`}
+            to={pcLink(`assets/${t.slug}`)}
             className="group flex items-center gap-4 rounded-xl border bg-white px-5 py-4 shadow-sm transition-[transform,box-shadow] duration-150 ease-out hover:-translate-y-px hover:shadow-md motion-reduce:transform-none motion-reduce:transition-none"
             style={{ borderColor: '#e5e7eb' }}
           >

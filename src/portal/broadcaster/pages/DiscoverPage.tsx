@@ -4,6 +4,7 @@ import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { apiGet } from '../../shared/apiHelpers';
 import type { Title } from '../../shared/types';
 import { titleTypeLabel } from '../posters';
+import { bcLink } from '../../shared/portalHost';
 
 // Client-side page size. The full result set is small enough at current scale
 // that paging in the browser is adequate; a large catalogue would move this to
@@ -110,7 +111,7 @@ export function BroadcasterDiscoverPage() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link
-                      to={`/portal/broadcaster/discover/${title.slug}`}
+                      to={bcLink(`discover/${title.slug}`)}
                       className="font-medium text-[var(--accent-2)] hover:text-white"
                     >
                       View →

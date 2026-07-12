@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiGet } from '../../shared/apiHelpers';
 import type { ScreenerStatus, ScreenerSummary } from '../../shared/types';
 import { DkFormMessage } from '../../../components/dk/DkFormMessage';
+import { bcLink } from '../../shared/portalHost';
 
 // Display groups, in the order an evaluator works them.
 const GROUPS: { key: ScreenerStatus[]; label: string }[] = [
@@ -47,7 +48,7 @@ export function BroadcasterScreenerRequestsPage() {
             Request a screener from any title to start your review.
           </p>
           <Link
-            to="/portal/broadcaster/discover"
+            to={bcLink('discover')}
             className="mt-4 inline-block rounded-lg px-4 py-2 text-sm font-semibold text-white"
             style={{ background: 'var(--accent)' }}
           >
@@ -105,7 +106,7 @@ export function BroadcasterScreenerRequestsPage() {
                         </button>
                       ) : (
                         <Link
-                          to={`/portal/broadcaster/discover/${req.title_slug}`}
+                          to={bcLink(`discover/${req.title_slug}`)}
                           className="shrink-0 text-sm font-medium text-[var(--accent-2)]"
                         >
                           View title →

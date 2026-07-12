@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { apiGet } from '../../shared/apiHelpers';
 import { TitleStatusBadge } from '../components/TitleStatusBadge';
+import { pcLink } from '../../shared/portalHost';
 import type {
   MeResponse,
   ProductionDashboard,
@@ -151,7 +152,7 @@ function NeedsAttentionCard({
     <Card>
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-sm font-bold text-gray-900">Needs attention</h2>
-        <Link to="/portal/production/assets" className="text-xs font-medium" style={{ color: BRAND }}>
+        <Link to={pcLink('assets')} className="text-xs font-medium" style={{ color: BRAND }}>
           View all →
         </Link>
       </div>
@@ -166,7 +167,7 @@ function NeedsAttentionCard({
           {needsWork.map((t) => (
             <li key={t.slug}>
               <Link
-                to={`/portal/production/assets/${t.slug}`}
+                to={pcLink(`assets/${t.slug}`)}
                 className="flex items-center gap-3 py-2.5 transition-colors hover:bg-gray-50"
               >
                 <div className="h-7 w-11 shrink-0 rounded bg-gray-100" />
@@ -224,7 +225,7 @@ function RecentScreenerRequestsCard() {
     <Card>
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-sm font-bold text-gray-900">Recent screener requests</h2>
-        <Link to="/portal/production/screeners" className="text-xs font-medium" style={{ color: BRAND }}>
+        <Link to={pcLink('screeners')} className="text-xs font-medium" style={{ color: BRAND }}>
           View all →
         </Link>
       </div>
@@ -275,7 +276,7 @@ function WatchlistsCard({ watched }: { watched: ProductionDashboard['watched_tit
           {watched.map((t) => (
             <li key={t.slug} className="flex items-center justify-between gap-3 py-2">
               <Link
-                to={`/portal/production/assets/${t.slug}`}
+                to={pcLink(`assets/${t.slug}`)}
                 className="min-w-0 truncate text-sm font-medium text-gray-900 hover:opacity-80"
               >
                 {t.name}
@@ -367,7 +368,7 @@ function TerritoryInterestCard({
         </div>
       )}
       <Link
-        to="/portal/production/assets"
+        to={pcLink('assets')}
         className="mt-3 inline-block text-xs font-medium"
         style={{ color: BRAND }}
       >

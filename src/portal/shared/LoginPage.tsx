@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { postLogin, decodeToken } from './auth';
 import { useAuth } from './AuthContext';
 import { DkFormMessage } from '../../components/dk/DkFormMessage';
+import { bcLink, pcLink, portalHome, signupPath } from './portalHost';
 
 export function LoginPage() {
   const { login } = useAuth();
@@ -22,11 +23,11 @@ export function LoginPage() {
       login(token);
       const payload = decodeToken(token);
       if (payload.role === 'broadcaster_user') {
-        navigate('/portal/broadcaster/dashboard', { replace: true });
+        navigate(bcLink('dashboard'), { replace: true });
       } else if (payload.role === 'production_company_user') {
-        navigate('/portal/production/dashboard', { replace: true });
+        navigate(pcLink('dashboard'), { replace: true });
       } else {
-        navigate('/portal', { replace: true });
+        navigate(portalHome(), { replace: true });
       }
     } catch {
       setError('Invalid username or password.');
@@ -107,7 +108,7 @@ export function LoginPage() {
 
         <p className="mt-6 text-center text-sm text-gray-500">
           New to Didactik?{' '}
-          <Link to="/portal/apply" className="font-medium" style={{ color: '#5343fd' }}>
+          <Link to={signupPath()} className="font-medium" style={{ color: '#5343fd' }}>
             Apply for access
           </Link>
         </p>
