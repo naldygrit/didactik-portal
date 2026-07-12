@@ -2,7 +2,7 @@ import { useId, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { postApplication, type OnboardingApplicationInput, type OrgType } from './onboarding';
 import { DkFormMessage } from '../../components/dk/DkFormMessage';
-import { loginPath } from '../shared/portalHost';
+import { activePortal, loginPath } from '../shared/portalHost';
 
 const BRAND = '#5343fd';
 
@@ -23,8 +23,17 @@ const ORG_OPTIONS: { type: OrgType; title: string; blurb: string }[] = [
 
 export function ApplyPage() {
   const orgTypeHeadingId = useId();
-  const [step, setStep] = useState<Step>('choose');
-  const [orgType, setOrgType] = useState<OrgType | null>(null);
+  // On an audience subdomain the org type is implied by the host — pre-select it
+  // and skip the "who are you?" chooser (broadcaster. → broadcaster, producer. →
+  // production company). The unified host still shows the chooser.
+  const preset: OrgType | null =
+    activePortal() === 'broadcaster'
+      ? 'broadcaster'
+      : activePortal() === 'production'
+        ? 'production_company'
+        : null;
+  const [step, setStep] = useState<Step>(preset ? 'details' : 'choose');
+  const [orgType, setOrgType] = useState<OrgType | null>(preset);
   const [form, setForm] = useState({
     org_name: '',
     country: '',
