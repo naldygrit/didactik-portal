@@ -67,6 +67,11 @@ export function ApplyPage() {
   }
 
   const orgLabel = orgType === 'broadcaster' ? 'broadcaster' : 'production company';
+  // Emem's split: broadcasters are vetted (apply → manual review after checks);
+  // production companies self-serve (instant account) to keep supply-side
+  // friction low. Backend follow-up: producer signup should create an ACTIVE
+  // account, broadcaster signup a PENDING application for the admin queue.
+  const isInstant = orgType === 'production_company';
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
@@ -76,7 +81,13 @@ export function ApplyPage() {
             Didactik
           </span>
           <p className="mt-1 text-sm text-gray-500">
-            {step === 'done' ? 'Application received' : 'Apply for access'}
+            {step === 'done'
+              ? isInstant
+                ? 'Account created'
+                : 'Application received'
+              : isInstant
+                ? 'Create your account'
+                : 'Apply for access'}
           </p>
         </div>
 
@@ -129,7 +140,9 @@ export function ApplyPage() {
                   Tell us about your {orgLabel}
                 </h1>
                 <p className="mt-1 text-sm text-gray-500">
-                  We review every application and email you when your account is ready.
+                  {isInstant
+                    ? 'Set up your account — you can start listing straight away.'
+                    : 'We review every broadcaster application and email you once your account is verified.'}
                 </p>
               </div>
 
@@ -197,7 +210,13 @@ export function ApplyPage() {
                   className="ml-auto rounded-lg px-5 py-2 text-sm font-semibold text-white transition-opacity disabled:opacity-60"
                   style={{ backgroundColor: BRAND }}
                 >
-                  {submitting ? 'Submitting…' : 'Submit application'}
+                  {submitting
+                    ? isInstant
+                      ? 'Creating…'
+                      : 'Submitting…'
+                    : isInstant
+                      ? 'Create account'
+                      : 'Submit application'}
                 </button>
               </div>
             </form>
@@ -212,12 +231,23 @@ export function ApplyPage() {
               >
                 ✓
               </div>
-              <h1 className="mt-4 text-lg font-semibold text-gray-900">Application received</h1>
+              <h1 className="mt-4 text-lg font-semibold text-gray-900">
+                {isInstant ? "You're all set" : 'Application received'}
+              </h1>
               <p className="mt-2 text-sm text-gray-500">
-                Thanks, {form.contact_name || 'there'}. Our team reviews each {orgLabel} and we will
-                email{' '}
-                <span className="font-medium text-gray-700">{form.contact_email}</span> once your
-                account is verified.
+                {isInstant ? (
+                  <>
+                    Welcome, {form.contact_name || 'there'}. Your account is ready — sign in to
+                    start listing your catalogue.
+                  </>
+                ) : (
+                  <>
+                    Thanks, {form.contact_name || 'there'}. Our team reviews each broadcaster and we
+                    will email{' '}
+                    <span className="font-medium text-gray-700">{form.contact_email}</span> once your
+                    account is verified.
+                  </>
+                )}
               </p>
               <Link
                 to="/portal/login"
