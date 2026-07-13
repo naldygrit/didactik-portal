@@ -57,6 +57,25 @@ backend-free demo (ideal MultiChoice pitch link). `npm run build` verified green
 When a real API is deployed later, flip `VITE_USE_MOCK=false` (here or as a Vercel
 env var) and point at the live backend.
 
+### Subdomain routing — clean per-portal URLs (branch `feat/clean-subdomain-routing`)
+One deployment behind four subdomains. `src/portal/shared/portalHost.ts` is the
+source of truth: `activePortal()` reads the host; the `bcLink`/`pcLink`/`adLink`/
+`loginPath`/`signupPath`/`portalHome` builders return **clean root paths on a
+dedicated subdomain** (`broadcaster.didactikmedia.com/dashboard`) and the
+**`/portal/<role>/…` prefix on the unified `app.`/previews/localhost** — so the
+existing app.-host + test behaviour is byte-identical (201 tests still green).
+- `App.tsx`: a subdomain renders `<PortalApp/>` at root (no marketing, no
+  `/portal`); the unified host keeps marketing + `/portal/*` with `/` → login.
+- `PortalApp`: route paths are prefixed by `active` (`'' | '<role>/' | null`),
+  and only the active portal's routes mount per subdomain.
+- Every in-portal link/redirect goes through the `portalHost` builders; add new
+  links the same way (never hardcode `/portal/…`). `PortalLayout` theme is
+  host-aware (`activePortal() === 'broadcaster'` for the dark cinema, etc.).
+- **Signup split (Emem):** producers self-serve/instant, broadcasters apply →
+  manual review; `/signup` on a subdomain pre-selects that org type (admin: none).
+- **To ship:** `git push origin feat/clean-subdomain-routing:main` (fast-forward)
+  → Vercel redeploys. Subdomains also need their WhoGoHost CNAME+TXT records.
+
 ## State of the three portals
 - **Broadcaster** (Netflix dark skin, KEEP): migrated off the legacy auction/Asset
   API onto the Title model — browse, detail, ScreenerPanel (rights + request
