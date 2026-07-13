@@ -207,13 +207,17 @@ export function ApplyPage() {
               </div>
 
               <div className="flex items-center gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setStep('choose')}
-                  className="text-sm font-medium text-gray-500 hover:text-gray-800"
-                >
-                  Back
-                </button>
+                {/* No chooser to go back to on a dedicated audience subdomain
+                    (the org type is fixed by the host). */}
+                {!preset && (
+                  <button
+                    type="button"
+                    onClick={() => setStep('choose')}
+                    className="text-sm font-medium text-gray-500 hover:text-gray-800"
+                  >
+                    Back
+                  </button>
+                )}
                 <button
                   type="submit"
                   disabled={submitting}
